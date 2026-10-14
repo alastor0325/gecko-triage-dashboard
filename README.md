@@ -30,7 +30,8 @@ Reassign** (`duplicate`, `invalid`, `wrong_component`, `incomplete`, `stalled`).
   step through it. Each row shows only the bug number, its category (in the All tab
   only) and the `regression` and `new` tags. A card (full view) shows all tags and the
   bot's timeline on the bug: the newest run with every change and the whole comment the
-  bot posted, then the earlier runs, folded. Every bug number links to Bugzilla.
+  bot posted, then the earlier posted runs, folded. Dry-run rounds rerun the same bugs as
+  tests, so the page data keeps only each bug's newest dry run. Every bug number links to Bugzilla.
 
 Each bug counts once in a period, by its newest run. Tags: `new` (filed in the last 7
 days), `regression` (the bot added the keyword or `regressed_by`), `dev needinfo` (the bot
@@ -54,7 +55,8 @@ its landing page with this dashboard's text.
 lists each dry-run round and its directory (the round name is used in the ingest log only). The site is public, so the records keep no
 email address: a needinfo becomes a role (`reporter`, `assignee` or `other`), and every
 string is scrubbed of emails and `:nick` mentions. Restricted bugs are never ingested. A
-run's team comes from its bug's component. Times are stored in UTC.
+run's team comes from its bug's component. Times are stored in UTC, and the page shows them in the viewer's time zone; the per-day
+chart counts by the viewer's local day.
 
 v1 reads the local dry runs. Bugzilla (`comment_tag=gecko-triage`) comes next.
 

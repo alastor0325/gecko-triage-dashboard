@@ -159,7 +159,9 @@ const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const bug = (id, cls = "bug-link") => `<a class="${cls}" href="https://bugzilla.mozilla.org/show_bug.cgi?id=${id}">${id}</a>`;
 const bugList = ids => ids.map(bug).join(", ");
-const day = iso => new Date(iso).toLocaleDateString("en-US", {month: "short", day: "numeric", timeZone: "UTC"});
+// Dates are shown, and runs are put into days, in the viewer's own time zone.
+const day = d => new Date(d).toLocaleDateString("en-US", {month: "short", day: "numeric"});
+const dayKey = d => new Date(d).toLocaleDateString("en-CA");
 const tag = t => `<span class="tag ${TAGS[t].cls}">${esc(t)}</span>`;
 const TAG_ORDER = Object.keys(TAGS);
 const tags = (list, keep = () => true) => TAG_ORDER.filter(t => keep(t) && list.includes(t)).map(tag).join("");
@@ -181,8 +183,25 @@ function horizontalBar(id, counts, color) {
     options: {indexAxis: "y", plugins: {legend: {display: false}},
       scales: {x: {beginAtZero: true, ticks: {precision: 0}}, y: {grid: {display: false}}}}});
 }
+// Bugs handled per local day, by the category of that day's newest run on each bug. Days
+// with no run count zero, so the time axis has no gaps.
+function daily() {
+  const days = DATA.periods.find(p => p.key === state.period).days;
+  const keys = Array.from({length: days}, (_, i) => dayKey(new Date(DATA.as_of) - (days - 1 - i) * 864e5));
+  const perDay = Object.fromEntries(keys.map(k => [k, {}]));
+  for (const b of DATA.bugs) {
+    for (const r of b.runs) {  // newest first, so the first run seen on a day wins
+      const k = dayKey(r.started_at);
+      if (perDay[k] && !(b.bug_id in perDay[k])) perDay[k][b.bug_id] = r.category;
+    }
+  }
+  return keys.map(k => ({label: day(k + "T12:00:00"), ...Object.fromEntries(DATA.categories.map(c =>
+    [c.key, Object.values(perDay[k]).filter(cat => cat === c.key).length]))}));
+}
+
 function drawOverview() {
   const o = DATA.overview[state.period];
+  const perDay = daily();
   document.getElementById("summary-title").textContent = `Summary (${period().label.toLowerCase()} window)`;
   // Each tile opens the Bugs view on its category.
   const share = n => o.counts.all ? `${Math.round(100 * n / o.counts.all)}% of bugs handled` : "";
@@ -190,7 +209,7 @@ function drawOverview() {
     <div class="label">${c === "all" ? "Bugs handled" : CAT_TEXT[c]}</div><div class="value">${o.counts[c]}</div>
     <div class="sub">${c === "all" ? "each bug once, by its newest run" : share(o.counts[c])}</div></button>`).join("");
   chart("chart-daily", {type: "bar",
-    data: {labels: o.daily.map(d => day(d.date)), datasets: DATA.categories.map(c => ({label: c.label, data: o.daily.map(d => d[c.key]), backgroundColor: c.color, maxBarThickness: 28}))},
+    data: {labels: perDay.map(d => d.label), datasets: DATA.categories.map(c => ({label: c.label, data: perDay.map(d => d[c.key]), backgroundColor: c.color, maxBarThickness: 28}))},
     options: {plugins: {legend: {labels: {boxWidth: 10, boxHeight: 10}}},
       scales: {x: {stacked: true, grid: {display: false}, ticks: {maxRotation: 0, autoSkip: true, maxTicksLimit: 10}},
         y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}}});
@@ -208,10 +227,9 @@ function shown() {
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
     if (!runs.length) return null;
-    const run = runs[0];
-    // Dry-run rounds rerun the same bugs as tests, so only an earlier posted run is a return.
-    const again = run.posted && runs.slice(1).some(e => e.posted) ? ["again"] : [];
-    return {...b, run, runs, tags: [...b.tags, ...run.tags, ...again]};
+    // Python sends only the runs the page shows, so any earlier run means the bot came back.
+    const [run, ...earlier] = runs;
+    return {...b, run, earlier, tags: [...b.tags, ...run.tags, ...(earlier.length ? ["again"] : [])]};
   }).filter(b => b && matches(b))
     .sort((a, b) => rank(a.run) - rank(b.run) || b.run.started_at.localeCompare(a.run.started_at));
 }
@@ -241,7 +259,7 @@ function railItem(b) {
 }
 
 // The bot's timeline on the bug: the newest run in the period with every change and its
-// whole comment, then the earlier runs, folded.
+// whole comment, then the earlier posted runs, folded.
 function card(b, index, total) {
   const r = b.run;
   const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}</div>${changes(e)}
@@ -252,7 +270,7 @@ function card(b, index, total) {
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
     <ol class="timeline">${entry(r)}</ol>
-    ${b.runs.length > 1 ? `<details class="earlier"><summary>Earlier runs · ${b.runs.length - 1}</summary><ol class="timeline">${b.runs.slice(1).map(entry).join("")}</ol></details>` : ""}`;
+    ${b.earlier.length ? `<details class="earlier"><summary>Earlier runs · ${b.earlier.length}</summary><ol class="timeline">${b.earlier.map(entry).join("")}</ol></details>` : ""}`;
 }
 
 let current = [];  // the list the last drawBugs() showed
@@ -343,8 +361,8 @@ Chart.defaults.font.family = getComputedStyle(document.body).getPropertyValue("-
 Chart.defaults.font.size = 11;
 Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--muted");
 Chart.defaults.scale.grid.color = getComputedStyle(document.body).getPropertyValue("--rule-soft");
-const asOf = new Date(DATA.as_of).toLocaleString("en-US", {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC"});
-document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(asOf)} UTC`
+const asOf = new Date(DATA.as_of).toLocaleString("en-US", {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZoneName: "short"});
+document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(asOf)}`
   + (DATA.posted ? "" : ` · <span class="dry-run">dry run, nothing posted</span>`);
 readHash();
 draw();

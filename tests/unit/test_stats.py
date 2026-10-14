@@ -1,4 +1,4 @@
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 
 from triagedash import stats
 
@@ -59,7 +59,7 @@ def test_decision_label():
 
 def test_run_view_keeps_only_page_fields():
     v = stats.run_view(make_record(decision="wrong_component", comment="**Moved**"))
-    assert (v["category"], v["decision"], v["posted"]) == ("close", "wrong component", False)
+    assert (v["category"], v["decision"]) == ("close", "wrong component")
     assert v["comment_html"] == "<p><strong>Moved</strong></p>"
     assert stats.run_view(make_record(comment=None))["comment_html"] is None
     assert not {"run_id", "error", "team", "bug_id", "title", "comment"} & set(v)
@@ -88,22 +88,17 @@ def test_bugs_newest_first():
     ]
     one, three = sorted(stats.bugs(runs, AS_OF), key=lambda b: b["bug_id"])
     assert one["title"] == "new title"
-    assert [r["started_at"][:10] for r in one["runs"]] == ["2026-10-13", "2026-10-06"]
+    assert [r["started_at"][:10] for r in one["runs"]] == ["2026-10-13"]
     assert (one["tags"], three["tags"]) == ([], ["new"])
 
 
-def test_daily_zero_fills_and_counts_each_bug_once_a_day():
-    runs = [
-        make_record(1, started_at="2026-10-12T08:00:00+00:00", decision="needs_info", run_id="a"),
-        make_record(1, started_at="2026-10-12T09:00:00+00:00", decision="triaged", run_id="b"),
-        make_record(2, started_at="2026-10-12T10:00:00+00:00", decision="duplicate"),
-    ]
-    out = stats.daily(runs, date(2026, 10, 11), date(2026, 10, 13))
-    assert out == [
-        {"date": "2026-10-11", "analyzed": 0, "needs-info": 0, "close": 0},
-        {"date": "2026-10-12", "analyzed": 1, "needs-info": 0, "close": 1},
-        {"date": "2026-10-13", "analyzed": 0, "needs-info": 0, "close": 0},
-    ]
+def test_shown_runs_drop_dry_run_history():
+    posted = [make_record(started_at=f"2026-10-1{d}T00:00:00+00:00", posted=True) for d in (4, 3)]
+    dry = [make_record(started_at=f"2026-10-1{d}T00:00:00+00:00") for d in (4, 3)]
+    assert stats.shown_runs(posted) == posted
+    assert stats.shown_runs(dry) == dry[:1]
+    assert stats.shown_runs([posted[0], dry[1]]) == [posted[0]]
+    assert stats.shown_runs([dry[0], posted[1]]) == [dry[0]]
 
 
 def test_overview():
@@ -118,8 +113,6 @@ def test_overview():
     assert o["1m"]["counts"]["needs-info"] == 1
     assert o["1w"]["close_kinds"] == {"Duplicate": 1, "Moved to Widget: Gtk": 1}
     assert o["1w"]["severity"] == {"S1": 0, "S2": 0, "S3": 1, "S4": 0}
-    assert [len(o[k]["daily"]) for k in ("1w", "1m", "3m")] == [7, 30, 90]
-    assert o["1w"]["daily"][-1]["date"] == "2026-10-14"
 
 
 def test_team_page():
@@ -137,6 +130,7 @@ def test_team_page():
     assert page["periods"][0] == {
         "key": "1w",
         "label": "1-Week",
+        "days": 7,
         "start": "2026-10-07T12:00:00+00:00",
     }
     assert [b["bug_id"] for b in page["bugs"]] == [100]

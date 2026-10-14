@@ -1,12 +1,13 @@
 """Shapes one team's records into the page data. Pure: no I/O.
 
-The page picks, per bug, the newest run inside the chosen period, so the data holds
-every run of the longest period that changed a bug, newest first."""
+The page shows, per bug, its newest run and the earlier runs that were posted. Every
+date the page shows, including the per-day chart, is in the viewer's time zone, so the
+page buckets runs into days itself."""
 
 from __future__ import annotations
 
 from collections import Counter
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from .markdown import render
 from .store import order
@@ -86,7 +87,7 @@ def period_start(as_of: datetime, key: str) -> str:
 
 def run_view(record: dict) -> dict:
     keep = (
-        "posted", "started_at", "severity", "priority", "needinfo", "dupe_of", "blocks_add",
+        "started_at", "severity", "priority", "needinfo", "dupe_of", "blocks_add",
         "keywords_add", "regressed_by_add", "other_bugs",
     )  # fmt: skip
     return {
@@ -123,8 +124,16 @@ def by_category(runs: list[dict]) -> dict[str, int]:
     return {c: counts[c] for c in CATEGORIES}
 
 
+def shown_runs(bug_runs: list[dict]) -> list[dict]:
+    """A bug's runs, newest first, as the page shows them: the newest run, then the earlier
+    ones only if they and the newest were posted. Dry-run rounds rerun the same bugs as
+    tests, so a dry run is never history."""
+    newest, earlier = bug_runs[0], bug_runs[1:]
+    return [newest, *(r for r in earlier if r["posted"])] if newest["posted"] else [newest]
+
+
 def bugs(records: list[dict], as_of: datetime) -> list[dict]:
-    """Each bug the bot changed, with its runs newest first. Title and the `new` tag come
+    """Each bug the bot changed, with the runs the page shows. Title and the `new` tag come
     from the newest run."""
     by_bug: dict[int, list[dict]] = {}
     for r in sorted(filter(acted, records), key=order, reverse=True):
@@ -134,32 +143,21 @@ def bugs(records: list[dict], as_of: datetime) -> list[dict]:
             "bug_id": bug_id,
             "title": bug_runs[0]["title"],
             "tags": ["new"] if is_new(bug_runs[0]["filed"], as_of) else [],
-            "runs": [run_view(r) for r in bug_runs],
+            "runs": [run_view(r) for r in shown_runs(bug_runs)],
         }
         for bug_id, bug_runs in by_bug.items()
     ]
 
 
-def daily(runs: list[dict], first: date, last: date) -> list[dict]:
-    """Bugs handled per day, by the category of that day's newest run on each bug. Days
-    with no run count zero, so the chart's time axis has no gaps."""
-    per_day: dict[date, list[dict]] = {}
-    for r in runs:
-        per_day.setdefault(datetime.fromisoformat(r["started_at"]).date(), []).append(r)
-    days = (first + timedelta(days=n) for n in range((last - first).days + 1))
-    return [{"date": d.isoformat(), **by_category(latest_runs(per_day.get(d, [])))} for d in days]
-
-
 def overview(records: list[dict], as_of: datetime) -> dict:
-    """Per period: the counts, the daily chart, where closed bugs went, and the severity
-    the bot set. Each bug counts once, by its newest run in the period."""
+    """Per period: the counts, where closed bugs went, and the severity the bot set. Each
+    bug counts once, by its newest run in the period."""
     out = {}
-    for key, (days, _) in PERIODS.items():
+    for key in PERIODS:
         runs = in_period(records, as_of, key)
         latest = latest_runs(runs)
         out[key] = {
             "counts": {"all": len(latest), **by_category(latest)},
-            "daily": daily(runs, (as_of - timedelta(days=days - 1)).date(), as_of.date()),
             "close_kinds": dict(
                 Counter(close_kind(r) for r in latest if category(r) == "close").most_common()
             ),
@@ -181,8 +179,8 @@ def team_page(records: list[dict], as_of: datetime) -> dict:
         ],
         "risk": list(RISK),
         "periods": [
-            {"key": k, "label": label, "start": period_start(as_of, k)}
-            for k, (_, label) in PERIODS.items()
+            {"key": k, "label": label, "days": days, "start": period_start(as_of, k)}
+            for k, (days, label) in PERIODS.items()
         ],
         "overview": overview(records, as_of),
         "bugs": bugs(records, as_of),
