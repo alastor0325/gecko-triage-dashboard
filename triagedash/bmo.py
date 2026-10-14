@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import store
 
-FIELDS = "id,creator,assigned_to,product,component,summary,groups"
+FIELDS = "id,creator,assigned_to,product,component,summary,groups,creation_time"
 BASE = "https://bugzilla.mozilla.org/rest/bug"
 
 

@@ -15,7 +15,9 @@ from .conftest import make_record, make_summary
 
 
 def parse(summary, meta, bug_id=100):
-    return parse_summary(summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta)
+    return parse_summary(
+        summary, bug_id=bug_id, round_="r1", run_id="local-20261014-174025-eb0234", meta=meta
+    )
 
 
 def test_run_started_at_is_utc():

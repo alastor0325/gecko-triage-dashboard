@@ -60,7 +60,9 @@ def ingest_dryrun(args) -> None:
             if meta is None or not is_public(meta):
                 print(f"skip {path}: bug {bug_id} is not public")
                 continue
-            record = parse_summary(summary, bug_id=bug_id, run_id=path.parent.name, meta=meta)
+            record = parse_summary(
+                summary, bug_id=bug_id, round_=round_, run_id=path.parent.name, meta=meta
+            )
             if record["team"] is None:
                 print(f"skip {path}: bug {bug_id} is in no team's component")
                 continue
@@ -82,7 +84,8 @@ def build(args) -> None:
     records = store.load(RUNS, [])
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    shutil.copy(render.TEMPLATES / "review-stats.css", out / "review-stats.css")
+    for name in ("review-stats.css", "favicon.svg"):
+        shutil.copy(render.TEMPLATES / name, out / name)
     team_template = (render.TEMPLATES / "team.html").read_text()
     pages = {}
     for team in TEAMS:

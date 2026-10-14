@@ -1,4 +1,6 @@
-from triagedash import render, store
+from datetime import UTC, datetime
+
+from triagedash import render, stats, store
 from triagedash.teams import TEAMS
 
 from .conftest import make_record
@@ -30,7 +32,9 @@ def test_landing_html_without_data():
     assert "1 dashboard<" in out
 
 
-def test_landing_row_uses_latest_week():
-    week = {"counts": {"all": 5, "closed": 1, "moved": 2, "sp": 0, "needinfo": 0}}
-    out = render.team_row(1, TEAMS[0], {"weeks": [week]})
-    assert "<strong>5</strong>bugs changed · 3 closed or moved" in out
+def test_landing_row_counts_last_7_days():
+    page = stats.team_page(
+        [make_record(resolution="INVALID")], datetime(2026, 10, 14, 12, tzinfo=UTC)
+    )
+    out = render.team_row(1, TEAMS[0], page)
+    assert "<strong>1</strong>bugs changed in 7 days · 1 closed or moved" in out

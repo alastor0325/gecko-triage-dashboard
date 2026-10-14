@@ -4,26 +4,72 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Triage Dashboard · __TEAM__</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23FF0039'/><text x='32' y='49' font-family='-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif' font-weight='900' font-size='52' fill='white' text-anchor='middle'>m</text></svg>">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../review-stats.css">
 <style>
   /* Local to this dashboard; everything else is review-stats.css. */
-  col.c-bug { width: 90px; }
-  col.c-did { width: 34%; }
-  col.c-date { width: 96px; }
-  #queue-table td { overflow-wrap: anywhere; }
-  td .sub { display: block; color: var(--muted); font-size: 11.5px; margin-top: 3px; }
-  td .did { display: block; }
-  td .did + .did { margin-top: 3px; }
-  .tag { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em;
-          padding: 1px 6px; border-radius: 999px; background: var(--paper-warm); color: var(--ink-soft); }
+  .toggle-bar { flex-wrap: wrap; row-gap: 6px; }
+  .toggle-bar button .n { margin-left: 5px; color: var(--muted); font-weight: 500; }
+  .controls { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .controls select, .controls input {
+    font-family: var(--mono); font-size: 11px; color: var(--ink);
+    border: 1px solid var(--rule); background: var(--surface); padding: 4px 8px; border-radius: 2px;
+  }
+  .controls input { width: 230px; }
+  .layout { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 10px; align-items: start; }
+  .rail, .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; }
+  .card { padding: 16px 20px 18px; }
+  .rail {
+    position: sticky; top: 118px; max-height: calc(100vh - 136px); overflow-y: auto;
+  }
+  .rail-head, .pos {
+    font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); display: flex; justify-content: space-between; gap: 8px;
+  }
+  .rail-head { padding: 10px 14px; border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--surface); }
+  .rail ol { list-style: none; margin: 0; padding: 0; }
+  .rail-item { display: block; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none;
+    border: 0; border-bottom: 1px solid var(--rule-soft); padding: 9px 14px 10px; cursor: pointer; }
+  .rail-item:hover { background: var(--paper); }
+  .rail-item.is-active { background: var(--paper-warm); box-shadow: inset 3px 0 0 var(--red); }
+  .rail-item:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+  .rail-row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  .rail-id { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
+  .rail-item.is-active .rail-id { color: var(--red-deep); }
+  .rail-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; }
+  .rail-title { font-size: 12.5px; line-height: 1.35; margin-top: 3px; overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tag { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 1px 6px; border-radius: 999px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
   .tag.closed, .tag.moved { background: var(--red); color: var(--surface); }
-  .empty { color: var(--muted); font-size: 12.5px; margin: 0; }
+  .tag.flag { background: transparent; color: var(--red-deep); box-shadow: inset 0 0 0 1px var(--red); }
+  .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .card-id { font-family: var(--mono); font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+  .badge { font-family: var(--mono); font-size: 10px; padding: 0 5px; border: 1px solid var(--rule); border-radius: 2px; }
+  .badge.unset { border-style: dashed; color: var(--muted); }
+  .pos button { font: inherit; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; padding: 0 6px; }
+  .card-title { font-family: var(--serif); font-variation-settings: "opsz" 30, "wght" 600, "SOFT" 30;
+    font-size: 18px; line-height: 1.3; margin: 0 0 12px; overflow-wrap: anywhere; }
+  .did { display: block; font-size: 13px; line-height: 1.5; }
+  .did + .did { margin-top: 2px; }
+  .card a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .card a:hover { color: var(--red); border-bottom-color: var(--red); }
+  details.more { margin-top: 12px; border-top: 1px solid var(--rule-soft); padding-top: 8px; }
+  details.more summary { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; }
+  details.more p, details.more li { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+  details.more ol { margin: 6px 0 0; padding-left: 18px; }
+  .open-bug { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 11px; }
+  .empty { color: var(--muted); font-size: 12.5px; margin: 0; padding: 14px; }
   .dry-run { color: var(--red-deep); }
-  .stat.expandable:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    .rail { position: static; max-height: 45vh; }
+    .controls { margin-left: 0; width: 100%; }
+    .controls input { flex: 1; width: auto; }
+  }
 </style>
 </head>
 <body>
@@ -35,53 +81,79 @@
     <h1><a href="../index.html" title="Back to team picker">←</a><span class="dash-title">Triage Dashboard</span> <span style="color: var(--muted); font-variation-settings: 'opsz' 110, 'wght' 300; font-style: italic;">·</span> <span id="header-group">__TEAM__</span></h1>
     <div class="meta" id="header-meta"></div>
   </header>
-  <nav class="toggle-bar" aria-label="Week selector">
-    <div class="toggle-group" role="tablist" aria-label="Week" id="weeks"></div>
+  <nav class="toggle-bar" aria-label="Filters">
+    <div class="toggle-group" role="tablist" aria-label="What the bot did" id="tabs"></div>
+    <div class="controls">
+      <select id="when" aria-label="When"></select>
+      <input id="search" type="search" placeholder="Search id, title, tag" aria-label="Search">
+    </div>
   </nav>
 </div>
 
 <main>
-  <section>
-    <h2 id="week-title"></h2>
-    <div class="summary-grid" id="tiles"></div>
-  </section>
-  <section>
-    <h2 id="table-title">What the bot changed</h2>
-    <div id="table"></div>
-  </section>
+  <div class="layout">
+    <aside class="rail" aria-label="Bugs">
+      <div class="rail-head"><span id="rail-title"></span><span id="rail-count"></span></div>
+      <ol id="rail"></ol>
+    </aside>
+    <div class="card" id="card" aria-live="polite"></div>
+  </div>
 </main>
 
 <script id="data" type="application/json">__DATA__</script>
 <script>
 "use strict";
 const DATA = JSON.parse(document.getElementById("data").textContent);
-// Display text per category; the order comes from DATA.categories, riskiest first.
-const TEXT = {
-  all: ["All bugs", "every bug it changed"],
-  closed: ["Closed", "check first: a wrong close hides a bug"],
-  moved: ["Moved", "left the team's components"],
-  sp: ["S/P set", "severity or priority"],
-  needinfo: ["Asked for info", "waiting on a person"],
-};
-const TILES = ["all", ...DATA.categories].map(k => [k, ...TEXT[k]]);
-const state = {week: DATA.weeks.length ? DATA.weeks[0].key : null, filter: "all"};
+// Tab text per category; the order comes from DATA.categories, riskiest first.
+const TAB_TEXT = {closed: "Closed", moved: "Moved", sp: "S/P set", needinfo: "Needs info", all: "All"};
+const TABS = [...DATA.categories, "all"];
+const WHEN = [["7d", "Last 7 days"], ["30d", "Last 30 days"], ["all", "All time"],
+  ...DATA.rounds.map(r => [`round:${r}`, `Round ${r}`])];
+const ROLES = {reporter: "reporter", assignee: "assignee", other: "another person", unknown: "unknown person"};
+const state = {tab: "all", when: "7d", q: "", bug: null};
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
-const bug = id => `<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=${id}">${id}</a>`;
+const bugUrl = id => `https://bugzilla.mozilla.org/show_bug.cgi?id=${id}`;
+const bug = id => `<a href="${bugUrl(id)}">${id}</a>`;
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const bugList = ids => ids.map(bug).join(", ");
-const day = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-US", {month: "short", day: "numeric"});
-const week = () => DATA.weeks.find(w => w.key === state.week);
-const ROLES = {reporter: "reporter", assignee: "assignee", other: "another person", unknown: "unknown person"};
+const day = iso => new Date(iso).toLocaleDateString("en-US", {month: "short", day: "numeric", timeZone: "UTC"});
+const FLAG_TAGS = new Set(["regression", "dev needinfo"]);
+const tag = (t, cls = FLAG_TAGS.has(t) ? "flag" : "") => `<span class="tag ${cls}">${esc(t)}</span>`;
+const tags = b => b.tags.map(t => tag(t)).join("");
+const main = r => r.categories[0];
 
-// The tagged line for each of the row's categories, in risk order.
+// DATA.windows holds each window's start; ISO strings in UTC compare in time order.
+function inWhen(run) {
+  if (state.when.startsWith("round:")) return run.round === state.when.slice(6);
+  return state.when === "all" || run.started_at >= DATA.windows[state.when];
+}
+
+const matches = (b, q) => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.categories.join(" ")}`.toLowerCase().includes(q);
+
+// Per bug, the newest run inside the window, with the tags that depend on it.
+function shown() {
+  const q = state.q.trim().toLowerCase();
+  const rank = r => main(r) ? DATA.categories.indexOf(main(r)) : DATA.categories.length;
+  return DATA.bugs.map(b => {
+    const i = b.runs.findIndex(inWhen);
+    if (i < 0) return null;
+    const run = b.runs[i];
+    const earlier = b.runs.slice(i + 1);
+    // Dry-run rounds rerun the same bugs as tests, so only an earlier posted run is a return.
+    const again = run.posted && earlier.some(e => e.posted) ? ["again"] : [];
+    return {...b, run, earlier, tags: [...b.tags, ...run.tags, ...again]};
+  }).filter(b => b && matches(b, q))
+    .sort((a, b) => rank(a.run) - rank(b.run) || b.run.started_at.localeCompare(a.run.started_at));
+}
+
 const TAGGED = {
-  closed: r => `<span class="tag closed">closed</span> ${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`,
-  moved: r => `<span class="tag moved">moved</span> to ${esc(r.move_to)}`,
-  sp: r => `<span class="tag">S/P</span> ${esc([r.severity, r.priority].filter(Boolean).join(" / "))}`,
-  needinfo: r => `<span class="tag">needinfo</span> ${esc(r.needinfo.map(x => ROLES[x] || x).join(", "))}`,
+  closed: r => `${tag("closed", "closed")} ${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`,
+  moved: r => `${tag("moved", "moved")} to ${esc(r.move_to)}`,
+  sp: r => `${tag("S/P")} ${esc([r.severity, r.priority].filter(Boolean).join(" / "))}`,
+  needinfo: r => `${tag("needinfo")} ${esc(r.needinfo.map(x => ROLES[x] || x).join(", "))}`,
 };
-
-// One line per change the bot made, most harmful first.
+// One line per change, most harmful first.
 function changes(r) {
   const lines = [
     ...r.categories.map(c => TAGGED[c](r)),
@@ -92,65 +164,106 @@ function changes(r) {
   ].filter(Boolean);
   return (lines.length ? lines : ["comment only, no field change"]).map(l => `<span class="did">${l}</span>`).join("");
 }
+const mainAction = r => main(r) ? TAB_TEXT[main(r)] : "comment only";
+
+function railItem(b) {
+  const c = main(b.run);
+  return `<li><button type="button" class="rail-item${b.bug_id === state.bug ? " is-active" : ""}" data-bug="${b.bug_id}">
+    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span><span class="rail-tags">${c ? tag(TAB_TEXT[c], c) : ""}${tags(b)}</span></span>
+    <span class="rail-title">${esc(b.title)}</span></button></li>`;
+}
+
+function card(b, index, total) {
+  const r = b.run;
+  const level = (v, unset) => v ? `<span class="badge">${esc(v)}</span>` : `<span class="badge unset">${unset}</span>`;
+  const history = b.earlier.length ? `<details class="more"><summary>History · ${plural(b.earlier.length, "earlier run")}</summary>
+    <ol>${b.earlier.map(e => `<li>${day(e.started_at)} · round ${esc(e.round)} · ${esc(mainAction(e))}</li>`).join("")}</ol></details>` : "";
+  return `<div class="card-top">
+      <span class="card-id">${b.bug_id} ${level(r.severity, "S?")} ${level(r.priority, "P?")} ${tags(b)}</span>
+      <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
+    </div>
+    <h2 class="card-title">${esc(b.title)}</h2>
+    ${changes(r)}
+    <details class="more" open><summary>The bot's summary · ${day(r.started_at)} · round ${esc(r.round)}</summary><p>${esc(r.summary)}</p></details>
+    ${history}
+    <a class="open-bug" href="${bugUrl(b.bug_id)}">Open bug ${b.bug_id} in Bugzilla</a>`;
+}
+
+let current = [];  // the list the last draw() showed
 
 function draw() {
-  document.getElementById("weeks").innerHTML = DATA.weeks.map(w =>
-    `<button type="button" data-week="${w.key}" class="${w.key === state.week ? "active" : ""}">${w.key.slice(5)} · ${day(w.start)}</button>`).join("");
-  const w = week();
-  if (!w) {
-    document.getElementById("week-title").textContent = "No runs yet";
-    document.getElementById("tiles").innerHTML = "";
-    document.getElementById("table").innerHTML = `<p class="empty">The bot has not changed any bug of this team yet.</p>`;
-    return;
-  }
-  document.getElementById("week-title").textContent = `Week ${w.key.slice(5)} · ${day(w.start)} to ${day(w.end)}`;
-  document.getElementById("tiles").innerHTML = TILES.map(([k, label, sub]) =>
-    `<div class="stat expandable${state.filter === k ? " is-open" : ""}" data-filter="${k}" role="button" tabindex="0" aria-pressed="${state.filter === k}">
-      <div class="label">${label}</div><div class="value">${w.counts[k]}</div><div class="sub">${sub}</div></div>`).join("");
-  const rows = w.rows.filter(r => state.filter === "all" || r.categories.includes(state.filter));
-  const label = TILES.find(([k]) => k === state.filter)[1];
-  document.getElementById("table-title").textContent = state.filter === "all" ? "What the bot changed" : `What the bot changed · ${label}`;
-  document.getElementById("table").innerHTML = rows.length ? `<div class="table-wrap"><table id="queue-table">
-    <colgroup><col class="c-bug"><col><col class="c-did"><col class="c-date"></colgroup>
-    <thead><tr><th>Bug</th><th>Title</th><th>What the bot did</th><th>Date</th></tr></thead>
-    <tbody>${rows.map(r => `<tr><td>${bug(r.bug_id)}</td><td>${esc(r.title)}<span class="sub">${esc(r.summary)}</span></td>
-      <td>${changes(r)}</td><td>${day(r.started_at.slice(0, 10))}</td></tr>`).join("")}</tbody></table></div>`
-    : `<p class="empty">No bug is in “${label}” this week. Choose “All bugs” to see every change.</p>`;
-  history.replaceState(null, "", `#${state.week}`);
+  const all = shown();
+  const inTab = c => c === "all" ? all : all.filter(b => b.run.categories.includes(c));
+  document.getElementById("tabs").innerHTML = TABS.map(t =>
+    `<button type="button" role="tab" data-tab="${t}" aria-selected="${state.tab === t}" class="${state.tab === t ? "active" : ""}">${TAB_TEXT[t]}<span class="n">${inTab(t).length}</span></button>`).join("");
+  const list = inTab(state.tab);
+  if (!list.some(b => b.bug_id === state.bug)) state.bug = list.length ? list[0].bug_id : null;
+  document.getElementById("rail-title").textContent = TAB_TEXT[state.tab];
+  document.getElementById("rail-count").textContent = plural(list.length, "bug");
+  document.getElementById("rail").innerHTML = list.length ? list.map(railItem).join("")
+    : `<li class="empty">${state.q ? "No bug matches the search." : "The bot changed no bug in this group in this period."} Choose “All” or a longer period.</li>`;
+  const i = list.findIndex(b => b.bug_id === state.bug);
+  document.getElementById("card").innerHTML = i < 0 ? `<p class="empty">Choose a bug on the left.</p>` : card(list[i], i, list.length);
+  const p = new URLSearchParams({tab: state.tab, when: state.when});
+  if (state.bug) p.set("bug", state.bug);
+  history.replaceState(null, "", "#" + p);
+  current = list;
+}
+
+function step(n) {
+  const i = current.findIndex(b => b.bug_id === state.bug);
+  const next = current[i + n];
+  if (!next) return;
+  state.bug = next.bug_id;
+  draw();
+  document.querySelector(`.rail-item[data-bug="${next.bug_id}"]`)?.scrollIntoView({block: "nearest"});
 }
 
 function readHash() {
-  const key = location.hash.slice(1);
-  if (DATA.weeks.some(w => w.key === key)) state.week = key;
+  const p = new URLSearchParams(location.hash.slice(1));
+  if (TABS.includes(p.get("tab"))) state.tab = p.get("tab");
+  if (WHEN.some(([k]) => k === p.get("when"))) state.when = p.get("when");
+  if (p.get("bug")) state.bug = Number(p.get("bug"));
 }
 
-function pick(el) {
-  if (el.dataset.week) { state.week = el.dataset.week; state.filter = "all"; }
-  if (el.dataset.filter) state.filter = state.filter === el.dataset.filter ? "all" : el.dataset.filter;
-  draw();
-}
+const whenSelect = document.getElementById("when");
+whenSelect.innerHTML = WHEN.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("");
+whenSelect.addEventListener("change", () => { state.when = whenSelect.value; draw(); });
+const search = document.getElementById("search");
+let typing;
+search.addEventListener("input", () => {
+  clearTimeout(typing);
+  typing = setTimeout(() => { state.q = search.value; draw(); }, 120);
+});
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-week], [data-filter]");
-  if (el) pick(el);
+  const el = e.target.closest("[data-tab], [data-bug], [data-step]");
+  if (!el) return;
+  if (el.dataset.tab) state.tab = el.dataset.tab;
+  if (el.dataset.bug) state.bug = Number(el.dataset.bug);
+  if (el.dataset.step) return step(Number(el.dataset.step));
+  draw();
 });
 document.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  const el = e.target.closest && e.target.closest("[data-filter]");
-  if (el && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(el); return; }
-  if ((e.key !== "ArrowLeft" && e.key !== "ArrowRight") || !DATA.weeks.length) return;
-  const i = DATA.weeks.findIndex(w => w.key === state.week);
-  const next = i + (e.key === "ArrowRight" ? -1 : 1);
-  if (next < 0 || next >= DATA.weeks.length) return;
-  state.week = DATA.weeks[next].key;
-  state.filter = "all";
-  draw();
+  if (["INPUT", "SELECT"].includes(document.activeElement.tagName)) {
+    if (e.key === "Escape") document.activeElement.blur();
+    return;
+  }
+  if (e.key === "/") { e.preventDefault(); search.focus(); return; }
+  if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); step(1); }
+  if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); step(-1); }
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    const i = TABS.indexOf(state.tab) + (e.key === "ArrowRight" ? 1 : -1);
+    if (i >= 0 && i < TABS.length) { state.tab = TABS[i]; draw(); }
+  }
 });
 window.addEventListener("hashchange", () => { readHash(); draw(); });
 
 document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(DATA.as_of.replace("T", " ").slice(0, 16))} UTC`
   + (DATA.posted ? "" : ` · <span class="dry-run">dry run: nothing was posted to Bugzilla</span>`)
-  + ` · Left/Right change the week`;
+  + ` · Up/Down: next bug · Left/Right: tab · /: search`;
 readHash();
+whenSelect.value = state.when;
 draw();
 </script>
 </body>

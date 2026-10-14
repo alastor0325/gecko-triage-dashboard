@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import UTC, datetime
 
 from triagedash import stats
 
@@ -14,6 +14,13 @@ def test_categories_in_risk_order():
     assert stats.categories(make_record()) == []
 
 
+def test_tags():
+    assert stats.tags(make_record(keywords_add=["regression"])) == ["regression"]
+    assert stats.tags(make_record(regressed_by_add=[5])) == ["regression"]
+    assert stats.tags(make_record(needinfo=["reporter", "other"])) == ["dev needinfo"]
+    assert stats.tags(make_record(needinfo=["reporter"])) == []
+
+
 def test_acted():
     assert stats.acted(make_record())
     assert not stats.acted(make_record(error=True))
@@ -21,66 +28,69 @@ def test_acted():
     assert not stats.acted(make_record(started_at=None))
 
 
-def test_week_of():
-    assert stats.week_of("2026-10-14T17:40:25") == ("2026-W42", date(2026, 10, 12))
-    assert stats.week_of("2026-10-18T23:00:00") == ("2026-W42", date(2026, 10, 12))
-    assert stats.week_of("2026-10-19T00:00:00") == ("2026-W43", date(2026, 10, 19))
+def test_run_view_keeps_only_page_fields():
+    v = stats.run_view(make_record(severity="S3", round="r9a"))
+    assert (v["categories"], v["round"]) == (["sp"], "r9a")
+    assert not {"run_id", "error", "team", "decision", "bug_id", "title"} & set(v)
+    assert v["posted"] is False
 
 
-def test_latest_runs():
-    old = make_record(1, started_at="2026-10-13T10:00:00", run_id="old")
-    new = make_record(1, started_at="2026-10-14T10:00:00", run_id="new")
-    other = make_record(2, started_at="2026-10-12T10:00:00", run_id="other")
-    assert {r["run_id"] for r in stats.latest_runs([new, other, old])} == {"new", "other"}
-
-
-def test_row_keeps_no_run_details():
-    r = stats.row(make_record(severity="S3"))
-    assert r["categories"] == ["sp"]
-    assert not {"run_id", "error", "team", "decision"} & set(r)
-
-
-def test_weeks_groups_newest_first_and_counts():
+def test_bugs_group_runs_newest_first_and_drop_no_change_runs():
     runs = [
-        make_record(1, started_at="2026-10-06T10:00:00", resolution="DUPLICATE"),
-        make_record(2, started_at="2026-10-13T10:00:00", severity="S3", needinfo=["reporter"]),
-        make_record(3, started_at="2026-10-14T10:00:00", move_to="Core :: Web Audio"),
-        make_record(4, started_at="2026-10-14T11:00:00", error=True),
-        make_record(5, started_at="2026-10-14T12:00:00", decision="skipped"),
+        make_record(1, started_at="2026-10-06T10:00:00", run_id="a", round="r1"),
+        make_record(1, started_at="2026-10-13T10:00:00", run_id="b", round="r2", title="new title"),
+        make_record(1, started_at="2026-10-14T10:00:00", run_id="c", error=True),
+        make_record(2, started_at="2026-10-14T12:00:00", decision="skipped"),
     ]
-    w42, w41 = stats.weeks(runs)
-    assert (w42["key"], w42["start"], w42["end"]) == ("2026-W42", "2026-10-12", "2026-10-18")
-    assert [r["bug_id"] for r in w42["rows"]] == [3, 2]  # moved before S/P
-    assert w42["counts"] == {"all": 2, "closed": 0, "moved": 1, "sp": 1, "needinfo": 1}
-    assert w41["counts"]["closed"] == 1
+    (b,) = stats.bugs(runs, datetime(2026, 10, 14, 12, tzinfo=UTC))
+    assert b["bug_id"] == 1
+    assert b["title"] == "new title"
+    assert [r["round"] for r in b["runs"]] == ["r2", "r1"]
 
 
-def test_bug_in_two_weeks_shows_in_both():
+def test_rounds_newest_first():
     runs = [
-        make_record(1, started_at="2026-10-06T10:00:00"),
-        make_record(1, started_at="2026-10-13T10:00:00"),
+        make_record(1, started_at="2026-10-06T10:00:00", round="r1"),
+        make_record(2, started_at="2026-10-13T10:00:00", round="r2"),
+        make_record(3, started_at="2026-10-05T10:00:00", round="r1"),
+        make_record(4, started_at="2026-10-14T10:00:00", round="r3", error=True),
     ]
-    assert [len(w["rows"]) for w in stats.weeks(runs)] == [1, 1]
+    assert stats.rounds(runs) == ["r2", "r1"]
+    assert stats.rounds([make_record(round=None)]) == []
+
+
+def test_recent_counts():
+    runs = [
+        make_record(1, started_at="2026-10-13T10:00:00", resolution="DUPLICATE"),
+        make_record(2, started_at="2026-10-14T10:00:00", severity="S3"),
+        make_record(3, started_at="2026-09-01T10:00:00", move_to="Core :: Web Audio"),
+    ]
+    page = stats.team_page(runs, datetime(2026, 10, 14, 12, tzinfo=UTC))
+    assert stats.recent_counts(page) == {"bugs": 2, "closed_or_moved": 1}
 
 
 def test_team_page():
-    page = stats.team_page([make_record()], datetime(2026, 10, 14, 12))
-    assert page["as_of"] == "2026-10-14T12:00:00"
+    page = stats.team_page([make_record()], datetime(2026, 10, 14, 12, tzinfo=UTC))
+    assert page["as_of"] == "2026-10-14T12:00:00+00:00"
+    assert page["windows"] == {
+        "7d": "2026-10-07T12:00:00+00:00",
+        "30d": "2026-09-14T12:00:00+00:00",
+    }
     assert page["posted"] is False
-    assert [w["key"] for w in page["weeks"]] == ["2026-W42"]
     assert page["categories"] == list(stats.CATEGORIES)
-    assert stats.team_page([], datetime(2026, 10, 14))["weeks"] == []
+    assert [b["bug_id"] for b in page["bugs"]] == [100]
+    assert stats.team_page([], datetime(2026, 10, 14, tzinfo=UTC))["bugs"] == []
 
 
-def test_by_risk_then_newest():
-    rows = [
-        stats.row(make_record(1, started_at="2026-10-14T09:00:00")),
-        stats.row(make_record(2, started_at="2026-10-13T09:00:00", needinfo=["reporter"])),
-        stats.row(make_record(3, started_at="2026-10-14T09:00:00", needinfo=["reporter"])),
-        stats.row(make_record(4, started_at="2026-10-12T09:00:00", resolution="INVALID")),
-    ]
-    assert [r["bug_id"] for r in stats.by_risk(rows)] == [4, 3, 2, 1]
+def test_is_new():
+    as_of = datetime(2026, 10, 14, 12, tzinfo=UTC)
+    assert stats.is_new("2026-10-08T00:00:00Z", as_of)
+    assert not stats.is_new("2026-10-01T00:00:00Z", as_of)
+    assert not stats.is_new(None, as_of)
 
 
-def test_week_of_aware_utc():
-    assert stats.week_of("2026-10-18T23:30:00+00:00")[0] == "2026-W42"
+def test_bug_tags_new():
+    as_of = datetime(2026, 10, 14, 12, tzinfo=UTC)
+    (fresh,) = stats.bugs([make_record(filed="2026-10-13T00:00:00Z")], as_of)
+    (old,) = stats.bugs([make_record(filed="2026-01-01T00:00:00Z")], as_of)
+    assert (fresh["tags"], old["tags"]) == (["new"], [])

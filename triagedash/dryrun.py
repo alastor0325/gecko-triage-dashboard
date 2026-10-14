@@ -69,9 +69,10 @@ def _move_target(changes: dict, meta: dict) -> str | None:
     return f"{product} :: {changes.get('component') or meta.get('component')}"
 
 
-def parse_summary(summary: dict, *, bug_id: int, run_id: str, meta: dict) -> dict:
+def parse_summary(summary: dict, *, bug_id: int, round_: str, run_id: str, meta: dict) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
-    summary, groups. `bug_id` comes from the caller, since a crashed run has no findings."""
+    summary, groups, creation_time. `bug_id` comes from the caller, since a crashed run
+    has no findings."""
     findings = summary.get("findings") or {}
     own: dict = {}
     other_bugs: list[dict] = []
@@ -89,10 +90,12 @@ def parse_summary(summary: dict, *, bug_id: int, run_id: str, meta: dict) -> dic
     flags = [f for f in own.get("flags") or [] if f.get("name") == "needinfo"]
     record = {
         "posted": False,
+        "round": round_,
         "run_id": run_id,
         "started_at": run_started_at(run_id),
         "bug_id": bug_id,
         "title": meta.get("summary"),
+        "filed": meta.get("creation_time"),
         "team": team_for(meta.get("product"), meta.get("component")),
         "error": summary.get("status") != "ok" or bool(summary.get("error")),
         "decision": findings.get("decision"),

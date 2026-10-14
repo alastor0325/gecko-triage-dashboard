@@ -1,8 +1,11 @@
-"""Groups records into the calendar weeks one team page shows. Pure: no I/O."""
+"""Shapes one team's records into the page data. Pure: no I/O.
+
+The page picks, per bug, the newest run inside the chosen window or round, so the data
+holds every run that changed a bug, newest first."""
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from .store import when
 
@@ -21,68 +24,80 @@ def categories(record: dict) -> list[str]:
     return [c for c in CATEGORIES if flags[c]]
 
 
+# The page's time windows, in days. The start of each is computed once, here.
+WINDOWS = {"7d": 7, "30d": 30}
+NEW_DAYS = 7
+
+
+def tags(record: dict) -> list[str]:
+    """Tags that hold for the run itself. `again` depends on the run that the page
+    picks, so the page adds it."""
+    out = []
+    if "regression" in record["keywords_add"] or record["regressed_by_add"]:
+        out.append("regression")
+    if any(role != "reporter" for role in record["needinfo"]):
+        out.append("dev needinfo")
+    return out
+
+
+def window_starts(as_of: datetime) -> dict[str, str]:
+    return {k: (as_of - timedelta(days=d)).isoformat() for k, d in WINDOWS.items()}
+
+
+def is_new(filed: str | None, as_of: datetime) -> bool:
+    """Filed in the last NEW_DAYS days."""
+    return bool(filed) and as_of - datetime.fromisoformat(filed) <= timedelta(days=NEW_DAYS)
+
+
 def acted(record: dict) -> bool:
     """A run that changed the bug. Failed and preflight-skipped runs changed nothing."""
     return not record["error"] and record["decision"] != "skipped" and bool(record["started_at"])
 
 
-def week_of(started_at: str) -> tuple[str, date]:
-    """The ISO week key and its Monday."""
-    day = datetime.fromisoformat(started_at).date()
-    year, week, weekday = day.isocalendar()
-    return f"{year}-W{week:02d}", day - timedelta(days=weekday - 1)
-
-
-def latest_runs(records: list[dict]) -> list[dict]:
-    """The newest run of each bug."""
-    best: dict[int, dict] = {}
-    for r in sorted(records, key=lambda r: (when(r), r["run_id"])):
-        best[r["bug_id"]] = r
-    return list(best.values())
-
-
-def risk_rank(row: dict) -> int:
-    """The index of the row's riskiest category; a comment-only row ranks last."""
-    return CATEGORIES.index(row["categories"][0]) if row["categories"] else len(CATEGORIES)
-
-
-def by_risk(rows: list[dict]) -> list[dict]:
-    """Riskiest first, so the triager can stop when time runs out; then newest first."""
-    newest = sorted(rows, key=lambda r: r["started_at"], reverse=True)
-    return sorted(newest, key=risk_rank)
-
-
-def row(record: dict) -> dict:
+def run_view(record: dict) -> dict:
     keep = (
-        "bug_id", "title", "summary", "started_at", "severity", "priority",
-        "needinfo", "resolution", "dupe_of", "move_to", "blocks_add", "keywords_add",
-        "regressed_by_add", "other_bugs",
+        "posted", "round", "started_at", "summary", "severity", "priority", "needinfo",
+        "resolution", "dupe_of", "move_to", "blocks_add", "keywords_add", "regressed_by_add",
+        "other_bugs",
     )  # fmt: skip
-    return {**{k: record[k] for k in keep}, "categories": categories(record)}
+    return {**{k: record[k] for k in keep}, "categories": categories(record), "tags": tags(record)}
 
 
-def weeks(records: list[dict]) -> list[dict]:
-    """Per calendar week, newest first: the latest run of each bug the bot changed."""
-    by_week: dict[str, tuple[date, list[dict]]] = {}
+def bugs(records: list[dict], as_of: datetime) -> list[dict]:
+    """Each bug the bot changed, with all its runs newest first. Title and the `new` tag come
+    from the newest run."""
+    by_bug: dict[int, list[dict]] = {}
+    for r in sorted(filter(acted, records), key=lambda r: (when(r), r["run_id"]), reverse=True):
+        by_bug.setdefault(r["bug_id"], []).append(r)
+    return [
+        {
+            "bug_id": bug_id,
+            "title": runs[0]["title"],
+            "tags": ["new"] if is_new(runs[0]["filed"], as_of) else [],
+            "runs": [run_view(r) for r in runs],
+        }
+        for bug_id, runs in by_bug.items()
+    ]
+
+
+def rounds(records: list[dict]) -> list[str]:
+    """Each round that changed a bug, newest first by its first run. Runs without a round
+    (posted runs) are not listed."""
+    first: dict[str, str] = {}
     for r in filter(acted, records):
-        key, monday = week_of(r["started_at"])
-        by_week.setdefault(key, (monday, []))[1].append(r)
-    out = []
-    for key, (monday, runs) in sorted(by_week.items(), reverse=True):
-        rows = by_risk([row(r) for r in latest_runs(runs)])
-        out.append(
-            {
-                "key": key,
-                "start": monday.isoformat(),
-                "end": (monday + timedelta(days=6)).isoformat(),
-                "rows": rows,
-                "counts": {
-                    "all": len(rows),
-                    **{c: sum(c in r["categories"] for r in rows) for c in CATEGORIES},
-                },
-            }
-        )
-    return out
+        if r["round"]:
+            first[r["round"]] = min(first.get(r["round"], r["started_at"]), r["started_at"])
+    return sorted(first, key=first.get, reverse=True)
+
+
+def recent_counts(page: dict) -> dict:
+    """For the landing page: bugs changed in the 7-day window, and how many of them the
+    newest such run closed or moved."""
+    start = page["windows"]["7d"]
+    newest = [next((r for r in b["runs"] if r["started_at"] >= start), None) for b in page["bugs"]]
+    shown = [r for r in newest if r]
+    closed_or_moved = sum(bool({"closed", "moved"} & set(r["categories"])) for r in shown)
+    return {"bugs": len(shown), "closed_or_moved": closed_or_moved}
 
 
 def team_page(records: list[dict], as_of: datetime) -> dict:
@@ -91,5 +106,7 @@ def team_page(records: list[dict], as_of: datetime) -> dict:
         "as_of": as_of.isoformat(),
         "posted": any(r["posted"] for r in records),
         "categories": list(CATEGORIES),
-        "weeks": weeks(records),
+        "windows": window_starts(as_of),
+        "rounds": rounds(records),
+        "bugs": bugs(records, as_of),
     }

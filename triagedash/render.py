@@ -6,6 +6,7 @@ import html
 import json
 from pathlib import Path
 
+from .stats import recent_counts
 from .teams import Team
 
 TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
@@ -26,11 +27,12 @@ def team_html(template: str, team: Team, page: dict) -> str:
 
 def team_row(index: int, team: Team, page: dict | None) -> str:
     components = '<span class="sep">·</span>'.join(html.escape(c) for _, c in team.components)
-    week = page["weeks"][0] if page and page["weeks"] else None
-    if week:
-        counts = week["counts"]
-        closed_or_moved = counts["closed"] + counts["moved"]
-        stats = f"<strong>{counts['all']}</strong>bugs changed · {closed_or_moved} closed or moved"
+    if page:
+        counts = recent_counts(page)
+        stats = (
+            f"<strong>{counts['bugs']}</strong>bugs changed in 7 days"
+            f" · {counts['closed_or_moved']} closed or moved"
+        )
     else:
         stats = "<strong>-</strong>no runs yet"
     return (
@@ -46,6 +48,6 @@ def landing_html(template: str, teams: tuple[Team, ...], pages: dict[str, dict])
     rows = "\n".join(team_row(i, t, pages.get(t.slug)) for i, t in enumerate(teams, 1))
     meta = (
         f"<span>{len(teams)} {'dashboard' if len(teams) == 1 else 'dashboards'}</span>"
-        '\n    <span class="sep">·</span>\n    <span>One page per calendar week</span>'
+        '\n    <span class="sep">·</span>\n    <span>What the bot changed, riskiest first</span>'
     )
     return template.replace("__ROWS__", rows).replace("__META__", meta)
