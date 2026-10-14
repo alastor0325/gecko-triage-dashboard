@@ -36,7 +36,12 @@
   .rail-item:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
   .rail-row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
   .rail-id { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
-  .rail-item.is-active .rail-id { color: var(--red-deep); }
+  .rail li { position: relative; }
+  /* The bug link sits over the row's number, as a sibling of the row's button: a link
+     cannot be inside a button. The number in the button only holds the space. */
+  .rail-link { position: absolute; top: 9px; left: 14px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
+  .rail-item .rail-id { visibility: hidden; }
+  .rail li:has(.is-active) .rail-link { color: var(--red-deep); }
   .rail-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; }
   .rail-title { font-size: 12.5px; line-height: 1.35; margin-top: 3px; overflow-wrap: anywhere;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -66,9 +71,8 @@
   .comment.folded { max-height: 9.5em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
   .unfold { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--red-deep);
     background: none; border: 0; padding: 4px 0 0; cursor: pointer; }
-  .card a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
-  .card a:hover { color: var(--red); border-bottom-color: var(--red); }
-  .open-bug { display: inline-block; margin-top: 8px; font-family: var(--mono); font-size: 11px; }
+  .card a, .bug-link { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .card a:hover, .bug-link:hover { color: var(--red); border-bottom-color: var(--red); }
   .empty { color: var(--muted); font-size: 12.5px; margin: 0; padding: 14px; }
   .dry-run { color: var(--red-deep); }
   [hidden] { display: none !important; }
@@ -141,8 +145,7 @@ const FLAG_TAGS = new Set(["regression", "dev needinfo"]);
 const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
-const bugUrl = id => `https://bugzilla.mozilla.org/show_bug.cgi?id=${id}`;
-const bug = id => `<a href="${bugUrl(id)}">${id}</a>`;
+const bug = (id, cls = "bug-link") => `<a class="${cls}" href="https://bugzilla.mozilla.org/show_bug.cgi?id=${id}">${id}</a>`;
 const bugList = ids => ids.map(bug).join(", ");
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const day = iso => new Date(iso).toLocaleDateString("en-US", {month: "short", day: "numeric", timeZone: "UTC"});
@@ -210,7 +213,7 @@ function railItem(b) {
   const c = b.run.category;
   return `<li><button type="button" class="rail-item${b.bug_id === state.bug ? " is-active" : ""}" data-bug="${b.bug_id}">
     <span class="rail-row1"><span class="rail-id">${b.bug_id}</span><span class="rail-tags">${c ? tag(CAT_TEXT[c], c) : ""}${tags(b)}</span></span>
-    <span class="rail-title">${esc(b.title)}</span></button></li>`;
+    <span class="rail-title">${esc(b.title)}</span></button>${bug(b.bug_id, "bug-link rail-link")}</li>`;
 }
 
 // The bot's timeline on the bug: the newest run in the period with its comment, then the
@@ -221,11 +224,10 @@ function card(b, index, total) {
   const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment folded">${e.comment_html}</div><button type="button" class="unfold" data-unfold>Show the whole comment</button>` : ""}</li>`;
   return `<div class="card-top">
-      <span class="card-id">${b.bug_id} ${level(r.severity, "S?")} ${level(r.priority, "P?")} ${tags(b)}</span>
+      <span class="card-id">${bug(b.bug_id)} ${level(r.severity, "S?")} ${level(r.priority, "P?")} ${tags(b)}</span>
       <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
-    <a class="open-bug" href="${bugUrl(b.bug_id)}">Open bug ${b.bug_id} in Bugzilla</a>
     <ol class="timeline">${entry(r)}</ol>
     ${b.runs.length > 1 ? `<details class="earlier"><summary>Earlier runs · ${b.runs.length - 1}</summary><ol class="timeline">${b.runs.slice(1).map(entry).join("")}</ol></details>` : ""}`;
 }
