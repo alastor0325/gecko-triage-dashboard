@@ -38,6 +38,15 @@ def scrub(value):
     return value
 
 
+_FOOTER = re.compile(r"\n-{3,}\n(?:(?!\n-{3,}\n).)*gecko-triage · rules [^\n]*\s*$", re.S)
+
+
+def strip_footer(comment: str | None) -> str | None:
+    """Drops the fixed footer that ends every bot comment: the `---` rule, the feedback
+    line and the `gecko-triage · rules` signature."""
+    return _FOOTER.sub("", comment) if comment else comment
+
+
 def summary_bug_id(summary: dict) -> int | None:
     return (summary.get("findings") or {}).get("bug_id")
 
@@ -69,15 +78,18 @@ def _move_target(changes: dict, meta: dict) -> str | None:
     return f"{product} :: {changes.get('component') or meta.get('component')}"
 
 
-def parse_summary(summary: dict, *, bug_id: int, round_: str, run_id: str, meta: dict) -> dict:
+def parse_summary(summary: dict, *, bug_id: int, run_id: str, meta: dict) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
     summary, groups, creation_time. `bug_id` comes from the caller, since a crashed run
     has no findings."""
     findings = summary.get("findings") or {}
     own: dict = {}
     other_bugs: list[dict] = []
+    comment = None
     for action in summary.get("actions") or []:
         params = action.get("params") or {}
+        if action.get("type") == "bugzilla.add_comment":
+            comment = params.get("text")
         if action.get("type") != "bugzilla.update_bug":
             continue
         changes = params.get("changes") or {}
@@ -90,7 +102,6 @@ def parse_summary(summary: dict, *, bug_id: int, round_: str, run_id: str, meta:
     flags = [f for f in own.get("flags") or [] if f.get("name") == "needinfo"]
     record = {
         "posted": False,
-        "round": round_,
         "run_id": run_id,
         "started_at": run_started_at(run_id),
         "bug_id": bug_id,
@@ -99,7 +110,7 @@ def parse_summary(summary: dict, *, bug_id: int, round_: str, run_id: str, meta:
         "team": team_for(meta.get("product"), meta.get("component")),
         "error": summary.get("status") != "ok" or bool(summary.get("error")),
         "decision": findings.get("decision"),
-        "summary": findings.get("summary"),
+        "comment": strip_footer(comment),
         "severity": own.get("severity"),
         "priority": own.get("priority"),
         "needinfo": [needinfo_role(f.get("requestee"), meta) for f in flags],

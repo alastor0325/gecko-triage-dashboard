@@ -8,6 +8,7 @@ from triagedash.dryrun import (
     parse_summary,
     run_started_at,
     scrub,
+    strip_footer,
     summary_bug_id,
 )
 
@@ -15,9 +16,7 @@ from .conftest import make_record, make_summary
 
 
 def parse(summary, meta, bug_id=100):
-    return parse_summary(
-        summary, bug_id=bug_id, round_="r1", run_id="local-20261014-174025-eb0234", meta=meta
-    )
+    return parse_summary(summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta)
 
 
 def test_run_started_at_is_utc():
@@ -48,7 +47,7 @@ def test_needinfo_role(meta):
 
 def test_record_holds_no_email_in_any_field(meta):
     changes = {"flags": [{"name": "needinfo", "status": "?", "requestee": "reporter@example.com"}]}
-    summary = make_summary(changes=changes, summary="Asked x@example.com.")
+    summary = make_summary(changes=changes, comment="Asked x@example.com.")
     record = parse(summary, {**meta, "summary": "Crash, cc z@example.com"})
     assert record["needinfo"] == ["reporter"]
     assert not EMAIL.search(str(record))
@@ -133,3 +132,19 @@ def test_scrub_keeps_cpp_scopes():
         scrub("Crash in [@ mozilla::MozPromise<T>::Resolve]")
         == "Crash in [@ mozilla::MozPromise<T>::Resolve]"
     )
+
+
+def test_parse_keeps_the_comment_scrubbed(meta):
+    r = parse(make_summary(comment="Thanks. Please ask x@example.com or :jdoe."), meta)
+    assert r["comment"] == "Thanks. Please ask [email] or :[person]."
+    assert parse({"traceback": "boom"}, meta)["comment"] is None
+
+
+def test_strip_footer():
+    text = (
+        "Thanks.\n\n---\n\nKeep this.\n\n---\n\nIf you'd like to give feedback...\n\n"
+        "gecko-triage · rules 0.1.0 · asked: none · unread: none"
+    )
+    assert strip_footer(text) == "Thanks.\n\n---\n\nKeep this.\n"
+    assert strip_footer("No footer here.") == "No footer here."
+    assert strip_footer(None) is None

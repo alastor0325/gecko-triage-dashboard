@@ -1,32 +1,52 @@
 """Shapes one team's records into the page data. Pure: no I/O.
 
-The page picks, per bug, the newest run inside the chosen window or round, so the data
-holds every run that changed a bug, newest first."""
+The page picks, per bug, the newest run inside the chosen period, so the data holds
+every run of the longest period that changed a bug, newest first."""
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from collections import Counter
+from datetime import date, datetime, timedelta
 
-from .store import when
+from .markdown import render
+from .store import order
 
-# Most harmful first: a wrong close hides a real bug, a wrong move takes it off the
-# team, a wrong S/P misplaces it, and a needinfo only waits on someone.
-CATEGORIES = ("closed", "moved", "sp", "needinfo")
-
-
-def categories(record: dict) -> list[str]:
-    flags = {
-        "closed": bool(record["resolution"]),
-        "moved": bool(record["move_to"]),
-        "sp": bool(record["severity"] or record["priority"]),
-        "needinfo": bool(record["needinfo"]),
-    }
-    return [c for c in CATEGORIES if flags[c]]
-
-
-# The page's time windows, in days. The start of each is computed once, here.
-WINDOWS = {"7d": 7, "30d": 30}
+# The agent's decision, grouped as the local triage dashboard groups its drafts.
+CATEGORY = {
+    "triaged": "analyzed",
+    "needs_info": "needs-info",
+    **dict.fromkeys(("duplicate", "invalid", "wrong_component", "incomplete", "stalled"), "close"),
+}
+# Tab order, as in the triage dashboard, with each tab's label and chart color. The colors
+# are COLOR_NAVY, COLOR_MUSTARD and COLOR_RED of the review-stats editorial palette.
+CATEGORIES = ("analyzed", "needs-info", "close")
+CATEGORY_LABEL = {"analyzed": "Analyzed", "needs-info": "Needs info", "close": "Close / Reassign"}
+CATEGORY_COLOR = {"analyzed": "#1B3B6F", "needs-info": "#C89B3C", "close": "#FF0039"}
+DECISION_LABEL = {"triaged": "analyzed"}
+# Most harmful first, for the list: a wrong close or move takes a bug off the team,
+# a wrong S/P misplaces it, and a needinfo only waits on someone.
+RISK = ("close", "analyzed", "needs-info")
+# key: (days, label), as the review-stats period toggle.
+PERIODS = {"1w": (7, "1-Week"), "1m": (30, "1-Month"), "3m": (90, "3-Month")}
 NEW_DAYS = 7
+
+
+def category(record: dict) -> str | None:
+    return CATEGORY.get(record["decision"])
+
+
+def decision_label(decision: str | None) -> str:
+    """`triaged` reads as `analyzed`, as in the tabs; other decisions lose the underscore."""
+    return DECISION_LABEL.get(decision) or (decision or "").replace("_", " ")
+
+
+def close_kind(record: dict) -> str | None:
+    """Where a Close / Reassign run sent the bug: its resolution, or the new component."""
+    if record["resolution"]:
+        return record["resolution"]
+    if record["move_to"]:
+        return f"moved to {record['move_to']}"
+    return None
 
 
 def tags(record: dict) -> list[str]:
@@ -40,10 +60,6 @@ def tags(record: dict) -> list[str]:
     return out
 
 
-def window_starts(as_of: datetime) -> dict[str, str]:
-    return {k: (as_of - timedelta(days=d)).isoformat() for k, d in WINDOWS.items()}
-
-
 def is_new(filed: str | None, as_of: datetime) -> bool:
     """Filed in the last NEW_DAYS days."""
     return bool(filed) and as_of - datetime.fromisoformat(filed) <= timedelta(days=NEW_DAYS)
@@ -54,59 +70,104 @@ def acted(record: dict) -> bool:
     return not record["error"] and record["decision"] != "skipped" and bool(record["started_at"])
 
 
+def period_start(as_of: datetime, key: str) -> str:
+    return (as_of - timedelta(days=PERIODS[key][0])).isoformat()
+
+
 def run_view(record: dict) -> dict:
     keep = (
-        "posted", "round", "started_at", "summary", "severity", "priority", "needinfo",
-        "resolution", "dupe_of", "move_to", "blocks_add", "keywords_add", "regressed_by_add",
-        "other_bugs",
+        "posted", "started_at", "severity", "priority", "needinfo", "resolution", "dupe_of",
+        "move_to", "blocks_add", "keywords_add", "regressed_by_add", "other_bugs",
     )  # fmt: skip
-    return {**{k: record[k] for k in keep}, "categories": categories(record), "tags": tags(record)}
+    return {
+        **{k: record[k] for k in keep},
+        "category": category(record),
+        "decision": decision_label(record["decision"]),
+        "comment_html": render(record["comment"]) if record["comment"] else None,
+        "tags": tags(record),
+    }
+
+
+def in_period(records: list[dict], as_of: datetime, key: str) -> list[dict]:
+    start = period_start(as_of, key)
+    return [r for r in records if acted(r) and r["started_at"] >= start]
+
+
+def latest_runs(records: list[dict]) -> list[dict]:
+    """The newest run of each bug."""
+    best: dict[int, dict] = {}
+    for r in sorted(records, key=order):
+        best[r["bug_id"]] = r
+    return list(best.values())
+
+
+def by_category(runs: list[dict]) -> dict[str, int]:
+    counts = Counter(map(category, runs))
+    return {c: counts[c] for c in CATEGORIES}
 
 
 def bugs(records: list[dict], as_of: datetime) -> list[dict]:
-    """Each bug the bot changed, with all its runs newest first. Title and the `new` tag come
+    """Each bug the bot changed, with its runs newest first. Title and the `new` tag come
     from the newest run."""
     by_bug: dict[int, list[dict]] = {}
-    for r in sorted(filter(acted, records), key=lambda r: (when(r), r["run_id"]), reverse=True):
+    for r in sorted(filter(acted, records), key=order, reverse=True):
         by_bug.setdefault(r["bug_id"], []).append(r)
     return [
         {
             "bug_id": bug_id,
-            "title": runs[0]["title"],
-            "tags": ["new"] if is_new(runs[0]["filed"], as_of) else [],
-            "runs": [run_view(r) for r in runs],
+            "title": bug_runs[0]["title"],
+            "tags": ["new"] if is_new(bug_runs[0]["filed"], as_of) else [],
+            "runs": [run_view(r) for r in bug_runs],
         }
-        for bug_id, runs in by_bug.items()
+        for bug_id, bug_runs in by_bug.items()
     ]
 
 
-def rounds(records: list[dict]) -> list[str]:
-    """Each round that changed a bug, newest first by its first run. Runs without a round
-    (posted runs) are not listed."""
-    first: dict[str, str] = {}
-    for r in filter(acted, records):
-        if r["round"]:
-            first[r["round"]] = min(first.get(r["round"], r["started_at"]), r["started_at"])
-    return sorted(first, key=first.get, reverse=True)
+def daily(runs: list[dict], first: date, last: date) -> list[dict]:
+    """Bugs handled per day, by the category of that day's newest run on each bug. Days
+    with no run count zero, so the chart's time axis has no gaps."""
+    per_day: dict[date, list[dict]] = {}
+    for r in runs:
+        per_day.setdefault(datetime.fromisoformat(r["started_at"]).date(), []).append(r)
+    days = (first + timedelta(days=n) for n in range((last - first).days + 1))
+    return [{"date": d.isoformat(), **by_category(latest_runs(per_day.get(d, [])))} for d in days]
 
 
-def recent_counts(page: dict) -> dict:
-    """For the landing page: bugs changed in the 7-day window, and how many of them the
-    newest such run closed or moved."""
-    start = page["windows"]["7d"]
-    newest = [next((r for r in b["runs"] if r["started_at"] >= start), None) for b in page["bugs"]]
-    shown = [r for r in newest if r]
-    closed_or_moved = sum(bool({"closed", "moved"} & set(r["categories"])) for r in shown)
-    return {"bugs": len(shown), "closed_or_moved": closed_or_moved}
+def overview(records: list[dict], as_of: datetime) -> dict:
+    """Per period: the counts, the daily chart, where closed bugs went, and the severity
+    the bot set. Each bug counts once, by its newest run in the period."""
+    out = {}
+    for key, (days, _) in PERIODS.items():
+        runs = in_period(records, as_of, key)
+        latest = latest_runs(runs)
+        out[key] = {
+            "counts": {"all": len(latest), **by_category(latest)},
+            "daily": daily(runs, (as_of - timedelta(days=days - 1)).date(), as_of.date()),
+            "close_kinds": dict(
+                Counter(close_kind(r) for r in latest if category(r) == "close").most_common()
+            ),
+            "severity": dict(
+                sorted(Counter(r["severity"] for r in latest if r["severity"]).items())
+            ),
+        }
+    return out
 
 
 def team_page(records: list[dict], as_of: datetime) -> dict:
-    """Records are one team's."""
+    """Records are one team's. The page holds only the longest period."""
+    longest = max(PERIODS, key=lambda k: PERIODS[k][0])
+    records = in_period(records, as_of, longest)
     return {
         "as_of": as_of.isoformat(),
         "posted": any(r["posted"] for r in records),
-        "categories": list(CATEGORIES),
-        "windows": window_starts(as_of),
-        "rounds": rounds(records),
+        "categories": [
+            {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c]} for c in CATEGORIES
+        ],
+        "risk": list(RISK),
+        "periods": [
+            {"key": k, "label": label, "start": period_start(as_of, k)}
+            for k, (_, label) in PERIODS.items()
+        ],
+        "overview": overview(records, as_of),
         "bugs": bugs(records, as_of),
     }

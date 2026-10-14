@@ -6,7 +6,6 @@ import html
 import json
 from pathlib import Path
 
-from .stats import recent_counts
 from .teams import Team
 
 TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
@@ -28,10 +27,10 @@ def team_html(template: str, team: Team, page: dict) -> str:
 def team_row(index: int, team: Team, page: dict | None) -> str:
     components = '<span class="sep">·</span>'.join(html.escape(c) for _, c in team.components)
     if page:
-        counts = recent_counts(page)
+        counts = page["overview"]["1w"]["counts"]
         stats = (
-            f"<strong>{counts['bugs']}</strong>bugs changed in 7 days"
-            f" · {counts['closed_or_moved']} closed or moved"
+            f"<strong>{counts['all']}</strong>bugs handled in 1 week"
+            f" · {counts['close']} closed or reassigned"
         )
     else:
         stats = "<strong>-</strong>no runs yet"

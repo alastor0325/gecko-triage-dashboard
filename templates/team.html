@@ -9,22 +9,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../review-stats.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   /* Local to this dashboard; everything else is review-stats.css. */
-  .toggle-bar { flex-wrap: wrap; row-gap: 6px; }
-  .toggle-bar button .n { margin-left: 5px; color: var(--muted); font-weight: 500; }
-  .controls { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-  .controls select, .controls input {
-    font-family: var(--mono); font-size: 11px; color: var(--ink);
-    border: 1px solid var(--rule); background: var(--surface); padding: 4px 8px; border-radius: 2px;
-  }
-  .controls input { width: 230px; }
+  .chart-box { position: relative; height: 280px; }
+  /* minmax(0, ...) lets a Chart.js canvas shrink with its column. */
+  .split { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: center; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .filters .lw-filters { margin: 0; }
+  .filters input { margin-left: auto; width: 240px; font-family: var(--mono); font-size: 11px; color: var(--ink);
+    border: 1px solid var(--rule); background: var(--surface); padding: 4px 8px; border-radius: 2px; }
   .layout { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 10px; align-items: start; }
   .rail, .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; }
   .card { padding: 16px 20px 18px; }
-  .rail {
-    position: sticky; top: 118px; max-height: calc(100vh - 136px); overflow-y: auto;
-  }
+  .rail { position: sticky; top: 92px; max-height: calc(100vh - 110px); overflow-y: auto; }
   .rail-head, .pos {
     font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em;
     color: var(--muted); display: flex; justify-content: space-between; gap: 8px;
@@ -44,7 +42,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .tag { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
     padding: 1px 6px; border-radius: 999px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
-  .tag.closed, .tag.moved { background: var(--red); color: var(--surface); }
+  .tag.close { background: var(--red); color: var(--surface); }
   .tag.flag { background: transparent; color: var(--red-deep); box-shadow: inset 0 0 0 1px var(--red); }
   .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
   .card-id { font-family: var(--mono); font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
@@ -52,23 +50,32 @@
   .badge.unset { border-style: dashed; color: var(--muted); }
   .pos button { font: inherit; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; padding: 0 6px; }
   .card-title { font-family: var(--serif); font-variation-settings: "opsz" 30, "wght" 600, "SOFT" 30;
-    font-size: 18px; line-height: 1.3; margin: 0 0 12px; overflow-wrap: anywhere; }
+    font-size: 18px; line-height: 1.3; margin: 0 0 6px; overflow-wrap: anywhere; }
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline > li { border-top: 1px solid var(--rule-soft); padding: 10px 0; }
+  .when { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
   .did { display: block; font-size: 13px; line-height: 1.5; }
-  .did + .did { margin-top: 2px; }
+  .comment { margin-top: 8px; padding: 2px 12px; background: var(--paper); border-left: 2px solid var(--rule);
+    font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); overflow-wrap: anywhere; }
+  .comment p, .comment ol, .comment ul { margin: 8px 0; }
+  .comment ol, .comment ul { padding-left: 20px; }
+  .comment hr { border: 0; border-top: 1px solid var(--rule); margin: 10px 0; }
+  .comment code { font-family: var(--mono); font-size: 11.5px; }
+  details.earlier { border-top: 1px solid var(--rule-soft); padding-top: 8px; }
+  details.earlier > summary { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; }
+  .comment.folded { max-height: 9.5em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+  .unfold { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--red-deep);
+    background: none; border: 0; padding: 4px 0 0; cursor: pointer; }
   .card a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
   .card a:hover { color: var(--red); border-bottom-color: var(--red); }
-  details.more { margin-top: 12px; border-top: 1px solid var(--rule-soft); padding-top: 8px; }
-  details.more summary { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; }
-  details.more p, details.more li { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
-  details.more ol { margin: 6px 0 0; padding-left: 18px; }
-  .open-bug { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 11px; }
+  .open-bug { display: inline-block; margin-top: 8px; font-family: var(--mono); font-size: 11px; }
   .empty { color: var(--muted); font-size: 12.5px; margin: 0; padding: 14px; }
   .dry-run { color: var(--red-deep); }
+  [hidden] { display: none !important; }
   @media (max-width: 800px) {
-    .layout { grid-template-columns: 1fr; }
+    .layout, .split { grid-template-columns: 1fr; }
     .rail { position: static; max-height: 45vh; }
-    .controls { margin-left: 0; width: 100%; }
-    .controls input { flex: 1; width: auto; }
+    .filters input { margin-left: 0; width: 100%; }
   }
 </style>
 </head>
@@ -81,22 +88,43 @@
     <h1><a href="../index.html" title="Back to team picker">←</a><span class="dash-title">Triage Dashboard</span> <span style="color: var(--muted); font-variation-settings: 'opsz' 110, 'wght' 300; font-style: italic;">·</span> <span id="header-group">__TEAM__</span></h1>
     <div class="meta" id="header-meta"></div>
   </header>
-  <nav class="toggle-bar" aria-label="Filters">
-    <div class="toggle-group" role="tablist" aria-label="What the bot did" id="tabs"></div>
-    <div class="controls">
-      <select id="when" aria-label="When"></select>
-      <input id="search" type="search" placeholder="Search id, title, tag" aria-label="Search">
-    </div>
+  <nav class="toggle-bar" aria-label="View and period selectors">
+    <div class="toggle-group" role="tablist" aria-label="View" id="views"></div>
+    <div class="toggle-sep" aria-hidden="true"></div>
+    <div class="toggle-group" role="tablist" aria-label="Period" id="periods"></div>
   </nav>
 </div>
 
 <main>
-  <div class="layout">
-    <aside class="rail" aria-label="Bugs">
-      <div class="rail-head"><span id="rail-title"></span><span id="rail-count"></span></div>
-      <ol id="rail"></ol>
-    </aside>
-    <div class="card" id="card" aria-live="polite"></div>
+  <div id="overview-view">
+    <section>
+      <h2 id="summary-title"></h2>
+      <div class="summary-grid" id="summary-grid"></div>
+    </section>
+    <section>
+      <h2>Bugs handled per day</h2>
+      <div class="chart-box"><canvas id="chart-daily"></canvas></div>
+    </section>
+    <section>
+      <div class="split">
+        <div><h2>Close / Reassign: where the bugs went</h2><div class="chart-box"><canvas id="chart-close"></canvas></div></div>
+        <div><h2>Severity the bot set</h2><div class="chart-box"><canvas id="chart-severity"></canvas></div></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="bugs-view" hidden>
+    <div class="filters">
+      <div class="lw-filters" role="tablist" aria-label="Decision" id="cats"></div>
+      <input id="search" type="search" placeholder="Search id, title, tag" aria-label="Search">
+    </div>
+    <div class="layout">
+      <aside class="rail" aria-label="Bugs">
+        <div class="rail-head"><span id="rail-title"></span><span id="rail-count"></span></div>
+        <ol id="rail"></ol>
+      </aside>
+      <div class="card" id="card" aria-live="polite"></div>
+    </div>
   </div>
 </main>
 
@@ -104,59 +132,72 @@
 <script>
 "use strict";
 const DATA = JSON.parse(document.getElementById("data").textContent);
-// Tab text per category; the order comes from DATA.categories, riskiest first.
-const TAB_TEXT = {closed: "Closed", moved: "Moved", sp: "S/P set", needinfo: "Needs info", all: "All"};
-const TABS = [...DATA.categories, "all"];
-const WHEN = [["7d", "Last 7 days"], ["30d", "Last 30 days"], ["all", "All time"],
-  ...DATA.rounds.map(r => [`round:${r}`, `Round ${r}`])];
+const VIEWS = [["overview", "Overview"], ["bugs", "Bugs"]];
+const PERIODS = DATA.periods.map(p => [p.key, p.label]);
+const CAT_TEXT = {all: "All", ...Object.fromEntries(DATA.categories.map(c => [c.key, c.label]))};
+const CATS = ["all", ...DATA.categories.map(c => c.key)];
 const ROLES = {reporter: "reporter", assignee: "assignee", other: "another person", unknown: "unknown person"};
-const state = {tab: "all", when: "7d", q: "", bug: null};
+const FLAG_TAGS = new Set(["regression", "dev needinfo"]);
+const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const bugUrl = id => `https://bugzilla.mozilla.org/show_bug.cgi?id=${id}`;
 const bug = id => `<a href="${bugUrl(id)}">${id}</a>`;
-const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const bugList = ids => ids.map(bug).join(", ");
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const day = iso => new Date(iso).toLocaleDateString("en-US", {month: "short", day: "numeric", timeZone: "UTC"});
-const FLAG_TAGS = new Set(["regression", "dev needinfo"]);
 const tag = (t, cls = FLAG_TAGS.has(t) ? "flag" : "") => `<span class="tag ${cls}">${esc(t)}</span>`;
 const tags = b => b.tags.map(t => tag(t)).join("");
-const main = r => r.categories[0];
+const period = () => DATA.periods.find(p => p.key === state.period);
 
-// DATA.windows holds each window's start; ISO strings in UTC compare in time order.
-function inWhen(run) {
-  if (state.when.startsWith("round:")) return run.round === state.when.slice(6);
-  return state.when === "all" || run.started_at >= DATA.windows[state.when];
+// ---- Overview ----
+const charts = {};
+function chart(id, config) {
+  charts[id]?.destroy();
+  charts[id] = new Chart(document.getElementById(id), {...config, options: {maintainAspectRatio: false, ...config.options}});
+}
+function horizontalBar(id, counts, color) {
+  const labels = Object.keys(counts);
+  chart(id, {type: "bar", data: {labels, datasets: [{data: labels.map(k => counts[k]), backgroundColor: color}]},
+    options: {indexAxis: "y", plugins: {legend: {display: false}}, scales: {x: {beginAtZero: true, ticks: {precision: 0}}}}});
+}
+function drawOverview() {
+  const o = DATA.overview[state.period];
+  document.getElementById("summary-title").textContent = `Summary (${period().label.toLowerCase()} window)`;
+  document.getElementById("summary-grid").innerHTML = CATS.map(c => `<div class="stat"><div class="label">${c === "all" ? "Bugs handled" : CAT_TEXT[c]}</div><div class="value">${o.counts[c]}</div></div>`).join("");
+  chart("chart-daily", {type: "bar",
+    data: {labels: o.daily.map(d => day(d.date)), datasets: DATA.categories.map(c => ({label: c.label, data: o.daily.map(d => d[c.key]), backgroundColor: c.color}))},
+    options: {scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}}});
+  const color = key => DATA.categories.find(c => c.key === key).color;
+  horizontalBar("chart-close", o.close_kinds, color("close"));
+  horizontalBar("chart-severity", o.severity, color("analyzed"));
 }
 
-const matches = (b, q) => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.categories.join(" ")}`.toLowerCase().includes(q);
-
-// Per bug, the newest run inside the window, with the tags that depend on it.
+// ---- Bugs ----
+// Per bug, the newest run inside the period, with the tags that depend on it.
 function shown() {
+  const start = period().start;
   const q = state.q.trim().toLowerCase();
-  const rank = r => main(r) ? DATA.categories.indexOf(main(r)) : DATA.categories.length;
+  const rank = r => r.category ? DATA.risk.indexOf(r.category) : DATA.risk.length;
+  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${CAT_TEXT[b.run.category] || ""}`.toLowerCase().includes(q);
   return DATA.bugs.map(b => {
-    const i = b.runs.findIndex(inWhen);
-    if (i < 0) return null;
-    const run = b.runs[i];
-    const earlier = b.runs.slice(i + 1);
+    const runs = b.runs.filter(r => r.started_at >= start);
+    if (!runs.length) return null;
+    const run = runs[0];
     // Dry-run rounds rerun the same bugs as tests, so only an earlier posted run is a return.
-    const again = run.posted && earlier.some(e => e.posted) ? ["again"] : [];
-    return {...b, run, earlier, tags: [...b.tags, ...run.tags, ...again]};
-  }).filter(b => b && matches(b, q))
+    const again = run.posted && runs.slice(1).some(e => e.posted) ? ["again"] : [];
+    return {...b, run, runs, tags: [...b.tags, ...run.tags, ...again]};
+  }).filter(b => b && matches(b))
     .sort((a, b) => rank(a.run) - rank(b.run) || b.run.started_at.localeCompare(a.run.started_at));
 }
 
-const TAGGED = {
-  closed: r => `${tag("closed", "closed")} ${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`,
-  moved: r => `${tag("moved", "moved")} to ${esc(r.move_to)}`,
-  sp: r => `${tag("S/P")} ${esc([r.severity, r.priority].filter(Boolean).join(" / "))}`,
-  needinfo: r => `${tag("needinfo")} ${esc(r.needinfo.map(x => ROLES[x] || x).join(", "))}`,
-};
 // One line per change, most harmful first.
 function changes(r) {
   const lines = [
-    ...r.categories.map(c => TAGGED[c](r)),
+    r.resolution && `${tag("closed", "close")} ${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`,
+    r.move_to && `${tag("moved", "close")} to ${esc(r.move_to)}`,
+    (r.severity || r.priority) && `${tag("S/P")} ${esc([r.severity, r.priority].filter(Boolean).join(" / "))}`,
+    r.needinfo.length && `${tag("needinfo")} ${esc(r.needinfo.map(x => ROLES[x] || x).join(", "))}`,
     r.blocks_add.length && `blocks ${bugList(r.blocks_add)}`,
     r.regressed_by_add.length && `regressed by ${bugList(r.regressed_by_add)}`,
     r.keywords_add.length && `keywords ${esc(r.keywords_add.join(", "))}`,
@@ -164,50 +205,59 @@ function changes(r) {
   ].filter(Boolean);
   return (lines.length ? lines : ["comment only, no field change"]).map(l => `<span class="did">${l}</span>`).join("");
 }
-const mainAction = r => main(r) ? TAB_TEXT[main(r)] : "comment only";
 
 function railItem(b) {
-  const c = main(b.run);
+  const c = b.run.category;
   return `<li><button type="button" class="rail-item${b.bug_id === state.bug ? " is-active" : ""}" data-bug="${b.bug_id}">
-    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span><span class="rail-tags">${c ? tag(TAB_TEXT[c], c) : ""}${tags(b)}</span></span>
+    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span><span class="rail-tags">${c ? tag(CAT_TEXT[c], c) : ""}${tags(b)}</span></span>
     <span class="rail-title">${esc(b.title)}</span></button></li>`;
 }
 
+// The bot's timeline on the bug: the newest run in the period with its comment, then the
+// earlier runs, folded.
 function card(b, index, total) {
   const r = b.run;
   const level = (v, unset) => v ? `<span class="badge">${esc(v)}</span>` : `<span class="badge unset">${unset}</span>`;
-  const history = b.earlier.length ? `<details class="more"><summary>History · ${plural(b.earlier.length, "earlier run")}</summary>
-    <ol>${b.earlier.map(e => `<li>${day(e.started_at)} · round ${esc(e.round)} · ${esc(mainAction(e))}</li>`).join("")}</ol></details>` : "";
+  const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}</div>${changes(e)}
+    ${e.comment_html ? `<div class="comment folded">${e.comment_html}</div><button type="button" class="unfold" data-unfold>Show the whole comment</button>` : ""}</li>`;
   return `<div class="card-top">
       <span class="card-id">${b.bug_id} ${level(r.severity, "S?")} ${level(r.priority, "P?")} ${tags(b)}</span>
       <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
-    ${changes(r)}
-    <details class="more" open><summary>The bot's summary · ${day(r.started_at)} · round ${esc(r.round)}</summary><p>${esc(r.summary)}</p></details>
-    ${history}
-    <a class="open-bug" href="${bugUrl(b.bug_id)}">Open bug ${b.bug_id} in Bugzilla</a>`;
+    <a class="open-bug" href="${bugUrl(b.bug_id)}">Open bug ${b.bug_id} in Bugzilla</a>
+    <ol class="timeline">${entry(r)}</ol>
+    ${b.runs.length > 1 ? `<details class="earlier"><summary>Earlier runs · ${b.runs.length - 1}</summary><ol class="timeline">${b.runs.slice(1).map(entry).join("")}</ol></details>` : ""}`;
 }
 
-let current = [];  // the list the last draw() showed
+let current = [];  // the list the last drawBugs() showed
 
-function draw() {
+function drawBugs() {
   const all = shown();
-  const inTab = c => c === "all" ? all : all.filter(b => b.run.categories.includes(c));
-  document.getElementById("tabs").innerHTML = TABS.map(t =>
-    `<button type="button" role="tab" data-tab="${t}" aria-selected="${state.tab === t}" class="${state.tab === t ? "active" : ""}">${TAB_TEXT[t]}<span class="n">${inTab(t).length}</span></button>`).join("");
-  const list = inTab(state.tab);
+  const inCat = c => c === "all" ? all : all.filter(b => b.run.category === c);
+  document.getElementById("cats").innerHTML = CATS.map(c =>
+    `<button type="button" class="lw-filter" role="tab" data-cat="${c}" aria-pressed="${state.cat === c}" aria-selected="${state.cat === c}">${CAT_TEXT[c]} <span class="lw-filter-n">${inCat(c).length}</span></button>`).join("");
+  const list = inCat(state.cat);
   if (!list.some(b => b.bug_id === state.bug)) state.bug = list.length ? list[0].bug_id : null;
-  document.getElementById("rail-title").textContent = TAB_TEXT[state.tab];
+  document.getElementById("rail-title").textContent = CAT_TEXT[state.cat];
   document.getElementById("rail-count").textContent = plural(list.length, "bug");
   document.getElementById("rail").innerHTML = list.length ? list.map(railItem).join("")
-    : `<li class="empty">${state.q ? "No bug matches the search." : "The bot changed no bug in this group in this period."} Choose “All” or a longer period.</li>`;
+    : `<li class="empty">${state.q ? "No bug matches the search." : "The bot handled no bug in this group in this period."} Choose “All” or a longer period.</li>`;
   const i = list.findIndex(b => b.bug_id === state.bug);
   document.getElementById("card").innerHTML = i < 0 ? `<p class="empty">Choose a bug on the left.</p>` : card(list[i], i, list.length);
-  const p = new URLSearchParams({tab: state.tab, when: state.when});
-  if (state.bug) p.set("bug", state.bug);
-  history.replaceState(null, "", "#" + p);
   current = list;
+}
+
+// ---- Shell ----
+const toggles = (list, key) => list.map(([k, l]) => `<button type="button" data-${key}="${k}" class="${state[key] === k ? "active" : ""}">${l}</button>`).join("");
+function draw() {
+  document.getElementById("views").innerHTML = toggles(VIEWS, "view");
+  document.getElementById("periods").innerHTML = toggles(PERIODS, "period");
+  document.getElementById("overview-view").hidden = state.view !== "overview";
+  document.getElementById("bugs-view").hidden = state.view !== "bugs";
+  if (state.view === "overview") drawOverview(); else drawBugs();
+  const parts = [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? ""] : [])];
+  history.replaceState(null, "", "#" + parts.join("/"));
 }
 
 function step(n) {
@@ -220,15 +270,17 @@ function step(n) {
 }
 
 function readHash() {
-  const p = new URLSearchParams(location.hash.slice(1));
-  if (TABS.includes(p.get("tab"))) state.tab = p.get("tab");
-  if (WHEN.some(([k]) => k === p.get("when"))) state.when = p.get("when");
-  if (p.get("bug")) state.bug = Number(p.get("bug"));
+  const [view, period, cat, bugId] = location.hash.slice(1).split("/");
+  if (VIEWS.some(([k]) => k === view)) state.view = view;
+  if (PERIODS.some(([k]) => k === period)) state.period = period;
+  if (CATS.includes(cat)) state.cat = cat;
+  if (bugId) state.bug = Number(bugId);
 }
 
-const whenSelect = document.getElementById("when");
-whenSelect.innerHTML = WHEN.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("");
-whenSelect.addEventListener("change", () => { state.when = whenSelect.value; draw(); });
+const cycle = (list, key, dir) => {
+  const i = list.findIndex(([k]) => k === state[key]) + dir;
+  if (i >= 0 && i < list.length) { state[key] = list[i][0]; draw(); }
+};
 const search = document.getElementById("search");
 let typing;
 search.addEventListener("input", () => {
@@ -236,34 +288,45 @@ search.addEventListener("input", () => {
   typing = setTimeout(() => { state.q = search.value; draw(); }, 120);
 });
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-tab], [data-bug], [data-step]");
+  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-unfold]");
   if (!el) return;
-  if (el.dataset.tab) state.tab = el.dataset.tab;
-  if (el.dataset.bug) state.bug = Number(el.dataset.bug);
+  if (el.dataset.unfold !== undefined) {
+    el.previousElementSibling.classList.remove("folded");
+    el.remove();
+    return;
+  }
   if (el.dataset.step) return step(Number(el.dataset.step));
+  if (el.dataset.view) state.view = el.dataset.view;
+  if (el.dataset.period) state.period = el.dataset.period;
+  if (el.dataset.cat) state.cat = el.dataset.cat;
+  if (el.dataset.bug) state.bug = Number(el.dataset.bug);
   draw();
 });
 document.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  if (["INPUT", "SELECT"].includes(document.activeElement.tagName)) {
+  if (document.activeElement.tagName === "INPUT") {
     if (e.key === "Escape") document.activeElement.blur();
     return;
   }
-  if (e.key === "/") { e.preventDefault(); search.focus(); return; }
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    e.preventDefault();
+    const dir = e.key === "ArrowRight" ? 1 : -1;
+    return e.shiftKey ? cycle(PERIODS, "period", dir) : cycle(VIEWS, "view", dir);
+  }
+  if (state.view !== "bugs") return;
+  if (e.key === "/") { e.preventDefault(); search.focus(); }
   if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); step(1); }
   if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); step(-1); }
-  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-    const i = TABS.indexOf(state.tab) + (e.key === "ArrowRight" ? 1 : -1);
-    if (i >= 0 && i < TABS.length) { state.tab = TABS[i]; draw(); }
-  }
 });
 window.addEventListener("hashchange", () => { readHash(); draw(); });
 
+Chart.defaults.font.family = getComputedStyle(document.body).getPropertyValue("--mono");
+Chart.defaults.font.size = 11;
+Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--muted");
 document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(DATA.as_of.replace("T", " ").slice(0, 16))} UTC`
   + (DATA.posted ? "" : ` · <span class="dry-run">dry run: nothing was posted to Bugzilla</span>`)
-  + ` · Up/Down: next bug · Left/Right: tab · /: search`;
+  + ` · Left/Right: view · Shift+Left/Right: period · in Bugs, Up/Down: next bug, /: search`;
 readHash();
-whenSelect.value = state.when;
 draw();
 </script>
 </body>

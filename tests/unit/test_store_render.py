@@ -32,9 +32,10 @@ def test_landing_html_without_data():
     assert "1 dashboard<" in out
 
 
-def test_landing_row_counts_last_7_days():
+def test_landing_row_counts_1_week():
     page = stats.team_page(
-        [make_record(resolution="INVALID")], datetime(2026, 10, 14, 12, tzinfo=UTC)
+        [make_record(decision="invalid", resolution="INVALID")],
+        datetime(2026, 10, 14, 12, tzinfo=UTC),
     )
     out = render.team_row(1, TEAMS[0], page)
-    assert "<strong>1</strong>bugs changed in 7 days · 1 closed or moved" in out
+    assert "<strong>1</strong>bugs handled in 1 week · 1 closed or reassigned" in out

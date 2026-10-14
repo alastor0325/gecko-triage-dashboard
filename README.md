@@ -10,30 +10,38 @@ page lists each team, and each team has its own page.
 
 ## What it shows
 
-The page answers one question for the team: **what did the bot change on our bugs, and
-does any of it look wrong?** One page per team, with fixed controls, so it does not grow
-with the number of rounds:
+The page answers one question for the team: **what did the bot do on our bugs, and does
+any of it look wrong?** Each team page has two views and a period toggle, as in
+firefox-review-stats: Overview and Bugs, over 1-Week (default), 1-Month or 3-Month. Left/Right
+change the view, Shift+Left/Right the period, and the URL hash keeps both
+(`#overview/1w`, `#bugs/1m/close/2080127`).
 
-- **Tabs**: Closed, Moved, S/P set, Needs info and All, in order of harm if the bot is
-  wrong, each with its count. Left/Right change the tab.
-- **When**: the last 7 days (default), the last 30 days, all time, or one round.
-- **Search**: bug id, title or tag. `/` puts the cursor in it.
-- **List (short view)**: one row per bug, with its newest run in the chosen period, the
-  main action, tags and title. The riskiest changes come first. Up/Down or j/k step
-  through it.
-- **Card (full view)**: S/P badges, every change the bot made, the bot's short summary,
-  the earlier runs on the bug (collapsed), and a link to Bugzilla.
+The categories are those of the local triage dashboard, from the bot's decision. Each bug
+is in exactly one: **Analyzed** (`triaged`), **Needs info** (`needs_info`) and **Close /
+Reassign** (`duplicate`, `invalid`, `wrong_component`, `incomplete`, `stalled`).
 
-Tags: `new` (filed in the last 7 days), `regression` (the bot added the keyword or
-`regressed_by`), `dev needinfo` (the bot asked someone other than the reporter, and it
-never closes those) and `again` (the bot came back to the bug; posted runs only, because
-dry-run rounds rerun the same bugs as tests).
+- **Overview**: the count of bugs handled and of each category; bugs handled per day,
+  stacked by category; where the Close / Reassign bugs went (resolution or new
+  component); and the severity the bot set.
+- **Bugs**: category filters with counts, and a search by id, title or tag (`/` puts the
+  cursor in it). A list (short view) shows one row per bug, with its newest run in the
+  period, riskiest first: Close / Reassign, then Analyzed, then Needs info. Up/Down or j/k
+  step through it. A card (full view) shows the bot's timeline on the bug: the newest run
+  with every change and the comment the bot posted, folded after a few lines, and the
+  earlier runs, folded.
 
-Failed runs and runs that the preflight skipped changed nothing, so the page leaves them
-out. Cost, run health and accuracy are not part of this MVP.
+Each bug counts once in a period, by its newest run. Tags: `new` (filed in the last 7
+days), `regression` (the bot added the keyword or `regressed_by`), `dev needinfo` (the bot
+asked someone other than the reporter, and it never closes those) and `again` (the bot
+came back to the bug; posted runs only, because dry-run rounds rerun the same bugs as
+tests).
 
-The layout follows the local triage dashboard (firefox-triage-dashboard), and the favicon
-is its own.
+The page holds only the last 3 months. Failed runs and runs that the preflight skipped
+changed nothing, so the page leaves them out. Cost, run health and accuracy are not part
+of this MVP.
+
+The layout of the Bugs view follows the local triage dashboard (firefox-triage-dashboard),
+and the favicon is its own.
 The style is a copy of firefox-review-stats: `templates/review-stats.css` is copied
 verbatim from its team template, and `templates/index.html` from its landing page. Change
 those files there first, then copy them again.
@@ -41,7 +49,7 @@ those files there first, then copy them again.
 ## Data
 
 `data/runs.json` has one record per agent run, and it is committed. `data/rounds.tsv`
-lists each dry-run round and its directory. The site is public, so the records keep no
+lists each dry-run round and its directory (the round name is used in the ingest log only). The site is public, so the records keep no
 email address: a needinfo becomes a role (`reporter`, `assignee` or `other`), and every
 string is scrubbed of emails and `:nick` mentions. Restricted bugs are never ingested. A
 run's team comes from its bug's component. Times are stored in UTC.

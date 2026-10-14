@@ -10,11 +10,16 @@ def when(record: dict) -> str:
     return record["started_at"] or ""
 
 
+def order(record: dict) -> tuple[str, str]:
+    """Oldest first; the run id breaks ties."""
+    return when(record), record["run_id"]
+
+
 def merge_records(existing: list[dict], new: list[dict]) -> list[dict]:
     """Upsert by run id, so a re-ingest replaces a run instead of adding it twice."""
     by_id = {r["run_id"]: r for r in existing}
     by_id.update({r["run_id"]: r for r in new})
-    return sorted(by_id.values(), key=lambda r: (when(r), r["run_id"]))
+    return sorted(by_id.values(), key=order)
 
 
 def load(path: Path, default):
