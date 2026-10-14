@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triage dashboards: pick a team</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="masthead">
+  <p class="eyebrow">gecko-triage</p>
+  <h1 class="title">Triage<br><em>Dashboards</em></h1>
+  <p class="lede">A daily read on the gecko-triage bot for each team: what it did, what it waits on, how it runs and, once the data is mature, how often people undo it.</p>
+</header>
+<main>
+  <p class="eyebrow">Team · Components · last 30 days</p>
+  <div id="teams">
+__ROWS__
+  </div>
+  <footer>Up/Down choose a team. Enter opens it.</footer>
+</main>
+<script>
+"use strict";
+const rows = [...document.querySelectorAll(".team-row")];
+let selected = 0;
+const select = i => { rows.forEach((r, j) => r.classList.toggle("is-selected", j === i)); selected = i; };
+rows.forEach((r, i) => r.addEventListener("mouseenter", () => select(i)));
+document.addEventListener("keydown", e => {
+  if (!rows.length) return;
+  if (e.key === "ArrowDown") { select((selected + 1) % rows.length); e.preventDefault(); }
+  if (e.key === "ArrowUp") { select((selected - 1 + rows.length) % rows.length); e.preventDefault(); }
+  if (e.key === "Enter") rows[selected].click();
+});
+select(0);
+</script>
+</body>
+</html>
