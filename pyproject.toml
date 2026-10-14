@@ -1,0 +1,19 @@
+[project]
+name = "gecko-triage-dashboard"
+version = "0.1.0"
+description = "Multi-team dashboard over gecko-triage bot output"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
