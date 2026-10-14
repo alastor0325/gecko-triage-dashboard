@@ -13,7 +13,7 @@ TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
 
 def embed_json(value) -> str:
     """JSON that is safe inside a <script> element."""
-    return json.dumps(value).replace("</", "<\\/")
+    return json.dumps(value, separators=(",", ":")).replace("</", "<\\/")
 
 
 def team_html(template: str, team: Team, page: dict) -> str:
@@ -25,22 +25,27 @@ def team_html(template: str, team: Team, page: dict) -> str:
 
 
 def team_row(index: int, team: Team, page: dict | None) -> str:
-    components = " · ".join(html.escape(c) for _, c in team.components)
-    if page:
-        month = page["periods"]["1m"]
-        triaged = month["overview"]["tiles"]["triaged"]
-        stats = f"<strong>{triaged}</strong>bugs triaged, {len(month['waiting'])} waiting"
+    components = '<span class="sep">·</span>'.join(html.escape(c) for _, c in team.components)
+    week = page["weeks"][0] if page and page["weeks"] else None
+    if week:
+        counts = week["counts"]
+        closed_or_moved = counts["closed"] + counts["moved"]
+        stats = f"<strong>{counts['all']}</strong>bugs changed · {closed_or_moved} closed or moved"
     else:
         stats = "<strong>-</strong>no runs yet"
     return (
-        f'<a class="team-row" href="{html.escape(team.slug)}/index.html">'
+        f'  <a class="team-row" href="{html.escape(team.slug)}/index.html">'
         f'<div class="row-num">{index:02d}</div>'
-        f'<div><div class="row-name">{html.escape(team.slug)}</div>'
+        f'<div class="row-meta"><div class="row-name">{html.escape(team.slug)}</div>'
         f'<div class="row-paths">{components}</div></div>'
-        f'<div class="row-stats">{stats}</div><div>&rarr;</div></a>'
+        f'<div class="row-stats">{stats}</div><div class="row-arrow">→</div></a>'
     )
 
 
 def landing_html(template: str, teams: tuple[Team, ...], pages: dict[str, dict]) -> str:
     rows = "\n".join(team_row(i, t, pages.get(t.slug)) for i, t in enumerate(teams, 1))
-    return template.replace("__ROWS__", rows)
+    meta = (
+        f"<span>{len(teams)} {'dashboard' if len(teams) == 1 else 'dashboards'}</span>"
+        '\n    <span class="sep">·</span>\n    <span>One page per calendar week</span>'
+    )
+    return template.replace("__ROWS__", rows).replace("__META__", meta)

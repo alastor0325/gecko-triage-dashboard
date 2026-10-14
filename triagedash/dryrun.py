@@ -7,7 +7,7 @@ scrubbed in `parse_summary`, because the site is public.
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime, tzinfo
 
 from .teams import team_for
 
@@ -16,12 +16,17 @@ EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _MENTION = re.compile(r"(?<![\w/]):[A-Za-z][\w-]*\b")
 
 
-def run_started_at(run_id: str) -> str | None:
-    """`local-20261014-174025-eb0234` -> `2026-10-14T17:40:25` (host local time)."""
+def run_started_at(run_id: str, host_tz: tzinfo | None = None) -> str | None:
+    """`local-20261014-174025-eb0234` -> the start time in UTC. The name holds the time
+    of the host that ran the agent; `host_tz` defaults to this machine's zone, since
+    ingest runs on that host."""
     m = _RUN_ID.search(run_id)
     if not m:
         return None
-    return datetime.strptime(m.group(1), "%Y%m%d-%H%M%S").isoformat()
+    local = datetime.strptime(m.group(1), "%Y%m%d-%H%M%S")
+    if host_tz is not None:
+        local = local.replace(tzinfo=host_tz)
+    return local.astimezone(UTC).isoformat()
 
 
 def scrub(value):
@@ -64,9 +69,7 @@ def _move_target(changes: dict, meta: dict) -> str | None:
     return f"{product} :: {changes.get('component') or meta.get('component')}"
 
 
-def parse_summary(
-    summary: dict, *, bug_id: int, round_: str, commit: str | None, run_id: str, meta: dict
-) -> dict:
+def parse_summary(summary: dict, *, bug_id: int, run_id: str, meta: dict) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
     summary, groups. `bug_id` comes from the caller, since a crashed run has no findings."""
     findings = summary.get("findings") or {}
@@ -85,24 +88,18 @@ def parse_summary(
             )
     flags = [f for f in own.get("flags") or [] if f.get("name") == "needinfo"]
     record = {
-        "source": "dryrun",
         "posted": False,
-        "round": round_,
-        "commit": commit,
         "run_id": run_id,
         "started_at": run_started_at(run_id),
         "bug_id": bug_id,
         "title": meta.get("summary"),
         "team": team_for(meta.get("product"), meta.get("component")),
-        "component": meta.get("component"),
         "error": summary.get("status") != "ok" or bool(summary.get("error")),
         "decision": findings.get("decision"),
         "summary": findings.get("summary"),
         "severity": own.get("severity"),
         "priority": own.get("priority"),
         "needinfo": [needinfo_role(f.get("requestee"), meta) for f in flags],
-        "asked": list(findings.get("asked") or []),
-        "unread": list(findings.get("unread") or []),
         "blocks_add": _added(own, "blocks"),
         "keywords_add": _added(own, "keywords"),
         "regressed_by_add": _added(own, "regressed_by"),
@@ -110,8 +107,6 @@ def parse_summary(
         "resolution": own.get("resolution"),
         "dupe_of": own.get("dupe_of"),
         "other_bugs": other_bugs,
-        "turns": findings.get("num_turns"),
-        "cost_usd": findings.get("total_cost_usd"),
     }
     return {k: scrub(v) for k, v in record.items()}
 

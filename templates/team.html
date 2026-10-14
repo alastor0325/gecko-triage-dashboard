@@ -1,171 +1,154 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>gecko-triage · __TEAM__</title>
-<link rel="stylesheet" href="../style.css">
+<title>Triage Dashboard · __TEAM__</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23FF0039'/><text x='32' y='49' font-family='-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif' font-weight='900' font-size='52' fill='white' text-anchor='middle'>m</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../review-stats.css">
+<style>
+  /* Local to this dashboard; everything else is review-stats.css. */
+  col.c-bug { width: 90px; }
+  col.c-did { width: 34%; }
+  col.c-date { width: 96px; }
+  td .sub { display: block; color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+  td .did { display: block; }
+  td .did + .did { margin-top: 3px; }
+  .tag { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em;
+          padding: 1px 6px; border-radius: 999px; background: var(--paper-warm); color: var(--ink-soft); }
+  .tag.closed, .tag.moved { background: var(--red); color: var(--surface); }
+  .empty { color: var(--muted); font-size: 12.5px; margin: 0; }
+  .dry-run { color: var(--red-deep); }
+  .stat.expandable:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+</style>
 </head>
 <body>
-<header class="masthead">
-  <p class="eyebrow"><a href="../index.html">Triage dashboards</a> · data as of <span id="as-of"></span></p>
-  <h1 class="title">gecko-triage<br><em>__TEAM__</em></h1>
-  <p class="lede">__LABEL__. What the triage bot did, what it waits on, and how it runs.</p>
-  <p class="note" id="source-note"></p>
-</header>
+
+<a class="gh-corner" href="https://github.com/alastor0325/gecko-triage-dashboard" target="_blank" rel="noopener" title="View the source on GitHub" aria-label="View the source on GitHub"><svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg></a>
+
+<div class="top-bar">
+  <header>
+    <h1><a href="../index.html" title="Back to team picker">←</a><span class="dash-title">Triage Dashboard</span> <span style="color: var(--muted); font-variation-settings: 'opsz' 110, 'wght' 300; font-style: italic;">·</span> <span id="header-group">__TEAM__</span></h1>
+    <div class="meta" id="header-meta"></div>
+  </header>
+  <nav class="toggle-bar" aria-label="Week selector">
+    <div class="toggle-group" role="tablist" aria-label="Week" id="weeks"></div>
+  </nav>
+</div>
+
 <main>
-  <div class="toggle-bar">
-    <div class="toggle-group" id="views"></div>
-    <div class="toggle-group" id="periods"></div>
-  </div>
-  <section id="view"></section>
-  <footer>Left/Right change the view. Shift+Left/Right change the period. Deep links: #overview/1m, #bugs, #waiting, #health, #accuracy.</footer>
+  <section>
+    <h2 id="week-title"></h2>
+    <div class="summary-grid" id="tiles"></div>
+  </section>
+  <section>
+    <h2 id="table-title">What the bot changed</h2>
+    <div id="table"></div>
+  </section>
 </main>
+
 <script id="data" type="application/json">__DATA__</script>
 <script>
 "use strict";
 const DATA = JSON.parse(document.getElementById("data").textContent);
-const VIEWS = [["overview", "Overview"], ["bugs", "Bugs"], ["waiting", "Waiting"], ["health", "Run health"], ["accuracy", "Accuracy (beta)"]];
-const PERIODS = Object.entries(DATA.periods).map(([k, p]) => [k, p.label]);
-const EMPTY = `<p class="note">No data in this period.</p>`;
-const state = {view: "overview", period: "all", filter: {}};
+// Display text per category; the order comes from DATA.categories, riskiest first.
+const TEXT = {
+  all: ["All bugs", "every bug it changed"],
+  closed: ["Closed", "check first: a wrong close hides a bug"],
+  moved: ["Moved", "left the team's components"],
+  sp: ["S/P set", "severity or priority"],
+  needinfo: ["Asked for info", "waiting on a person"],
+};
+const TILES = ["all", ...DATA.categories].map(k => [k, ...TEXT[k]]);
+const state = {week: DATA.weeks.length ? DATA.weeks[0].key : null, filter: "all"};
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const bug = id => `<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=${id}">${id}</a>`;
 const bugList = ids => ids.map(bug).join(", ");
-const chip = x => `<span class="chip">${esc(x)}</span>`;
-const chips = xs => (xs || []).map(chip).join("") || "-";
-const run = id => DATA.runs[id];
+const day = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-US", {month: "short", day: "numeric"});
+const week = () => DATA.weeks.find(w => w.key === state.week);
+const ROLES = {reporter: "reporter", assignee: "assignee", other: "another person", unknown: "unknown person"};
 
-// entries: [label, part, whole]; the bar is part/whole of the row's full width.
-function barRows(entries, text) {
-  if (!entries.length) return EMPTY;
-  return `<div class="bars">${entries.map(([k, part, whole]) =>
-    `<span class="label">${esc(k)}</span><span><span class="bar" style="width:${(100 * part / whole).toFixed(1)}%"></span></span><span class="n">${text(part, whole)}</span>`).join("")}</div>`;
-}
-const pct = (part, whole) => Math.round(100 * part / whole);
-function bars(counts) {
-  const entries = Object.entries(counts);
-  const max = Math.max(...entries.map(([, n]) => n));
-  const total = entries.reduce((a, [, n]) => a + n, 0);
-  return barRows(entries.map(([k, n]) => [k, n, max]), n => `${n} · ${pct(n, total)}%`);
-}
-const rates = entries => barRows(entries, (part, whole) => `${part}/${whole} · ${pct(part, whole)}%`);
-const tiles = list => `<div class="tiles">${list.map(([n, l]) => `<div class="tile"><strong>${n}</strong><span>${l}</span></div>`).join("")}</div>`;
-
-function table(head, rows) {
-  if (!rows.length) return EMPTY;
-  return `<div class="table-wrap"><table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
-}
-
-function changes(b) {
-  return [
-    b.resolution && `${esc(b.resolution)}${b.dupe_of ? " of " + bug(b.dupe_of) : ""}`,
-    b.move_to && `move to ${esc(b.move_to)}`,
-    b.blocks_add.length && `blocks ${bugList(b.blocks_add)}`,
-    b.keywords_add.length && `keywords ${chips(b.keywords_add)}`,
-    b.regressed_by_add.length && `regressed by ${bugList(b.regressed_by_add)}`,
-    ...b.other_bugs.map(o => `on ${bug(o.bug_id)}: blocks ${bugList(o.blocks_add)}`),
-  ].filter(Boolean).join("<br>") || "-";
-}
-
-const render = {
-  overview(p) {
-    const t = p.overview.tiles;
-    return `<h2>Summary (${p.name} window)</h2>
-      ${tiles([[t.triaged, "bugs triaged"], [t.sp_set, "S/P set"], [t.needinfo, "needinfo asked"], [t.closed, "closed"], [t.moved, "moved"]])}
-      <h2>Decisions</h2>${bars(p.overview.decisions)}
-      <div class="cols"><div><h2>Severity set by the bot</h2>${bars(p.overview.severity)}</div>
-      <div><h2>Needinfo asked of</h2>${bars(p.overview.needinfo_roles)}</div></div>
-      <h2>Bugs triaged per week</h2>${bars(p.overview.weekly)}`;
-  },
-  bugs(p) {
-    const all = p.bugs.map(run);
-    const options = field => [...new Set(all.map(b => b[field]).filter(Boolean))].sort();
-    const f = state.filter;
-    const rows = all.filter(b => (!f.decision || b.decision === f.decision) && (!f.component || b.component === f.component)
-      && (!f.q || `${b.bug_id} ${b.title} ${b.summary}`.toLowerCase().includes(f.q.toLowerCase())));
-    const select = name => `<select data-filter="${name}"><option value="">${name}: all</option>${options(name).map(x => `<option ${f[name] === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>`;
-    return `<h2>Bugs (latest run of each bug)</h2>
-      <div class="filters">${select("decision")}${select("component")}<input data-filter="q" placeholder="search" value="${esc(f.q || "")}"></div>
-      ${table(["Bug", "Title", "Decision", "S/P", "Needinfo", "Other changes", "Run"], rows.map(b => [
-        bug(b.bug_id), `${esc(b.title)}<br><span class="note">${esc(b.summary)}</span>`,
-        b.error ? `<span class="bad">run failed</span>` : esc(b.decision),
-        esc([b.severity, b.priority].filter(Boolean).join("/") || "-"), chips(b.needinfo), changes(b),
-        `${chip(b.round)}${esc((b.started_at || "").slice(0, 10))}`]))}`;
-  },
-  waiting(p) {
-    return `<h2>Waiting on a needinfo the bot asked</h2>
-      ${DATA.posted ? "" : `<p class="note">Dry-run data: nothing was posted, so no needinfo is open on Bugzilla. The list shows what the bot would wait on.</p>`}
-      ${table(["Bug", "Title", "Asked of", "Asked for", "Days"], p.waiting.map(w => {
-        const b = run(w.run_id);
-        return [bug(b.bug_id), esc(b.title), chips(b.needinfo), chips(b.asked), `<span class="num">${w.days ?? "-"}</span>`];
-      }))}`;
-  },
-  health(p) {
-    const h = p.health;
-    return `<h2>Runs (${p.name} window)</h2>
-      ${tiles([[h.runs, "runs"], [h.errors, "failed runs"], ["$" + h.cost_total, "total cost"], [h.cost_median == null ? "-" : "$" + h.cost_median, "median cost a run"], [h.turns_median ?? "-", "median turns"]])}
-      <div class="cols"><div><h2>Unread artifacts</h2>${bars(h.unread)}</div>
-      <div><h2>Skipped in preflight</h2><p class="note">${h.skipped} runs. Skip reasons need the Hackbot run store.</p></div></div>
-      <h2>By round</h2>${table(["Round", "Agent commit", "Runs", "Failed", "Cost"], Object.entries(h.rounds).map(([r, e]) => [
-        chip(r), `<code>${esc(e.commit || "-")}</code>`, e.runs, e.errors ? `<span class="bad">${e.errors}</span>` : 0, "$" + e.cost_usd.toFixed(2)]))}`;
-  },
-  accuracy(p) {
-    const a = p.agreement;
-    return `<h2>Agreement with /triage (dry run)</h2>
-      <p class="note">Before the bot posts, the reference is the local /triage draft of the same bug. Later this view counts changes that people make after the bot, on bugs triaged 14 or more days ago.</p>
-      ${tiles([[`${a.bugs.filter(b => b.same).length} / ${a.bugs.length}`, "same category, latest run"]])}
-      <h2>Same category, by round</h2>${rates(Object.entries(a.rounds).map(([r, e]) => [r, e.same, e.runs]))}
-      <h2>Per bug</h2>${table(["Bug", "Round", "Bot", "/triage", "Same", "Field differences"], a.bugs.map(row => {
-        const b = run(row.run_id);
-        return [bug(b.bug_id), chip(b.round), esc(row.agent), esc(row.triage),
-          row.same ? "yes" : `<span class="bad">no</span>`, row.diffs.map(esc).join("<br>") || "none"];
-      }))}`;
-  },
+// The tagged line for each of the row's categories, in risk order.
+const TAGGED = {
+  closed: r => `<span class="tag closed">closed</span> ${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`,
+  moved: r => `<span class="tag moved">moved</span> to ${esc(r.move_to)}`,
+  sp: r => `<span class="tag">S/P</span> ${esc([r.severity, r.priority].filter(Boolean).join(" / "))}`,
+  needinfo: r => `<span class="tag">needinfo</span> ${esc(r.needinfo.map(x => ROLES[x] || x).join(", "))}`,
 };
 
-const buttons = (list, key) => list.map(([k, l]) => `<button data-${key}="${k}" class="${state[key] === k ? "active" : ""}">${l}</button>`).join("");
+// One line per change the bot made, most harmful first.
+function changes(r) {
+  const lines = [
+    ...r.categories.map(c => TAGGED[c](r)),
+    r.blocks_add.length && `blocks ${bugList(r.blocks_add)}`,
+    r.regressed_by_add.length && `regressed by ${bugList(r.regressed_by_add)}`,
+    r.keywords_add.length && `keywords ${esc(r.keywords_add.join(", "))}`,
+    ...r.other_bugs.map(o => `on ${bug(o.bug_id)}: blocks ${bugList(o.blocks_add)}`),
+  ].filter(Boolean);
+  return (lines.length ? lines : ["comment only, no field change"]).map(l => `<span class="did">${l}</span>`).join("");
+}
 
 function draw() {
-  document.getElementById("views").innerHTML = buttons(VIEWS, "view");
-  document.getElementById("periods").innerHTML = buttons(PERIODS, "period");
-  document.getElementById("view").innerHTML = render[state.view](DATA.periods[state.period]);
-  history.replaceState(null, "", `#${state.view}/${state.period}`);
+  document.getElementById("weeks").innerHTML = DATA.weeks.map(w =>
+    `<button type="button" data-week="${w.key}" class="${w.key === state.week ? "active" : ""}">${w.key.slice(5)} · ${day(w.start)}</button>`).join("");
+  const w = week();
+  if (!w) {
+    document.getElementById("week-title").textContent = "No runs yet";
+    document.getElementById("tiles").innerHTML = "";
+    document.getElementById("table").innerHTML = `<p class="empty">The bot has not changed any bug of this team yet.</p>`;
+    return;
+  }
+  document.getElementById("week-title").textContent = `Week ${w.key.slice(5)} · ${day(w.start)} to ${day(w.end)}`;
+  document.getElementById("tiles").innerHTML = TILES.map(([k, label, sub]) =>
+    `<div class="stat expandable${state.filter === k ? " is-open" : ""}" data-filter="${k}" role="button" tabindex="0" aria-pressed="${state.filter === k}">
+      <div class="label">${label}</div><div class="value">${w.counts[k]}</div><div class="sub">${sub}</div></div>`).join("");
+  const rows = w.rows.filter(r => state.filter === "all" || r.categories.includes(state.filter));
+  const label = TILES.find(([k]) => k === state.filter)[1];
+  document.getElementById("table-title").textContent = state.filter === "all" ? "What the bot changed" : `What the bot changed · ${label}`;
+  document.getElementById("table").innerHTML = rows.length ? `<div class="table-wrap"><table id="queue-table">
+    <colgroup><col class="c-bug"><col><col class="c-did"><col class="c-date"></colgroup>
+    <thead><tr><th>Bug</th><th>Title</th><th>What the bot did</th><th>Date</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td>${bug(r.bug_id)}</td><td>${esc(r.title)}<span class="sub">${esc(r.summary)}</span></td>
+      <td>${changes(r)}</td><td>${day(r.started_at.slice(0, 10))}</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="empty">No bug is in “${label}” this week. Choose “All bugs” to see every change.</p>`;
+  history.replaceState(null, "", `#${state.week}`);
 }
 
 function readHash() {
-  const [view, period] = location.hash.slice(1).split("/");
-  if (VIEWS.some(([k]) => k === view)) state.view = view;
-  if (PERIODS.some(([k]) => k === period)) state.period = period;
+  const key = location.hash.slice(1);
+  if (DATA.weeks.some(w => w.key === key)) state.week = key;
 }
 
+function pick(el) {
+  if (el.dataset.week) { state.week = el.dataset.week; state.filter = "all"; }
+  if (el.dataset.filter) state.filter = state.filter === el.dataset.filter ? "all" : el.dataset.filter;
+  draw();
+}
 document.addEventListener("click", e => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  if (b.dataset.view) state.view = b.dataset.view;
-  if (b.dataset.period) state.period = b.dataset.period;
-  draw();
-});
-document.addEventListener("change", e => {
-  const name = e.target.dataset.filter;
-  if (!name) return;
-  state.filter[name] = e.target.value;
-  draw();
+  const el = e.target.closest("[data-week], [data-filter]");
+  if (el) pick(el);
 });
 document.addEventListener("keydown", e => {
-  if (["INPUT", "SELECT"].includes(document.activeElement.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-  const step = e.key === "ArrowRight" ? 1 : -1;
-  const [list, key] = e.shiftKey ? [PERIODS, "period"] : [VIEWS, "view"];
-  const i = list.findIndex(([k]) => k === state[key]);
-  state[key] = list[(i + step + list.length) % list.length][0];
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const el = e.target.closest && e.target.closest("[data-filter]");
+  if (el && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(el); return; }
+  if ((e.key !== "ArrowLeft" && e.key !== "ArrowRight") || !DATA.weeks.length) return;
+  const i = DATA.weeks.findIndex(w => w.key === state.week);
+  const next = i + (e.key === "ArrowRight" ? -1 : 1);
+  if (next < 0 || next >= DATA.weeks.length) return;
+  state.week = DATA.weeks[next].key;
+  state.filter = "all";
   draw();
 });
 window.addEventListener("hashchange", () => { readHash(); draw(); });
 
-document.getElementById("as-of").textContent = DATA.as_of.replace("T", " ").slice(0, 16);
-document.getElementById("source-note").textContent = DATA.posted ? "" : "Source: gecko-triage dry runs on the host. Nothing was posted to Bugzilla.";
+document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(DATA.as_of.replace("T", " ").slice(0, 16))} UTC`
+  + (DATA.posted ? "" : ` · <span class="dry-run">dry run: nothing was posted to Bugzilla</span>`)
+  + ` · Left/Right change the week`;
 readHash();
 draw();
 </script>

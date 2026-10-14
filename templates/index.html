@@ -1,37 +1,358 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Triage dashboards: pick a team</title>
-<link rel="stylesheet" href="style.css">
+<title>Triage Dashboards: pick a team</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23FF0039'/><text x='32' y='49' font-family='-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif' font-weight='900' font-size='52' fill='white' text-anchor='middle'>m</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<style>:root {
+  --paper: #FAF7F0;
+  --paper-warm: #F2EBDC;
+  --ink: #16110D;
+  --ink-soft: #3B342D;
+  --muted: #8B8378;
+  --rule: #E6DECD;
+  --rule-soft: #F0E9D9;
+  --surface: #FFFFFF;
+  --red: #FF0039;
+  --red-deep: #B3002A;
+
+  --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: var(--sans);
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.masthead {
+  max-width: 980px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 48px 40px 18px;
+  position: relative;
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.eyebrow::before, .eyebrow::after {
+  content: '';
+  flex: 0 0 auto;
+  height: 1px;
+  background: var(--rule);
+}
+.eyebrow::before { width: 32px; }
+.eyebrow::after  { flex: 1; }
+
+h1.title {
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 120, "wght" 500, "SOFT" 30;
+  font-size: clamp(42px, 6.4vw, 72px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  margin: 0 0 14px;
+  color: var(--ink);
+}
+h1.title em {
+  font-style: italic;
+  font-variation-settings: "opsz" 120, "wght" 500, "SOFT" 100;
+  color: var(--red);
+  letter-spacing: -0.022em;
+}
+
+.lede {
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 18, "wght" 400, "SOFT" 60;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  max-width: 620px;
+  margin: 0 0 18px;
+  font-weight: 400;
+}
+.lede em {
+  font-style: italic;
+  color: var(--ink);
+}
+
+.meta-row {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.meta-row .sep { color: var(--rule); }
+
+main {
+  flex: 1;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 8px 40px 36px;
+  width: 100%;
+}
+
+.toc-rule {
+  height: 1px;
+  background: var(--ink);
+  margin: 0;
+}
+.toc-rule.thin { background: var(--rule); }
+
+.toc-header {
+  display: grid;
+  grid-template-columns: 48px 1fr 130px 24px;
+  gap: 20px;
+  padding: 8px 0;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.toc-header span { font-weight: 500; }
+.toc-header .toc-h-count { text-align: right; }
+
+.team-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 130px 24px;
+  gap: 20px;
+  padding: 16px 0 18px;
+  align-items: baseline;
+  text-decoration: none;
+  color: var(--ink);
+  border-top: 1px solid var(--rule);
+  transition: background 0.18s, padding-left 0.2s ease;
+  position: relative;
+}
+.team-row:first-of-type { border-top: none; }
+.team-row::after {
+  content: '';
+  position: absolute;
+  left: 0; top: -1px;
+  height: 1px; width: 0;
+  background: var(--red);
+  transition: width 0.28s ease;
+}
+/* Exactly one row is highlighted at a time — the "selection". Both
+   hovering and the Up/Down keys set it via JS (`.is-selected`), so
+   there's only ever one highlight and the keyboard stays in control
+   even while the cursor rests over the list. Using a JS-driven class
+   instead of CSS :hover/:focus is what avoids two rows lighting up. */
+.team-row.is-selected {
+  background: var(--paper-warm);
+  padding-left: 14px;
+}
+/* Drop the default ring — the selection highlight (warm bg + full-width
+   red top rule + red name/arrow) is the visible focus indicator. */
+.team-row:focus { outline: none; }
+.team-row.is-selected::after { width: 100%; }
+.team-row.is-selected .row-arrow { transform: translateX(6px); color: var(--red); }
+.team-row.is-selected .row-name { color: var(--red); }
+
+.row-num {
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 30, "wght" 400, "SOFT" 50;
+  font-style: italic;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+.row-meta { min-width: 0; }
+.row-name {
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 30, "wght" 500, "SOFT" 30;
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 5px;
+  transition: color 0.18s;
+}
+.row-paths {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin: 0;
+  word-break: break-word;
+}
+.row-paths .sep {
+  color: var(--rule);
+  margin: 0 4px;
+}
+.row-stats {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: right;
+  line-height: 1.4;
+}
+.row-stats strong {
+  display: block;
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 30, "wght" 500;
+  font-style: italic;
+  font-size: 19px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  margin-bottom: 1px;
+  text-transform: none;
+}
+.row-arrow {
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 30, "wght" 400;
+  font-size: 22px;
+  color: var(--muted);
+  line-height: 1;
+  transition: transform 0.22s ease, color 0.18s;
+  text-align: right;
+}
+
+footer {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-align: center;
+  padding: 16px 40px 22px;
+  border-top: 1px solid var(--rule);
+  max-width: 980px;
+  margin: 16px auto 0;
+  width: 100%;
+}
+footer a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  transition: border-color 0.15s, color 0.15s;
+}
+footer a:hover {
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+
+@media (max-width: 720px) {
+  .masthead { padding: 32px 24px 18px; }
+  main { padding: 8px 24px 36px; }
+  .team-row, .toc-header {
+    grid-template-columns: 40px 1fr;
+    gap: 14px;
+  }
+  .team-row .row-stats, .team-row .row-arrow,
+  .toc-header .toc-h-count, .toc-header .toc-h-arrow {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+  .row-name { font-size: 20px; }
+  .row-num  { font-size: 22px; }
+}
+.gh-corner {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 101;
+  color: var(--muted);
+  line-height: 0;
+  transition: color 0.15s;
+}
+.gh-corner:hover { color: var(--ink); }</style>
 </head>
 <body>
-<header class="masthead">
-  <p class="eyebrow">gecko-triage</p>
+
+<a class="gh-corner" href="https://github.com/alastor0325/gecko-triage-dashboard" target="_blank" rel="noopener" title="View the source on GitHub" aria-label="View the source on GitHub"><svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg></a>
+
+<div class="masthead">
+  <p class="eyebrow"><span>Mozilla · Research</span></p>
   <h1 class="title">Triage<br><em>Dashboards</em></h1>
-  <p class="lede">A daily read on the gecko-triage bot for each team: what it did, what it waits on, how it runs and, once the data is mature, how often people undo it.</p>
-</header>
-<main>
-  <p class="eyebrow">Team · Components · last 30 days</p>
-  <div id="teams">
-__ROWS__
+  <p class="lede">A weekly read on the <em>gecko-triage</em> bot for each team: <em>what it changed</em> on your bugs, so you can check its actions and correct its mistakes.</p>
+  <div class="meta-row">
+    __META__
   </div>
-  <footer>Up/Down choose a team. Enter opens it.</footer>
+</div>
+
+<main>
+  <div class="toc-rule"></div>
+  <div class="toc-header">
+    <span></span>
+    <span>Team · Components</span>
+    <span class="toc-h-count">Latest week</span>
+    <span class="toc-h-arrow"></span>
+  </div>
+  <div class="toc-rule thin"></div>
+
+__ROWS__
+
+  <div class="toc-rule"></div>
 </main>
+
+<footer>
+  Source · <a href="https://github.com/alastor0325/gecko-triage-dashboard">alastor0325/gecko-triage-dashboard</a>
+</footer>
+
 <script>
-"use strict";
-const rows = [...document.querySelectorAll(".team-row")];
-let selected = 0;
-const select = i => { rows.forEach((r, j) => r.classList.toggle("is-selected", j === i)); selected = i; };
-rows.forEach((r, i) => r.addEventListener("mouseenter", () => select(i)));
-document.addEventListener("keydown", e => {
+// Up / Down move the selection highlight through the team rows so the
+// picker is keyboard-drivable like the per-team dashboards. Mouse and
+// keyboard share ONE selection (last interaction wins): hovering a row
+// selects it, and the arrows step from wherever the selection is — so
+// only one row is ever highlighted and the keyboard keeps working even
+// while the cursor rests over the list. Enter follows the selected
+// row's link natively (each row is a focused <a>).
+(function teamKeyboardNav() {
+  const rows = Array.from(document.querySelectorAll('a.team-row'));
   if (!rows.length) return;
-  if (e.key === "ArrowDown") { select((selected + 1) % rows.length); e.preventDefault(); }
-  if (e.key === "ArrowUp") { select((selected - 1 + rows.length) % rows.length); e.preventDefault(); }
-  if (e.key === "Enter") rows[selected].click();
-});
-select(0);
+  let sel = -1;  // index of the highlighted row; -1 = nothing yet
+  function select(i) {
+    rows.forEach((r, j) => r.classList.toggle('is-selected', j === i));
+    sel = i;
+    rows[i].focus({ preventScroll: true });
+  }
+  // Hovering a row makes it the selection (mouseenter, not CSS :hover,
+  // so it can't fight the keyboard highlight).
+  rows.forEach((r, i) => r.addEventListener('mouseenter', () => select(i)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    // Leave OS/browser-reserved arrow combos alone.
+    if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) return;
+    const dir = e.key === 'ArrowDown' ? 1 : -1;
+    // Nothing selected yet: Down → first row, Up → last row.
+    const next = sel === -1
+      ? (dir === 1 ? 0 : rows.length - 1)
+      : (sel + dir + rows.length) % rows.length;
+    select(next);
+    e.preventDefault();
+  });
+})();
 </script>
+
 </body>
 </html>

@@ -1,0 +1,334 @@
+/* Copied verbatim from firefox-review-stats templates/index.html.tmpl at commit a4c21af
+   so the two dashboards match. Change it there first, then copy it again. */
+  :root {
+    --paper: #FAF7F0;
+    --paper-warm: #F2EBDC;
+    --ink: #16110D;
+    --ink-soft: #3B342D;
+    --muted: #8B8378;
+    --rule: #E6DECD;
+    --rule-soft: #F0E9D9;
+    --surface: #FFFFFF;
+    --red: #FF0039;
+    --red-deep: #B3002A;
+
+    /* legacy token aliases retained in case any inline reference uses them */
+    --bg: var(--paper);
+    --fg: var(--ink);
+    --card: var(--surface);
+    --accent: var(--red);
+    --warn: var(--red);
+    --pill: var(--paper-warm);
+    --pill-active: var(--ink);
+    --pill-active-fg: var(--paper);
+
+    --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+    --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Sticky top bar — header + view selector pinned together */
+  .top-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+  header {
+    padding: 22px 40px 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header h1 {
+    margin: 0;
+    font-family: var(--serif);
+    font-variation-settings: "opsz" 90, "wght" 500, "SOFT" 30;
+    font-size: 32px;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  header h1 a {
+    color: var(--muted) !important;
+    text-decoration: none !important;
+    opacity: 1 !important;
+    font-family: var(--serif);
+    font-variation-settings: "opsz" 60, "wght" 400;
+    font-size: 22px;
+    margin-right: 12px !important;
+    vertical-align: 3px;
+    font-weight: 400 !important;
+    transition: color 0.15s;
+    display: inline-block;
+  }
+  header h1 a:hover { color: var(--red) !important; }
+  /* The title is plain heading text (the repo link now lives in the
+     fixed GitHub corner, top-right). Keep it visually identical to the
+     heading rather than the small muted back-arrow. */
+  header h1 .dash-title {
+    color: var(--ink) !important;
+    font-size: inherit !important;
+    font-weight: 500 !important;
+    font-variation-settings: "opsz" 90, "wght" 500, "SOFT" 30;
+    margin-right: 0 !important;
+    vertical-align: baseline;
+  }
+  /* Small GitHub mark fixed top-right — markup + CSS shared with the
+     landing picker via reviewstats/ui.py (injected at render time). */
+  .gh-corner {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 101;
+  color: var(--muted);
+  line-height: 0;
+  transition: color 0.15s;
+}
+.gh-corner:hover { color: var(--ink); }
+  header h1 #header-group {
+    font-style: italic;
+    color: var(--red);
+    font-variation-settings: "opsz" 90, "wght" 500, "SOFT" 100;
+    letter-spacing: -0.005em;
+  }
+  header .meta {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+    line-height: 1.65;
+  }
+
+  /* View / period selector — text tabs with red underline */
+  .toggle-bar {
+    display: flex; align-items: baseline;
+    max-width: 1200px; margin: 0 auto;
+    padding: 8px 40px 8px;
+  }
+  .toggle-group { display: flex; }
+  .toggle-sep {
+    width: 1px; height: 11px;
+    background: var(--rule);
+    margin: 5px 14px;
+    align-self: center;
+  }
+  .toggle-bar button {
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    padding: 4px 0;
+    margin-right: 20px;
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 10.5px; font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s;
+  }
+  .toggle-bar button::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -2px;
+    height: 2px;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.22s ease;
+  }
+  .toggle-bar button:hover { color: var(--ink); }
+  .toggle-bar button.active {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .toggle-bar button.active::after { transform: scaleX(1); }
+
+  main {
+    max-width: 1200px; margin: 0 auto;
+    padding: 18px 40px 48px;
+  }
+
+  /* Page divider — used for the inline phab-section H2 dividers */
+  .page-divider {
+    font-family: var(--serif);
+    font-variation-settings: "opsz" 60, "wght" 500, "SOFT" 30;
+    font-size: 22px;
+    line-height: 1.2;
+    margin: 24px 0 10px;
+    padding: 0;
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .page-divider em {
+    font-style: italic;
+    color: var(--red);
+    font-variation-settings: "opsz" 60, "wght" 500, "SOFT" 100;
+  }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 16px 20px 18px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  section h2 {
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: var(--serif);
+    font-variation-settings: "opsz" 30, "wght" 600, "SOFT" 30;
+    font-size: 16px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  section h2 .info { vertical-align: middle; }
+
+  /* Small marginal § marker beside each section, like a printed footnote */
+  section::before {
+    content: '§';
+    position: absolute;
+    left: -30px; top: 12px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--rule);
+    font-variation-settings: "opsz" 30, "wght" 400, "SOFT" 100;
+    line-height: 1;
+  }
+  @media (max-width: 1340px) { section::before { display: none; } }
+
+  /* Stats grid — bordered tiles using gap+background hairline trick */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .stat {
+    padding: 11px 14px 13px;
+    background: var(--surface);
+    position: relative;
+  }
+  .stat .label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .stat .value {
+    font-family: var(--serif);
+    font-variation-settings: "opsz" 72, "wght" 500, "SOFT" 20;
+    font-size: 26px;
+    line-height: 1;
+    margin-top: 6px;
+    letter-spacing: -0.022em;
+    font-weight: 500;
+    color: var(--ink);
+    font-feature-settings: "tnum", "lnum";
+  }
+  .stat .sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 5px;
+    letter-spacing: 0.02em;
+    line-height: 1.45;
+  }
+  .stat.expandable {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .stat.expandable:hover { background: var(--paper); }
+  .stat.expandable .label::after {
+    content: " →";
+    color: var(--red);
+    font-size: 10px;
+    display: inline-block;
+    transition: transform 0.2s;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+  .stat.expandable.is-open { background: var(--paper-warm); }
+  .stat.expandable.is-open .label::after { transform: rotate(90deg); }
+  .stat.expandable .hint {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    color: var(--red);
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+  .lw-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 10px; }
+  .lw-filter { font-family: var(--mono); font-size: 11px; padding: 3px 9px; border-radius: 999px;
+               border: 1px solid var(--rule); background: var(--surface); color: var(--ink);
+               cursor: pointer; }
+  .lw-filter[aria-pressed="true"] { background: var(--pill-active); color: var(--pill-active-fg);
+                                    border-color: var(--pill-active); }
+  .lw-filter-n { opacity: 0.7; }
+  .lw-chip.is-match { background: var(--ink); color: var(--paper); }
+  .lw-fix-line.is-match .lw-fix-where { color: var(--ink); font-weight: 600; }
+  .lw-count { font: inherit; color: inherit; background: none; border: 0; padding: 0;
+              text-decoration: underline dotted 1px; text-underline-offset: 2px; cursor: pointer; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+    font-size: 12.5px;
+    table-layout: fixed;
+  }
+  th, td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--rule);
+  }
+  th.num, td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--mono);
+  }
+  #queue-table a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  #queue-table a:hover {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+  .table-wrap { overflow-x: auto; }

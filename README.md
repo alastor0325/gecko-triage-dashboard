@@ -8,30 +8,34 @@ page lists each team, and each team has its own page.
 
 **Live**: <https://alastor0325.github.io/gecko-triage-dashboard/>
 
-## Views
+## What it shows
 
-Each team page has five views and a period switch (1W, 1M, 3M, All):
+The page answers one question for the team's weekly triage: **what did the bot change on
+our bugs this week, and is any of it wrong?**
 
-- **Overview**: bugs triaged, S/P set, needinfo asked, closed and moved; decisions;
-  severity; who the needinfo went to; bugs triaged per week.
-- **Bugs**: the latest run of each bug, with its decision and every change it records.
-  Filter by decision and component, or search.
-- **Waiting**: bugs with a needinfo from the bot.
-- **Run health**: runs, failed runs, cost and turns; unread artifacts; each round.
-- **Accuracy (beta)**: in the dry-run phase, agreement with the local /triage draft of
-  the same bug. Later, changes that people make after the bot.
+- **Week tabs**: one calendar week per tab, newest first. Left/Right change the week, and
+  the URL hash keeps it (`#2026-W42`).
+- **Tiles**: all bugs the bot changed, then closed, moved, S/P set and asked for info, in
+  order of harm if the bot is wrong. A click on a tile filters the table, and a second click
+  clears the filter.
+- **Table**: one row for each bug, with the latest run of that week. The riskiest changes
+  come first. Each row links to the bug and lists every change.
 
-Left/Right change the view, Shift+Left/Right the period. The URL hash keeps the state,
-for example `#overview/1m`.
+Failed runs and runs that the preflight skipped changed nothing, so the page leaves them
+out. Cost, run health and accuracy are not part of this MVP.
+
+The style is a copy of firefox-review-stats: `templates/review-stats.css` is copied
+verbatim from its team template, and `templates/index.html` from its landing page. Change
+those files there first, then copy them again.
 
 ## Data
 
-`data/runs.json` has one record per agent run, and `data/baseline.json` has the /triage
-reference for each bug. Both are committed. `data/rounds.tsv` lists each dry-run round,
-the agent commit it ran on, and its directory. The site is public, so the records keep
-no email address: a needinfo becomes a role (`reporter`, `assignee` or `other`), and
-every string is scrubbed of emails and `:nick` mentions. Restricted bugs are never
-ingested. A run's team comes from its bug's component.
+`data/runs.json` has one record per agent run, and it is committed. `data/rounds.tsv`
+lists each dry-run round and its directory. The site is public, so the records keep no
+email address: a needinfo becomes a role (`reporter`, `assignee` or `other`), and every
+string is scrubbed of emails and `:nick` mentions. Restricted bugs are never ingested. A
+run's team comes from its bug's component. Times are stored in UTC, and a week runs from
+Monday to Sunday in UTC.
 
 v1 reads the local dry runs. Bugzilla (`comment_tag=gecko-triage`) comes next.
 
@@ -39,9 +43,8 @@ v1 reads the local dry runs. Bugzilla (`comment_tag=gecko-triage`) comes next.
 
 ```
 uv sync
-./scripts/ingest-local.sh                 # every round in data/rounds.tsv, then the /triage drafts
+./scripts/ingest-local.sh                 # every round in data/rounds.tsv
 uv run python -m triagedash ingest-dryrun --root ~/hackbot data/rounds.tsv
-uv run python -m triagedash ingest-baseline ~/firefox-triage/pending
 uv run python -m triagedash build --out site
 uv run pytest tests/unit/
 ```
@@ -49,7 +52,7 @@ uv run pytest tests/unit/
 To add a round, add a line to `data/rounds.tsv` and run `ingest-local.sh`. `ingest-dryrun`
 reads `local-*/summary.json` in each directory and the bugs' public Bugzilla fields, in
 one request (cached in `.cache/bmo/`). A re-ingest replaces a run with the same id.
-`HACKBOT_DIR` and `TRIAGE_PENDING` change the input paths of `ingest-local.sh`.
+`HACKBOT_DIR` changes the input path of `ingest-local.sh`.
 
 ## Adding a team
 

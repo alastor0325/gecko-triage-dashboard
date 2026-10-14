@@ -13,20 +13,24 @@ def test_merge_records_upserts_by_run_id():
     assert {r["run_id"]: r["decision"] for r in merged}["x"] == "needs_info"
 
 
-def test_embed_json_escapes_script_end():
+def test_embed_json_escapes_script_end_and_keeps_order():
     assert "</script>" not in render.embed_json({"t": "</script>"})
+    assert render.embed_json({"b": 2, "a": 1}) == '{"b":2,"a":1}'
 
 
-def test_team_html_escapes_and_embeds():
+def test_team_html_fills_placeholders():
     out = render.team_html("__TEAM__|__LABEL__|__DATA__", TEAMS[0], {"a": 1})
-    assert out == 'media|Firefox Audio/Video|{"a": 1}'
+    assert out == 'media|Firefox Audio/Video|{"a":1}'
 
 
 def test_landing_html_without_data():
-    out = render.landing_html("__ROWS__", TEAMS, {})
+    out = render.landing_html("__META__ __ROWS__", TEAMS, {})
     assert "no runs yet" in out
     assert 'href="media/index.html"' in out
+    assert "1 dashboard<" in out
 
 
-def test_embed_json_keeps_order():
-    assert render.embed_json({"b": 2, "a": 1}) == '{"b": 2, "a": 1}'
+def test_landing_row_uses_latest_week():
+    week = {"counts": {"all": 5, "closed": 1, "moved": 2, "sp": 0, "needinfo": 0}}
+    out = render.team_row(1, TEAMS[0], {"weeks": [week]})
+    assert "<strong>5</strong>bugs changed · 3 closed or moved" in out

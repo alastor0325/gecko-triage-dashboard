@@ -6,8 +6,8 @@ from .conftest import make_record
 
 
 def test_read_manifest():
-    text = "# header\nr1\t23aaa262\tcompare-r1\n\ndry1\t-\tartifacts\n"
-    assert read_manifest(text) == [("r1", "23aaa262", "compare-r1"), ("dry1", None, "artifacts")]
+    text = "# header\nr1\tcompare-r1\n\ndry1\tartifacts\n"
+    assert read_manifest(text) == [("r1", "compare-r1"), ("dry1", "artifacts")]
 
 
 def test_page_clock():

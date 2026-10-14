@@ -1,3 +1,5 @@
+from datetime import timedelta, timezone
+
 from triagedash.dryrun import (
     EMAIL,
     is_public,
@@ -13,18 +15,13 @@ from .conftest import make_record, make_summary
 
 
 def parse(summary, meta, bug_id=100):
-    return parse_summary(
-        summary,
-        bug_id=bug_id,
-        round_="r1",
-        commit="abc",
-        run_id="local-20261014-174025-eb0234",
-        meta=meta,
-    )
+    return parse_summary(summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta)
 
 
-def test_run_started_at():
-    assert run_started_at("local-20261014-174025-eb0234") == "2026-10-14T17:40:25"
+def test_run_started_at_is_utc():
+    taipei = timezone(timedelta(hours=8))
+    assert run_started_at("local-20261014-174025-eb0234", taipei) == "2026-10-14T09:40:25+00:00"
+    assert run_started_at("local-20261014-174025-eb0234").endswith("+00:00")
     assert run_started_at("something-else") is None
 
 
@@ -49,9 +46,7 @@ def test_needinfo_role(meta):
 
 def test_record_holds_no_email_in_any_field(meta):
     changes = {"flags": [{"name": "needinfo", "status": "?", "requestee": "reporter@example.com"}]}
-    summary = make_summary(
-        changes=changes, summary="Asked x@example.com.", asked=["log from y@example.com"]
-    )
+    summary = make_summary(changes=changes, summary="Asked x@example.com.")
     record = parse(summary, {**meta, "summary": "Crash, cc z@example.com"})
     assert record["needinfo"] == ["reporter"]
     assert not EMAIL.search(str(record))
@@ -77,7 +72,7 @@ def test_parse_fields(meta):
         r["keywords_add"],
         r["regressed_by_add"],
     ) == ("S3", "P3", [5], ["regression"], [7])
-    assert r["started_at"] == "2026-10-14T17:40:25"
+    assert r["started_at"].endswith("+00:00")
     assert r["team"] == "media"
     assert r["posted"] is False
     assert r["error"] is False

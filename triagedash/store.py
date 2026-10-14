@@ -1,4 +1,4 @@
-"""The committed data files: `data/runs.json` and `data/baseline.json`."""
+"""The committed data file `data/runs.json`."""
 
 from __future__ import annotations
 

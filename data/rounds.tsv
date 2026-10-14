@@ -1,17 +1,17 @@
-# round	agent commit (- if unknown)	directory under $HACKBOT_DIR
-dry1	-	artifacts
-dry2	-	artifacts-v2
-r1	23aaa262	compare-r1
-r2	6379b08f	compare-r2
-r3	f706204d	compare-r3
-r4	b67b1cc1	compare-r4
-r5a	6e60c6e3	compare-r5a
-r5b	6e60c6e3	compare-r5b
-r6a	dc20740a	compare-r6a
-r6b	dc20740a	compare-r6b
-r7a	453a1bb4	compare-r7a
-r7b	453a1bb4	compare-r7b
-r8a	0ab2a273	compare-r8a
-r8b	0ab2a273	compare-r8b
-r9a	7a2b7733	compare-r9a
-r9b	7a2b7733	compare-r9b
+# round	directory under $HACKBOT_DIR
+dry1	artifacts
+dry2	artifacts-v2
+r1	compare-r1
+r2	compare-r2
+r3	compare-r3
+r4	compare-r4
+r5a	compare-r5a
+r5b	compare-r5b
+r6a	compare-r6a
+r6b	compare-r6b
+r7a	compare-r7a
+r7b	compare-r7b
+r8a	compare-r8a
+r8b	compare-r8b
+r9a	compare-r9a
+r9b	compare-r9b
