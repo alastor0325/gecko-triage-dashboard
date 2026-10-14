@@ -62,7 +62,7 @@
   "started_at": "2026-10-14T03:00:27+00:00",
   "summary": "macOS parent-process Rust panic (assert_ne on kAudioObjectUnknown) in cubeb_coreaudio get_channel_count during the device-collection-changed callback; crash report read, no duplicate (related fixed bug 1902801), commented and recorded S2/P2",
   "team": "media",
-  "title": "Crash in [@ cubeb_coreaudio::[person]::[person]]"
+  "title": "Crash in [@ cubeb_coreaudio::backend::get_channel_count]"
  },
  {
   "blocks_add": [],
@@ -284,7 +284,7 @@
   "started_at": "2026-10-14T07:31:10+00:00",
   "summary": "Parent-process CoreAudio crash (assert_ne 0 in get_channel_count during device-collection change) confirmed from crash report; related to fixed bug 1902801 but not a duplicate; set S2/P2, no asks.",
   "team": "media",
-  "title": "Crash in [@ cubeb_coreaudio::[person]::[person]]"
+  "title": "Crash in [@ cubeb_coreaudio::backend::get_channel_count]"
  },
  {
   "blocks_add": [
@@ -464,9 +464,9 @@
   "run_id": "local-20261014-020202-e7038d",
   "severity": "S3",
   "started_at": "2026-10-14T09:02:02+00:00",
-  "summary": "Nightly/DevEdition-only crash: the MDSM::[person] promise is never settled when the dispatch fails, so the FirstFrameLoaded ThenValue dies; regressor bug 1888265 named, S3/P3 and regression keyword set",
+  "summary": "Nightly/DevEdition-only crash: the MDSM::RequestDebugInfo promise is never settled when the dispatch fails, so the FirstFrameLoaded ThenValue dies; regressor bug 1888265 named, S3/P3 and regression keyword set",
   "team": "media",
-  "title": "Crash in [@ mozilla::[person]<T>::[person]<T>::[person]]"
+  "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
   "blocks_add": [],
@@ -740,9 +740,9 @@
   "run_id": "local-20261014-022349-cf8e0c",
   "severity": "S3",
   "started_at": "2026-10-14T09:23:49+00:00",
-  "summary": "Pre-release-only (diagnostic assert) content crash: MediaDecoderStateMachine::[person] leaves its promise pending when dispatch fails, killing the FirstFrameLoaded ThenValue; regressed by bug 1888265; triaged S3/P3 with regression keyword and regressed_by.",
+  "summary": "Pre-release-only (diagnostic assert) content crash: MediaDecoderStateMachine::RequestDebugInfo leaves its promise pending when dispatch fails, killing the FirstFrameLoaded ThenValue; regressed by bug 1888265; triaged S3/P3 with regression keyword and regressed_by.",
   "team": "media",
-  "title": "Crash in [@ mozilla::[person]<T>::[person]<T>::[person]]"
+  "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
   "blocks_add": [],
@@ -1004,9 +1004,9 @@
   "run_id": "local-20261014-025354-58ab2c",
   "severity": "S4",
   "started_at": "2026-10-14T09:53:54+00:00",
-  "summary": "Nightly-only diagnostic crash: MDSM::[person] leaves its promise unsettled on a failed TaskQueue dispatch, so the FirstFrameLoaded ThenValue trips AssertIsDead; confirmed cause and fix direction in comment, set S4/P3",
+  "summary": "Nightly-only diagnostic crash: MDSM::RequestDebugInfo leaves its promise unsettled on a failed TaskQueue dispatch, so the FirstFrameLoaded ThenValue trips AssertIsDead; confirmed cause and fix direction in comment, set S4/P3",
   "team": "media",
-  "title": "Crash in [@ mozilla::[person]<T>::[person]<T>::[person]]"
+  "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
   "blocks_add": [
@@ -1270,9 +1270,9 @@
   "run_id": "local-20261014-071604-505148",
   "severity": "S3",
   "started_at": "2026-10-14T14:16:04+00:00",
-  "summary": "Nightly/DevEdition-only MozPromise crash: MediaDecoderStateMachine::[person] leaves its promise unsettled on dispatch failure, so the FirstFrameLoaded ThenValue dies; confirmed root cause, regressed by bug 1888265; set S3/P3, regression keyword and regressed_by",
+  "summary": "Nightly/DevEdition-only MozPromise crash: MediaDecoderStateMachine::RequestDebugInfo leaves its promise unsettled on dispatch failure, so the FirstFrameLoaded ThenValue dies; confirmed root cause, regressed by bug 1888265; set S3/P3, regression keyword and regressed_by",
   "team": "media",
-  "title": "Crash in [@ mozilla::[person]<T>::[person]<T>::[person]]"
+  "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
   "blocks_add": [],
@@ -1557,9 +1557,9 @@
   "run_id": "local-20261014-074011-d06c38",
   "severity": "S3",
   "started_at": "2026-10-14T14:40:11+00:00",
-  "summary": "Nightly/DevEdition diagnostic-assert crash: MediaDecoderStateMachine::[person] returns an unsettled promise when dispatch to its shut-down TaskQueue fails, leaking the FirstFrameLoaded ThenValue; regression from bug 1888265. Recorded the triage comment with the cause and fix, S3/P2, regression keyword, regressed_by 1888265.",
+  "summary": "Nightly/DevEdition diagnostic-assert crash: MediaDecoderStateMachine::RequestDebugInfo returns an unsettled promise when dispatch to its shut-down TaskQueue fails, leaking the FirstFrameLoaded ThenValue; regression from bug 1888265. Recorded the triage comment with the cause and fix, S3/P2, regression keyword, regressed_by 1888265.",
   "team": "media",
-  "title": "Crash in [@ mozilla::[person]<T>::[person]<T>::[person]]"
+  "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
   "blocks_add": [

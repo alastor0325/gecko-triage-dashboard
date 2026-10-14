@@ -124,3 +124,10 @@ def test_summary_bug_id_and_orphans():
 def test_is_public(meta):
     assert is_public(meta)
     assert not is_public({**meta, "groups": ["media-core-security"]})
+
+
+def test_scrub_keeps_cpp_scopes():
+    assert (
+        scrub("Crash in [@ mozilla::MozPromise<T>::Resolve]")
+        == "Crash in [@ mozilla::MozPromise<T>::Resolve]"
+    )

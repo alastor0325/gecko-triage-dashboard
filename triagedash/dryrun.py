@@ -13,7 +13,7 @@ from .teams import team_for
 
 _RUN_ID = re.compile(r"local-(\d{8}-\d{6})-[0-9a-f]+$")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
-_MENTION = re.compile(r"(?<![\w/]):[A-Za-z][\w-]*\b")
+_MENTION = re.compile(r"(?<![\w/:]):[A-Za-z][\w-]*\b")
 
 
 def run_started_at(run_id: str, host_tz: tzinfo | None = None) -> str | None:
