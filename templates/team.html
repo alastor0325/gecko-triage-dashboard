@@ -13,8 +13,11 @@
 <style>
   /* Local to this dashboard; everything else is review-stats.css. */
   .chart-box { position: relative; height: 280px; }
+  /* A bar chart grows with its rows (--rows, set by the script), so bars stay thin. */
+  .chart-box.rows { height: max(120px, calc(var(--rows) * 34px + 40px)); }
+  button.stat { font: inherit; text-align: left; border: 0; width: 100%; color: inherit; }
   /* minmax(0, ...) lets a Chart.js canvas shrink with its column. */
-  .split { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: center; }
+  .split { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
   .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
   .filters .lw-filters { margin: 0; }
   .filters input { margin-left: auto; width: 240px; font-family: var(--mono); font-size: 11px; color: var(--ink);
@@ -23,18 +26,15 @@
   .rail, .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; }
   .card { padding: 16px 20px 18px; }
   .rail { position: sticky; top: 92px; max-height: calc(100vh - 110px); overflow-y: auto; }
-  .rail-head, .pos {
-    font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--muted); display: flex; justify-content: space-between; gap: 8px;
-  }
-  .rail-head { padding: 10px 14px; border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--surface); }
+  .pos { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); display: flex; gap: 6px; align-items: center; white-space: nowrap; }
   .rail ol { list-style: none; margin: 0; padding: 0; }
   .rail-item { display: block; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none;
     border: 0; border-bottom: 1px solid var(--rule-soft); padding: 9px 14px 10px; cursor: pointer; }
   .rail-item:hover { background: var(--paper); }
   .rail-item.is-active { background: var(--paper-warm); box-shadow: inset 3px 0 0 var(--red); }
   .rail-item:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
-  .rail-row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  .rail-row1 { display: flex; align-items: baseline; gap: 8px; }
   .rail-id { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
   .rail li { position: relative; }
   /* The bug link sits over the row's number, as a sibling of the row's button: a link
@@ -42,35 +42,43 @@
   .rail-link { position: absolute; top: 9px; left: 14px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
   .rail-item .rail-id { visibility: hidden; }
   .rail li:has(.is-active) .rail-link { color: var(--red-deep); }
-  .rail-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; }
+  .rail-tags { display: flex; gap: 3px; margin-left: auto; }
   .rail-title { font-size: 12.5px; line-height: 1.35; margin-top: 3px; overflow-wrap: anywhere;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .tag { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
-    padding: 1px 6px; border-radius: 999px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
-  .tag.close { background: var(--red); color: var(--surface); }
-  .tag.flag { background: transparent; color: var(--red-deep); box-shadow: inset 0 0 0 1px var(--red); }
+  /* Tags, in the triage dashboard's style: small soft pills, one color per meaning. A
+     category pill gets its color from the data (--c); the harmful one is solid. */
+  .tag, .rail-cat, .when, .changes dt, details.earlier > summary { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; }
+  .tag { padding: 1px 6px; border-radius: 3px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
+  .tag.new { background: rgba(63, 94, 63, 0.14); color: #3F5E3F; }
+  .tag.regression { background: rgba(200, 155, 60, 0.2); color: #7A5A12; }
+  .tag.outline { background: transparent; box-shadow: inset 0 0 0 1px var(--rule); }
+  .tag.cat { background: color-mix(in srgb, var(--c) 13%, transparent); color: color-mix(in srgb, var(--c) 80%, black); }
+  .tag.cat.harm { background: var(--c); color: var(--surface); }
+  .rail-cat, .changes dt { color: var(--muted); font-weight: 500; }
+  /* Anything that takes a bug off the team. */
+  .rail-cat.harm, .changes dt.harm { color: var(--red-deep); font-weight: 600; }
   .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
-  .card-id { font-family: var(--mono); font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
-  .badge { font-family: var(--mono); font-size: 10px; padding: 0 5px; border: 1px solid var(--rule); border-radius: 2px; }
-  .badge.unset { border-style: dashed; color: var(--muted); }
+  .card-id { font-family: var(--mono); font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .pos button { font: inherit; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; padding: 0 6px; }
   .card-title { font-family: var(--serif); font-variation-settings: "opsz" 30, "wght" 600, "SOFT" 30;
-    font-size: 18px; line-height: 1.3; margin: 0 0 6px; overflow-wrap: anywhere; }
+    font-size: 19px; line-height: 1.3; margin: 0 0 14px; overflow-wrap: anywhere; }
   .timeline { list-style: none; margin: 0; padding: 0; }
   .timeline > li { border-top: 1px solid var(--rule-soft); padding: 10px 0; }
-  .when { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
-  .did { display: block; font-size: 13px; line-height: 1.5; }
-  .comment { margin-top: 8px; padding: 2px 12px; background: var(--paper); border-left: 2px solid var(--rule);
+  .when { color: var(--muted); margin-bottom: 8px; }
+  .changes { display: grid; grid-template-columns: 96px 1fr; gap: 4px 12px; margin: 0; font-size: 13px; line-height: 1.5; }
+  .changes dt { padding-top: 3px; }
+  .changes dd { margin: 0; overflow-wrap: anywhere; }
+  .comment { margin-top: 12px; padding: 2px 14px; background: var(--paper); border-left: 2px solid var(--rule);
     font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); overflow-wrap: anywhere; }
   .comment p, .comment ol, .comment ul { margin: 8px 0; }
   .comment ol, .comment ul { padding-left: 20px; }
   .comment hr { border: 0; border-top: 1px solid var(--rule); margin: 10px 0; }
   .comment code { font-family: var(--mono); font-size: 11.5px; }
   details.earlier { border-top: 1px solid var(--rule-soft); padding-top: 8px; }
-  details.earlier > summary { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; }
-  .comment.folded { max-height: 9.5em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
-  .unfold { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--red-deep);
-    background: none; border: 0; padding: 4px 0 0; cursor: pointer; }
+  details.earlier > summary { color: var(--muted); cursor: pointer; }
+  footer.keys { max-width: 1200px; margin: 0 auto; padding: 0 40px 32px; font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.04em; color: var(--muted); }
   .card a, .bug-link { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
   .card a:hover, .bug-link:hover { color: var(--red); border-bottom-color: var(--red); }
   .empty { color: var(--muted); font-size: 12.5px; margin: 0; padding: 14px; }
@@ -111,8 +119,8 @@
     </section>
     <section>
       <div class="split">
-        <div><h2>Close / Reassign: where the bugs went</h2><div class="chart-box"><canvas id="chart-close"></canvas></div></div>
-        <div><h2>Severity the bot set</h2><div class="chart-box"><canvas id="chart-severity"></canvas></div></div>
+        <div><h2>Close / Reassign: where the bugs went</h2><div class="chart-box rows"><canvas id="chart-close"></canvas></div></div>
+        <div><h2>Severity the bot set</h2><div class="chart-box rows"><canvas id="chart-severity"></canvas></div></div>
       </div>
     </section>
   </div>
@@ -124,13 +132,13 @@
     </div>
     <div class="layout">
       <aside class="rail" aria-label="Bugs">
-        <div class="rail-head"><span id="rail-title"></span><span id="rail-count"></span></div>
         <ol id="rail"></ol>
       </aside>
       <div class="card" id="card" aria-live="polite"></div>
     </div>
   </div>
 </main>
+<footer class="keys">Left/Right: view · Shift+Left/Right: period · in Bugs, Up/Down or j/k: next bug · /: search</footer>
 
 <script id="data" type="application/json">__DATA__</script>
 <script>
@@ -138,19 +146,25 @@
 const DATA = JSON.parse(document.getElementById("data").textContent);
 const VIEWS = [["overview", "Overview"], ["bugs", "Bugs"]];
 const PERIODS = DATA.periods.map(p => [p.key, p.label]);
+const CAT = Object.fromEntries(DATA.categories.map(c => [c.key, c]));
 const CAT_TEXT = {all: "All", ...Object.fromEntries(DATA.categories.map(c => [c.key, c.label]))};
 const CATS = ["all", ...DATA.categories.map(c => c.key)];
 const ROLES = {reporter: "reporter", assignee: "assignee", other: "another person", unknown: "unknown person"};
-const FLAG_TAGS = new Set(["regression", "dev needinfo"]);
+// Each tag the page can show, in display order: its CSS class, and whether the short view
+// shows it. The short view keeps only the tags that change what to look at first.
+const TAGS = {regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
+  "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
 const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const bug = (id, cls = "bug-link") => `<a class="${cls}" href="https://bugzilla.mozilla.org/show_bug.cgi?id=${id}">${id}</a>`;
 const bugList = ids => ids.map(bug).join(", ");
-const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const day = iso => new Date(iso).toLocaleDateString("en-US", {month: "short", day: "numeric", timeZone: "UTC"});
-const tag = (t, cls = FLAG_TAGS.has(t) ? "flag" : "") => `<span class="tag ${cls}">${esc(t)}</span>`;
-const tags = b => b.tags.map(t => tag(t)).join("");
+const tag = t => `<span class="tag ${TAGS[t].cls}">${esc(t)}</span>`;
+const TAG_ORDER = Object.keys(TAGS);
+const tags = (list, keep = () => true) => TAG_ORDER.filter(t => keep(t) && list.includes(t)).map(tag).join("");
+const harm = key => CAT[key].harm ? " harm" : "";
+const catTag = key => `<span class="tag cat${harm(key)}" style="--c: ${CAT[key].color}">${esc(CAT[key].label)}</span>`;
 const period = () => DATA.periods.find(p => p.key === state.period);
 
 // ---- Overview ----
@@ -159,21 +173,29 @@ function chart(id, config) {
   charts[id]?.destroy();
   charts[id] = new Chart(document.getElementById(id), {...config, options: {maintainAspectRatio: false, ...config.options}});
 }
+// Thin bars whatever the row count: the box grows with the rows instead.
 function horizontalBar(id, counts, color) {
   const labels = Object.keys(counts);
-  chart(id, {type: "bar", data: {labels, datasets: [{data: labels.map(k => counts[k]), backgroundColor: color}]},
-    options: {indexAxis: "y", plugins: {legend: {display: false}}, scales: {x: {beginAtZero: true, ticks: {precision: 0}}}}});
+  document.getElementById(id).parentElement.style.setProperty("--rows", labels.length);
+  chart(id, {type: "bar", data: {labels, datasets: [{data: labels.map(k => counts[k]), backgroundColor: color, maxBarThickness: 18}]},
+    options: {indexAxis: "y", plugins: {legend: {display: false}},
+      scales: {x: {beginAtZero: true, ticks: {precision: 0}}, y: {grid: {display: false}}}}});
 }
 function drawOverview() {
   const o = DATA.overview[state.period];
   document.getElementById("summary-title").textContent = `Summary (${period().label.toLowerCase()} window)`;
-  document.getElementById("summary-grid").innerHTML = CATS.map(c => `<div class="stat"><div class="label">${c === "all" ? "Bugs handled" : CAT_TEXT[c]}</div><div class="value">${o.counts[c]}</div></div>`).join("");
+  // Each tile opens the Bugs view on its category.
+  const share = n => o.counts.all ? `${Math.round(100 * n / o.counts.all)}% of bugs handled` : "";
+  document.getElementById("summary-grid").innerHTML = CATS.map(c => `<button type="button" class="stat expandable" data-open-cat="${c}">
+    <div class="label">${c === "all" ? "Bugs handled" : CAT_TEXT[c]}</div><div class="value">${o.counts[c]}</div>
+    <div class="sub">${c === "all" ? "each bug once, by its newest run" : share(o.counts[c])}</div></button>`).join("");
   chart("chart-daily", {type: "bar",
-    data: {labels: o.daily.map(d => day(d.date)), datasets: DATA.categories.map(c => ({label: c.label, data: o.daily.map(d => d[c.key]), backgroundColor: c.color}))},
-    options: {scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}}});
-  const color = key => DATA.categories.find(c => c.key === key).color;
-  horizontalBar("chart-close", o.close_kinds, color("close"));
-  horizontalBar("chart-severity", o.severity, color("analyzed"));
+    data: {labels: o.daily.map(d => day(d.date)), datasets: DATA.categories.map(c => ({label: c.label, data: o.daily.map(d => d[c.key]), backgroundColor: c.color, maxBarThickness: 28}))},
+    options: {plugins: {legend: {labels: {boxWidth: 10, boxHeight: 10}}},
+      scales: {x: {stacked: true, grid: {display: false}, ticks: {maxRotation: 0, autoSkip: true, maxTicksLimit: 10}},
+        y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}}});
+  horizontalBar("chart-close", o.close_kinds, CAT.close.color);
+  horizontalBar("chart-severity", o.severity, CAT.analyzed.color);
 }
 
 // ---- Bugs ----
@@ -194,37 +216,38 @@ function shown() {
     .sort((a, b) => rank(a.run) - rank(b.run) || b.run.started_at.localeCompare(a.run.started_at));
 }
 
-// One line per change, most harmful first.
+// One row per change, most harmful first. Rows that take the bug off the team are red.
 function changes(r) {
-  const lines = [
-    r.resolution && `${tag("closed", "close")} ${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`,
-    r.move_to && `${tag("moved", "close")} to ${esc(r.move_to)}`,
-    (r.severity || r.priority) && `${tag("S/P")} ${esc([r.severity, r.priority].filter(Boolean).join(" / "))}`,
-    r.needinfo.length && `${tag("needinfo")} ${esc(r.needinfo.map(x => ROLES[x] || x).join(", "))}`,
-    r.blocks_add.length && `blocks ${bugList(r.blocks_add)}`,
-    r.regressed_by_add.length && `regressed by ${bugList(r.regressed_by_add)}`,
-    r.keywords_add.length && `keywords ${esc(r.keywords_add.join(", "))}`,
-    ...r.other_bugs.map(o => `on ${bug(o.bug_id)}: blocks ${bugList(o.blocks_add)}`),
+  const rows = [
+    r.resolution && ["Closed", `${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`, CAT.close.harm],
+    r.move_to && ["Moved", `to ${esc(r.move_to)}`, CAT.close.harm],
+    (r.severity || r.priority) && ["S/P", esc([r.severity, r.priority].filter(Boolean).join(" / "))],
+    r.needinfo.length && ["Needinfo", esc(r.needinfo.map(x => ROLES[x] || x).join(", "))],
+    r.blocks_add.length && ["Blocks", bugList(r.blocks_add)],
+    r.regressed_by_add.length && ["Regressed by", bugList(r.regressed_by_add)],
+    r.keywords_add.length && ["Keywords", esc(r.keywords_add.join(", "))],
+    ...r.other_bugs.map(o => ["Meta bug", `${bugList(o.blocks_add)}, added to ${bug(o.bug_id)}`]),
   ].filter(Boolean);
-  return (lines.length ? lines : ["comment only, no field change"]).map(l => `<span class="did">${l}</span>`).join("");
+  const all = rows.length ? rows : [["Changes", "comment only, no field change"]];
+  return `<dl class="changes">${all.map(([k, v, harm]) => `<dt${harm ? ' class="harm"' : ""}>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
 }
 
 function railItem(b) {
   const c = b.run.category;
   return `<li><button type="button" class="rail-item${b.bug_id === state.bug ? " is-active" : ""}" data-bug="${b.bug_id}">
-    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span><span class="rail-tags">${c ? tag(CAT_TEXT[c], c) : ""}${tags(b)}</span></span>
+    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span>${state.cat === "all" && c ? `<span class="rail-cat${harm(c)}">${esc(CAT[c].label)}</span>` : ""}
+      <span class="rail-tags">${tags(b.tags, t => TAGS[t].rail)}</span></span>
     <span class="rail-title">${esc(b.title)}</span></button>${bug(b.bug_id, "bug-link rail-link")}</li>`;
 }
 
-// The bot's timeline on the bug: the newest run in the period with its comment, then the
-// earlier runs, folded.
+// The bot's timeline on the bug: the newest run in the period with every change and its
+// whole comment, then the earlier runs, folded.
 function card(b, index, total) {
   const r = b.run;
-  const level = (v, unset) => v ? `<span class="badge">${esc(v)}</span>` : `<span class="badge unset">${unset}</span>`;
   const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}</div>${changes(e)}
-    ${e.comment_html ? `<div class="comment folded">${e.comment_html}</div><button type="button" class="unfold" data-unfold>Show the whole comment</button>` : ""}</li>`;
+    ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `<div class="card-top">
-      <span class="card-id">${bug(b.bug_id)} ${level(r.severity, "S?")} ${level(r.priority, "P?")} ${tags(b)}</span>
+      <span class="card-id">${bug(b.bug_id)} ${r.category ? catTag(r.category) : ""} ${tags(b.tags)}</span>
       <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
@@ -241,8 +264,6 @@ function drawBugs() {
     `<button type="button" class="lw-filter" role="tab" data-cat="${c}" aria-pressed="${state.cat === c}" aria-selected="${state.cat === c}">${CAT_TEXT[c]} <span class="lw-filter-n">${inCat(c).length}</span></button>`).join("");
   const list = inCat(state.cat);
   if (!list.some(b => b.bug_id === state.bug)) state.bug = list.length ? list[0].bug_id : null;
-  document.getElementById("rail-title").textContent = CAT_TEXT[state.cat];
-  document.getElementById("rail-count").textContent = plural(list.length, "bug");
   document.getElementById("rail").innerHTML = list.length ? list.map(railItem).join("")
     : `<li class="empty">${state.q ? "No bug matches the search." : "The bot handled no bug in this group in this period."} Choose “All” or a longer period.</li>`;
   const i = list.findIndex(b => b.bug_id === state.bug);
@@ -290,14 +311,10 @@ search.addEventListener("input", () => {
   typing = setTimeout(() => { state.q = search.value; draw(); }, 120);
 });
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-unfold]");
+  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat]");
   if (!el) return;
-  if (el.dataset.unfold !== undefined) {
-    el.previousElementSibling.classList.remove("folded");
-    el.remove();
-    return;
-  }
   if (el.dataset.step) return step(Number(el.dataset.step));
+  if (el.dataset.openCat) { state.view = "bugs"; state.cat = el.dataset.openCat; }
   if (el.dataset.view) state.view = el.dataset.view;
   if (el.dataset.period) state.period = el.dataset.period;
   if (el.dataset.cat) state.cat = el.dataset.cat;
@@ -325,9 +342,10 @@ window.addEventListener("hashchange", () => { readHash(); draw(); });
 Chart.defaults.font.family = getComputedStyle(document.body).getPropertyValue("--mono");
 Chart.defaults.font.size = 11;
 Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--muted");
-document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(DATA.as_of.replace("T", " ").slice(0, 16))} UTC`
-  + (DATA.posted ? "" : ` · <span class="dry-run">dry run: nothing was posted to Bugzilla</span>`)
-  + ` · Left/Right: view · Shift+Left/Right: period · in Bugs, Up/Down: next bug, /: search`;
+Chart.defaults.scale.grid.color = getComputedStyle(document.body).getPropertyValue("--rule-soft");
+const asOf = new Date(DATA.as_of).toLocaleString("en-US", {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC"});
+document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(asOf)} UTC`
+  + (DATA.posted ? "" : ` · <span class="dry-run">dry run, nothing posted</span>`);
 readHash();
 draw();
 </script>

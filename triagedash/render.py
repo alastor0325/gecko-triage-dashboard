@@ -28,10 +28,7 @@ def team_row(index: int, team: Team, page: dict | None) -> str:
     components = '<span class="sep">·</span>'.join(html.escape(c) for _, c in team.components)
     if page:
         counts = page["overview"]["1w"]["counts"]
-        stats = (
-            f"<strong>{counts['all']}</strong>bugs handled in 1 week"
-            f" · {counts['close']} closed or reassigned"
-        )
+        stats = f"<strong>{counts['all']}</strong>bugs handled<br>{counts['close']} closed or moved"
     else:
         stats = "<strong>-</strong>no runs yet"
     return (
@@ -45,8 +42,5 @@ def team_row(index: int, team: Team, page: dict | None) -> str:
 
 def landing_html(template: str, teams: tuple[Team, ...], pages: dict[str, dict]) -> str:
     rows = "\n".join(team_row(i, t, pages.get(t.slug)) for i, t in enumerate(teams, 1))
-    meta = (
-        f"<span>{len(teams)} {'dashboard' if len(teams) == 1 else 'dashboards'}</span>"
-        '\n    <span class="sep">·</span>\n    <span>What the bot changed, riskiest first</span>'
-    )
+    meta = f"<span>{len(teams)} {'dashboard' if len(teams) == 1 else 'dashboards'}</span>"
     return template.replace("__ROWS__", rows).replace("__META__", meta)

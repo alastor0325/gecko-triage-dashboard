@@ -15,11 +15,19 @@ def test_category():
     assert stats.category(make_record(decision="watching")) is None
 
 
+def test_labels():
+    assert stats.resolution_label("INCOMPLETE") == "Incomplete"
+    assert stats.resolution_label(None) is None
+    assert stats.move_label("Core :: Web Audio") == "Web Audio"
+    assert stats.move_label("Toolkit :: Media") == "Toolkit :: Media"
+    v = stats.run_view(make_record(resolution="DUPLICATE", move_to="Core :: Web Audio"))
+    assert (v["resolution"], v["move_to"]) == ("Duplicate", "Web Audio")
+
+
 def test_close_kind():
-    assert stats.close_kind(make_record(resolution="DUPLICATE")) == "DUPLICATE"
-    assert (
-        stats.close_kind(make_record(move_to="Core :: Web Audio")) == "moved to Core :: Web Audio"
-    )
+    assert stats.close_kind(make_record(resolution="DUPLICATE")) == "Duplicate"
+    assert stats.close_kind(make_record(move_to="Core :: Web Audio")) == "Moved to Web Audio"
+    assert stats.close_kind(make_record(move_to="Toolkit :: Media")) == "Moved to Toolkit :: Media"
     assert stats.close_kind(make_record()) is None
 
 
@@ -108,8 +116,8 @@ def test_overview():
     o = stats.overview(runs, AS_OF)
     assert o["1w"]["counts"] == {"all": 3, "analyzed": 1, "needs-info": 0, "close": 2}
     assert o["1m"]["counts"]["needs-info"] == 1
-    assert o["1w"]["close_kinds"] == {"DUPLICATE": 1, "moved to Core :: Widget: Gtk": 1}
-    assert o["1w"]["severity"] == {"S3": 1}
+    assert o["1w"]["close_kinds"] == {"Duplicate": 1, "Moved to Widget: Gtk": 1}
+    assert o["1w"]["severity"] == {"S1": 0, "S2": 0, "S3": 1, "S4": 0}
     assert [len(o[k]["daily"]) for k in ("1w", "1m", "3m")] == [7, 30, 90]
     assert o["1w"]["daily"][-1]["date"] == "2026-10-14"
 
@@ -123,6 +131,7 @@ def test_team_page():
         "key": "close",
         "label": "Close / Reassign",
         "color": "#FF0039",
+        "harm": True,
     }
     assert page["risk"][0] == "close"
     assert page["periods"][0] == {

@@ -29,6 +29,7 @@ RISK = ("close", "analyzed", "needs-info")
 # key: (days, label), as the review-stats period toggle.
 PERIODS = {"1w": (7, "1-Week"), "1m": (30, "1-Month"), "3m": (90, "3-Month")}
 NEW_DAYS = 7
+SEVERITIES = ("S1", "S2", "S3", "S4")
 
 
 def category(record: dict) -> str | None:
@@ -40,12 +41,21 @@ def decision_label(decision: str | None) -> str:
     return DECISION_LABEL.get(decision) or (decision or "").replace("_", " ")
 
 
+def resolution_label(resolution: str | None) -> str | None:
+    return resolution.capitalize() if resolution else None
+
+
+def move_label(move_to: str | None) -> str | None:
+    """The component a bug moved to, without the product when that is Core."""
+    return move_to.removeprefix("Core :: ") if move_to else None
+
+
 def close_kind(record: dict) -> str | None:
-    """Where a Close / Reassign run sent the bug: its resolution, or the new component."""
+    """Where a Close / Reassign run sent the bug, as a chart label."""
     if record["resolution"]:
-        return record["resolution"]
+        return resolution_label(record["resolution"])
     if record["move_to"]:
-        return f"moved to {record['move_to']}"
+        return f"Moved to {move_label(record['move_to'])}"
     return None
 
 
@@ -76,13 +86,15 @@ def period_start(as_of: datetime, key: str) -> str:
 
 def run_view(record: dict) -> dict:
     keep = (
-        "posted", "started_at", "severity", "priority", "needinfo", "resolution", "dupe_of",
-        "move_to", "blocks_add", "keywords_add", "regressed_by_add", "other_bugs",
+        "posted", "started_at", "severity", "priority", "needinfo", "dupe_of", "blocks_add",
+        "keywords_add", "regressed_by_add", "other_bugs",
     )  # fmt: skip
     return {
         **{k: record[k] for k in keep},
         "category": category(record),
         "decision": decision_label(record["decision"]),
+        "resolution": resolution_label(record["resolution"]),
+        "move_to": move_label(record["move_to"]),
         "comment_html": render(record["comment"]) if record["comment"] else None,
         "tags": tags(record),
     }
@@ -99,6 +111,11 @@ def latest_runs(records: list[dict]) -> list[dict]:
     for r in sorted(records, key=order):
         best[r["bug_id"]] = r
     return list(best.values())
+
+
+def by_severity(runs: list[dict]) -> dict[str, int]:
+    counts = Counter(r["severity"] for r in runs)
+    return {s: counts[s] for s in SEVERITIES}
 
 
 def by_category(runs: list[dict]) -> dict[str, int]:
@@ -146,9 +163,7 @@ def overview(records: list[dict], as_of: datetime) -> dict:
             "close_kinds": dict(
                 Counter(close_kind(r) for r in latest if category(r) == "close").most_common()
             ),
-            "severity": dict(
-                sorted(Counter(r["severity"] for r in latest if r["severity"]).items())
-            ),
+            "severity": by_severity(latest),
         }
     return out
 
@@ -161,7 +176,8 @@ def team_page(records: list[dict], as_of: datetime) -> dict:
         "as_of": as_of.isoformat(),
         "posted": any(r["posted"] for r in records),
         "categories": [
-            {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c]} for c in CATEGORIES
+            {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c], "harm": c == "close"}
+            for c in CATEGORIES
         ],
         "risk": list(RISK),
         "periods": [

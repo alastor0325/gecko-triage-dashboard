@@ -38,4 +38,4 @@ def test_landing_row_counts_1_week():
         datetime(2026, 10, 14, 12, tzinfo=UTC),
     )
     out = render.team_row(1, TEAMS[0], page)
-    assert "<strong>1</strong>bugs handled in 1 week · 1 closed or reassigned" in out
+    assert "<strong>1</strong>bugs handled<br>1 closed or moved" in out

@@ -20,15 +20,17 @@ The categories are those of the local triage dashboard, from the bot's decision.
 is in exactly one: **Analyzed** (`triaged`), **Needs info** (`needs_info`) and **Close /
 Reassign** (`duplicate`, `invalid`, `wrong_component`, `incomplete`, `stalled`).
 
-- **Overview**: the count of bugs handled and of each category; bugs handled per day,
+- **Overview**: the count of bugs handled and of each category (a click on a tile opens
+  the Bugs view on that category); bugs handled per day,
   stacked by category; where the Close / Reassign bugs went (resolution or new
   component); and the severity the bot set.
 - **Bugs**: category filters with counts, and a search by id, title or tag (`/` puts the
   cursor in it). A list (short view) shows one row per bug, with its newest run in the
   period, riskiest first: Close / Reassign, then Analyzed, then Needs info. Up/Down or j/k
-  step through it. A card (full view) shows the bot's timeline on the bug: the newest run
-  with every change and the comment the bot posted, folded after a few lines, and the
-  earlier runs, folded.
+  step through it. Each row shows only the bug number, its category (in the All tab
+  only) and the `regression` and `new` tags. A card (full view) shows all tags and the
+  bot's timeline on the bug: the newest run with every change and the whole comment the
+  bot posted, then the earlier runs, folded. Every bug number links to Bugzilla.
 
 Each bug counts once in a period, by its newest run. Tags: `new` (filed in the last 7
 days), `regression` (the bot added the keyword or `regressed_by`), `dev needinfo` (the bot
@@ -42,9 +44,9 @@ of this MVP.
 
 The layout of the Bugs view follows the local triage dashboard (firefox-triage-dashboard),
 and the favicon is its own.
-The style is a copy of firefox-review-stats: `templates/review-stats.css` is copied
-verbatim from its team template, and `templates/index.html` from its landing page. Change
-those files there first, then copy them again.
+The style is firefox-review-stats': `templates/review-stats.css` is copied verbatim from
+its team template, so change it there first and copy it again. `templates/index.html` is
+its landing page with this dashboard's text.
 
 ## Data
 
