@@ -69,9 +69,9 @@ The site is public, so the records keep no email address: a needinfo becomes the
 role (`reporter`, `assignee` or `other`) and their public Bugzilla name and nick, looked
 up at ingest, and every string is scrubbed of emails and `:nick` mentions. The card shows
 who each needinfo asks. Restricted bugs are never ingested. A run's team is the team it
-was made for (`inputs.team` in the pilot log), else its bug's component. Times are stored in UTC (a run folder is named by its UTC start time),
-and the page shows them in the viewer's time zone; the per-day chart counts by the
-viewer's local day.
+was made for (`inputs.team` in the pilot log), else its bug's component. Times are stored
+in UTC (a run folder is named by its UTC start time), and the page shows them in the
+viewer's time zone; the per-day chart counts by the viewer's local day.
 
 `docs/live-sources.md` plans the move to posted runs and to Hackbot.
 
