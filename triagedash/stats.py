@@ -14,8 +14,12 @@ from .store import order
 
 # The agent's decision, grouped as the local triage dashboard groups its drafts.
 CATEGORY = {
+    # `triaged` is the agent's old name for `analyzed`; earlier runs on disk still use it.
     "triaged": "analyzed",
+    "analyzed": "analyzed",
     "needs_info": "needs-info",
+    # A returning run that waits on a stale needinfo to a developer; not ready for work.
+    "watching": "needs-info",
     **dict.fromkeys(("duplicate", "invalid", "wrong_component", "incomplete", "stalled"), "close"),
 }
 # Tab order, as in the triage dashboard, with each tab's label and chart color. The colors
@@ -80,8 +84,9 @@ def is_new(filed: str | None, as_of: datetime) -> bool:
 
 
 def acted(record: dict) -> bool:
-    """A run that changed the bug. Failed and preflight-skipped runs changed nothing."""
-    return not record["error"] and record["decision"] != "skipped" and bool(record["started_at"])
+    """A run whose decision has a category. Failed runs, preflight skips and runs that ended
+    before they decided changed nothing."""
+    return not record["error"] and record["decision"] in CATEGORY and bool(record["started_at"])
 
 
 def period_start(as_of: datetime, key: str) -> str:
@@ -93,15 +98,13 @@ def run_view(record: dict) -> dict:
         "started_at", "severity", "priority", "needinfo", "asked", "dupe_of", "blocks_add",
         "keywords_add", "regressed_by_add", "other_bugs",
     )  # fmt: skip
+    cat = category(record)
+    reclassified = cat != CATEGORY.get(record["decision"])
     return {
         **{k: record[k] for k in keep},
-        "category": category(record),
+        "category": cat,
         "decision": decision_label(record["decision"])
-        + (
-            ", still asks for artifacts"
-            if category(record) != CATEGORY.get(record["decision"])
-            else ""
-        ),
+        + (", still asks for artifacts" if reclassified else ""),
         "resolution": resolution_label(record["resolution"]),
         "move_to": move_label(record["move_to"]),
         "comment_html": render(record["comment"]) if record["comment"] else None,

@@ -16,12 +16,23 @@ def test_analyzed_that_asks_for_artifacts_needs_info():
     assert stats.run_view(make_record(decision="triaged"))["decision"] == "analyzed"
 
 
+def test_old_and_new_name_of_analyzed():
+    assert (
+        stats.category(make_record(decision="triaged"))
+        == stats.category(make_record(decision="analyzed"))
+        == "analyzed"
+    )
+    assert stats.run_view(make_record(decision="analyzed"))["decision"] == "analyzed"
+    assert stats.acted(make_record(decision="analyzed"))
+    assert not stats.acted(make_record(decision="brand_new"))
+
+
 def test_category():
     assert stats.category(make_record(decision="triaged")) == "analyzed"
     assert stats.category(make_record(decision="needs_info")) == "needs-info"
     for d in ("duplicate", "invalid", "wrong_component", "incomplete", "stalled"):
         assert stats.category(make_record(decision=d)) == "close"
-    assert stats.category(make_record(decision="watching")) is None
+    assert stats.category(make_record(decision="watching")) == "needs-info"
 
 
 def test_labels():
@@ -58,6 +69,7 @@ def test_acted():
     assert stats.acted(make_record())
     assert not stats.acted(make_record(error=True))
     assert not stats.acted(make_record(decision="skipped"))
+    assert not stats.acted(make_record(decision=None))
     assert not stats.acted(make_record(started_at=None))
 
 

@@ -224,8 +224,8 @@ function drawOverview() {
 function shown() {
   const start = period().start;
   const q = state.q.trim().toLowerCase();
-  const rank = r => r.category ? DATA.risk.indexOf(r.category) : DATA.risk.length;
-  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${CAT_TEXT[b.run.category] || ""} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase().includes(q);
+  const rank = r => DATA.risk.indexOf(r.category);
+  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${CAT_TEXT[b.run.category]} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase().includes(q);
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
     if (!runs.length) return null;
@@ -263,7 +263,7 @@ function changes(r) {
 function railItem(b) {
   const c = b.run.category;
   return `<li><button type="button" class="rail-item${b.bug_id === state.bug ? " is-active" : ""}" data-bug="${b.bug_id}">
-    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span>${state.cat === "all" && c ? `<span class="rail-cat${harm(c)}">${esc(CAT[c].label)}</span>` : ""}
+    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span>${state.cat === "all" ? `<span class="rail-cat${harm(c)}">${esc(CAT[c].label)}</span>` : ""}
       <span class="rail-tags">${tags(b.tags, t => TAGS[t].rail)}</span></span>
     <span class="rail-title">${esc(b.title)}</span></button>${bug(b.bug_id, "bug-link rail-link")}</li>`;
 }
@@ -275,7 +275,7 @@ function card(b, index, total) {
   const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `<div class="card-top">
-      <span class="card-id">${bug(b.bug_id)} ${r.category ? catTag(r.category) : ""} ${tags(b.tags)}</span>
+      <span class="card-id">${bug(b.bug_id)} ${catTag(r.category)} ${tags(b.tags)}</span>
       <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>

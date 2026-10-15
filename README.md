@@ -17,10 +17,11 @@ change the view, Shift+Left/Right the period, and the URL hash keeps both
 (`#overview/1w`, `#bugs/1m/close/2080127`).
 
 The categories are those of the local triage dashboard, from the bot's decision. Each bug
-is in exactly one: **Analyzed** (`triaged`: the team can start on a fix), **Needs info**
-(`needs_info`, and any `triaged` run that still asks for artifacts such as a profile or a
-log) and **Close / Reassign** (`duplicate`, `invalid`, `wrong_component`, `incomplete`,
-`stalled`). S/P can be set in Analyzed and in Needs info.
+is in exactly one: **Analyzed** (`analyzed`, or `triaged` in earlier runs: the team can
+start on a fix), **Needs info** (`needs_info`; `watching`, a return that waits on a stale
+needinfo to a developer; and any `triaged` run that still asks for artifacts such as a
+profile or a log) and **Close / Reassign** (`duplicate`, `invalid`, `wrong_component`,
+`incomplete`, `stalled`). S/P can be set in Analyzed and in Needs info.
 
 - **Overview**: the count of bugs handled and of each category (a click on a tile opens
   the Bugs view on that category); bugs handled per day,
@@ -41,9 +42,9 @@ asked someone other than the reporter, and it never closes those) and `again` (t
 came back to the bug; posted runs only, because dry-run rounds rerun the same bugs as
 tests).
 
-The page holds only the last 3 months. Failed runs and runs that the preflight skipped
-changed nothing, so the page leaves them out. Cost, run health and accuracy are not part
-of this MVP.
+The page holds only the last 3 months. Failed runs, runs that the preflight skipped and
+runs that ended before they decided changed nothing, so the page leaves them out. Cost,
+run health and accuracy are not part of this MVP.
 
 The layout of the Bugs view follows the local triage dashboard (firefox-triage-dashboard),
 and the favicon is its own.
@@ -54,12 +55,13 @@ its landing page with this dashboard's text.
 ## Data
 
 `data/runs.json` has one record per agent run, and it is committed. `data/rounds.tsv`
-lists each dry-run round and its directory (the round name is used in the ingest log only). The site is public, so the records keep no
-email address: a needinfo becomes the person's role (`reporter`, `assignee` or `other`)
-and their public Bugzilla name and nick, looked up at ingest, and every string is scrubbed
-of emails and `:nick` mentions. The card shows who each needinfo asks. Restricted bugs are never ingested. A
-run's team comes from its bug's component. Times are stored in UTC, and the page shows them in the viewer's time zone; the per-day
-chart counts by the viewer's local day.
+lists each dry-run round and its directory (the round name is used in the ingest log
+only). The site is public, so the records keep no email address: a needinfo becomes the
+person's role (`reporter`, `assignee` or `other`) and their public Bugzilla name and nick,
+looked up at ingest, and every string is scrubbed of emails and `:nick` mentions. The card
+shows who each needinfo asks. Restricted bugs are never ingested. A run's team comes from
+its bug's component. Times are stored in UTC, and the page shows them in the viewer's time
+zone; the per-day chart counts by the viewer's local day.
 
 v1 reads the local dry runs. Bugzilla (`comment_tag=gecko-triage`) comes next.
 
