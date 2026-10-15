@@ -38,6 +38,11 @@ def load_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
+def log_teams(log: list[dict]) -> dict[str, str | None]:
+    """The team each logged run was made for, by run id."""
+    return {line["run_id"]: (line.get("inputs") or {}).get("team") for line in log}
+
+
 def apply_log(records: list[dict], log: list[dict]) -> list[dict]:
     """Marks the runs that the pilot log lists with what happened when they were reviewed.
     A posted run whose writes all succeeded is `posted`, else `partly posted`. Other

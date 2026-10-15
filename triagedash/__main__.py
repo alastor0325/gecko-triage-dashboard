@@ -76,6 +76,8 @@ def ingest(args) -> None:
     metas = bmo.fetch_meta({bug_id for *_, runs in rounds for *_, bug_id in runs}, CACHE)
     emails = {e for *_, runs in rounds for _, s, bug_id in runs for e in requestees(s, bug_id)}
     users = bmo.fetch_users(emails, CACHE)
+    log = store.load_jsonl(Path(args.root) / "pilot" / "log.jsonl")
+    teams = store.log_teams(log)
     new = []
     for round_, source, runs in rounds:
         count = 0
@@ -84,13 +86,15 @@ def ingest(args) -> None:
             if meta is None or not is_public(meta):
                 print(f"skip {path}: bug {bug_id} is not public")
                 continue
+            run_id = path.parent.name
             record = parse_summary(
                 summary,
                 bug_id=bug_id,
-                run_id=path.parent.name,
+                run_id=run_id,
                 meta=meta,
                 users=users,
                 source=source,
+                team=teams.get(run_id),
             )
             if record["team"] is None:
                 print(f"skip {path}: bug {bug_id} is in no team's component")
@@ -98,7 +102,6 @@ def ingest(args) -> None:
             new.append(record)
             count += 1
         print(f"{round_} ({source}): {count} runs")
-    log = store.load_jsonl(Path(args.root) / "pilot" / "log.jsonl")
     records = store.apply_log(store.merge_records(store.load(RUNS, []), new), log)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)

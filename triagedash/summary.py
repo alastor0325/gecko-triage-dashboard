@@ -135,11 +135,14 @@ def parse_summary(
     meta: dict,
     users: dict[str, dict],
     source: str,
+    team: str | None = None,
 ) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
     summary, groups, creation_time. `users` maps a requestee email to its public Bugzilla
     name and nick. `bug_id` comes from the caller, since a crashed run has no findings.
-    `source` is `daily` for an official daily run and `test` for a test round."""
+    `source` is `daily` for an official daily run and `test` for a test round. `team` is
+    the team the run was made for, when known; else the bug's component decides, which
+    fails once the bot has moved the bug out of the team."""
     findings = summary.get("findings") or {}
     own, other = update_actions(summary, bug_id)
     other_bugs = [
@@ -163,7 +166,7 @@ def parse_summary(
         "bug_id": bug_id,
         "title": meta.get("summary"),
         "filed": meta.get("creation_time"),
-        "team": team_for(meta.get("product"), meta.get("component")),
+        "team": team or team_for(meta.get("product"), meta.get("component")),
         "error": summary.get("status") != "ok" or bool(summary.get("error")),
         "decision": findings.get("decision"),
         "comment": strip_footer(comment),

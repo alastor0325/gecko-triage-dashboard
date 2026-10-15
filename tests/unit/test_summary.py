@@ -210,3 +210,9 @@ def test_parse_keeps_the_agent_version(meta):
 
 def test_parse_records_the_source(meta):
     assert parse(make_summary(), meta, source="daily")["source"] == "daily"
+
+
+def test_team_from_the_run_input_wins_over_the_component(meta):
+    moved = {**meta, "component": "Widget: Gtk"}
+    assert parse(make_summary(), moved)["team"] is None
+    assert parse(make_summary(), moved, team="media")["team"] == "media"

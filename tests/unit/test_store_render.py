@@ -88,3 +88,10 @@ def test_load_jsonl(tmp_path):
     p.write_text('{"a": 1}\n\n{"a": 2}\n')
     assert store.load_jsonl(p) == [{"a": 1}, {"a": 2}]
     assert store.load_jsonl(tmp_path / "missing.jsonl") == []
+
+
+def test_log_teams():
+    assert store.log_teams([{"run_id": "a", "inputs": {"team": "media"}}, {"run_id": "b"}]) == {
+        "a": "media",
+        "b": None,
+    }
