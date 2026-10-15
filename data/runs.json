@@ -19,6 +19,7 @@
   "resolution": null,
   "run_id": "local-20261015-054348-294f0f",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T05:43:48+00:00",
   "team": "media",
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
@@ -47,6 +48,7 @@
   "resolution": null,
   "run_id": "local-20261015-054348-3602c2",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T05:43:48+00:00",
   "team": "media",
   "title": "Crash in [@ amdh264enc64.dll | RtlpWaitOnCriticalSection] on GCN Radeon graphics"
@@ -73,6 +75,7 @@
   "resolution": null,
   "run_id": "local-20261015-054348-b27755",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T05:43:48+00:00",
   "team": "media",
   "title": "Playing tab stays silent after Bluetooth connects"
@@ -104,6 +107,7 @@
   "resolution": "DUPLICATE",
   "run_id": "local-20261015-055005-cf67f6",
   "severity": null,
+  "source": "daily",
   "started_at": "2026-10-15T05:50:05+00:00",
   "team": "media",
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
@@ -132,6 +136,7 @@
   "resolution": null,
   "run_id": "local-20261015-055238-f9d29d",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T05:52:38+00:00",
   "team": "media",
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
@@ -168,6 +173,7 @@
   "resolution": null,
   "run_id": "local-20261015-055247-8b473e",
   "severity": "S2",
+  "source": "daily",
   "started_at": "2026-10-15T05:52:47+00:00",
   "team": "media",
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
@@ -194,6 +200,7 @@
   "resolution": null,
   "run_id": "local-20261015-055440-f3488b",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T05:54:40+00:00",
   "team": "media",
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
@@ -230,6 +237,7 @@
   "resolution": null,
   "run_id": "local-20261015-055531-eabbb0",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T05:55:31+00:00",
   "team": "media",
   "title": "Youtube videos are automatically muted on the youtube interface when I start a video up."
@@ -271,6 +279,7 @@
   "resolution": null,
   "run_id": "local-20261015-055729-26b86a",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T05:57:29+00:00",
   "team": "media",
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
@@ -307,6 +316,7 @@
   "resolution": null,
   "run_id": "local-20261015-060016-987a68",
   "severity": null,
+  "source": "daily",
   "started_at": "2026-10-15T06:00:16+00:00",
   "team": "media",
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
@@ -341,6 +351,7 @@
   "resolution": null,
   "run_id": "local-20261015-060041-159a76",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:00:41+00:00",
   "team": "media",
   "title": "ms.now live video aborted"
@@ -371,6 +382,7 @@
   "resolution": null,
   "run_id": "local-20261015-060152-5382d7",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:01:52+00:00",
   "team": "media",
   "title": "GraphRunner is not real-time on Linux, so WebRTC playback glitches under transient load"
@@ -404,6 +416,7 @@
   "resolution": null,
   "run_id": "local-20261015-060235-1fcf0d",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:02:35+00:00",
   "team": "media",
   "title": "VA-API: 8-bit NV12 video falls back to software on Arm Mali (libmali): DMABufSurfaceYUV imports plane 1 as GR88, the driver offers neither GR88 nor RG88 (EGL_BAD_MATCH) although it offers whole-frame NV12"
@@ -430,6 +443,7 @@
   "resolution": null,
   "run_id": "local-20261015-060818-480c29",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:08:18+00:00",
   "team": "media",
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
@@ -456,6 +470,7 @@
   "resolution": null,
   "run_id": "local-20261015-060825-17f3b4",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:08:25+00:00",
   "team": "media",
   "title": "Video freezes, then skips several seconds ahead, when an MP4 with audio is downloaded in bursts"
@@ -480,6 +495,7 @@
   "resolution": null,
   "run_id": "local-20261015-061324-578bbf",
   "severity": "S4",
+  "source": "daily",
   "started_at": "2026-10-15T06:13:24+00:00",
   "team": "media",
   "title": "Media element fires `error` at a `<source>` candidate that was removed from it"
@@ -504,6 +520,7 @@
   "resolution": "INVALID",
   "run_id": "local-20261015-061818-86dceb",
   "severity": null,
+  "source": "daily",
   "started_at": "2026-10-15T06:18:18+00:00",
   "team": "media",
   "title": "Concurrency race on mIsUsingShmemBufferForDecode in FFmpegVideoDecoder get_buffer2 causes ImageBufferWrapper type confusion on ffmpeg default-pool buffers during frame-threaded H.264 decode (RDD memory corruption)"
@@ -528,6 +545,7 @@
   "resolution": null,
   "run_id": "local-20261015-061928-dbec67",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:19:28+00:00",
   "team": "media",
   "title": "Full range video not displayed correctly on MacOS"
@@ -556,6 +574,7 @@
   "resolution": null,
   "run_id": "local-20261015-062350-bba9f4",
   "severity": "S2",
+  "source": "daily",
   "started_at": "2026-10-15T06:23:50+00:00",
   "team": "media",
   "title": "Crash in [@ cubeb_coreaudio::backend::get_channel_count]"
@@ -589,6 +608,7 @@
   "resolution": null,
   "run_id": "local-20261015-063026-cdd100",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:30:26+00:00",
   "team": "media",
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
@@ -615,6 +635,7 @@
   "resolution": null,
   "run_id": "local-20261015-063038-5893d3",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:30:38+00:00",
   "team": "media",
   "title": "Drawing software-decoded 4K VideoFrames with WebGL halves the page frame rate (60 \u2192 30 fps) on Linux"
@@ -645,6 +666,7 @@
   "resolution": null,
   "run_id": "local-20261015-063604-0493a5",
   "severity": "S3",
+  "source": "daily",
   "started_at": "2026-10-15T06:36:04+00:00",
   "team": "media",
   "title": "Audio sometimes drops out when reusing stream on seek"

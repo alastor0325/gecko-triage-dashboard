@@ -1,6 +1,7 @@
 """Shapes one team's records into the page data. Pure: no I/O.
 
-The page shows, per bug, its newest run and the earlier runs that were posted. Every
+The page shows, per bug, its newest run and the earlier runs that are history (posted, or
+official daily runs). Every
 date the page shows, including the per-day chart, is in the viewer's time zone, so the
 page buckets runs into days itself."""
 
@@ -135,12 +136,17 @@ def by_category(runs: list[dict]) -> dict[str, int]:
     return {c: counts[c] for c in CATEGORIES}
 
 
+def is_history(run: dict) -> bool:
+    """A run that is part of the bug's history: posted, or an official daily run. Test
+    rounds rerun the same bugs, so their runs are never history."""
+    return run["posted"] or run["source"] == "daily"
+
+
 def shown_runs(bug_runs: list[dict]) -> list[dict]:
     """A bug's runs, newest first, as the page shows them: the newest run, then the earlier
-    ones only if they and the newest were posted. Dry-run rounds rerun the same bugs as
-    tests, so a dry run is never history."""
+    real runs if the newest is real too."""
     newest, earlier = bug_runs[0], bug_runs[1:]
-    return [newest, *(r for r in earlier if r["posted"])] if newest["posted"] else [newest]
+    return [newest, *filter(is_history, earlier)] if is_history(newest) else [newest]
 
 
 def bugs(records: list[dict], as_of: datetime) -> list[dict]:

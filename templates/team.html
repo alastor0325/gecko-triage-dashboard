@@ -373,7 +373,7 @@ Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--muted
 Chart.defaults.scale.grid.color = getComputedStyle(document.body).getPropertyValue("--rule-soft");
 const asOf = new Date(DATA.as_of).toLocaleString("en-US", {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZoneName: "short"});
 document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(asOf)}`
-  + (DATA.posted ? "" : ` · <span class="dry-run">dry run, nothing posted</span>`);
+  + (DATA.posted ? "" : ` · <span class="dry-run">nothing posted to Bugzilla yet</span>`);
 readHash();
 draw();
 </script>

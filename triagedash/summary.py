@@ -1,4 +1,4 @@
-"""Turns one gecko-triage dry-run `summary.json` into a dashboard record.
+"""Turns one gecko-triage run's `summary.json` into a dashboard record.
 
 A record holds no email address, because the site is public: a needinfo requestee becomes
 a role and their public Bugzilla name and nick, and every string is scrubbed in
@@ -128,11 +128,18 @@ def _move_target(changes: dict, meta: dict) -> str | None:
 
 
 def parse_summary(
-    summary: dict, *, bug_id: int, run_id: str, meta: dict, users: dict[str, dict]
+    summary: dict,
+    *,
+    bug_id: int,
+    run_id: str,
+    meta: dict,
+    users: dict[str, dict],
+    source: str,
 ) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
     summary, groups, creation_time. `users` maps a requestee email to its public Bugzilla
-    name and nick. `bug_id` comes from the caller, since a crashed run has no findings."""
+    name and nick. `bug_id` comes from the caller, since a crashed run has no findings.
+    `source` is `daily` for an official daily run and `test` for a test round."""
     findings = summary.get("findings") or {}
     own, other = update_actions(summary, bug_id)
     other_bugs = [
@@ -147,6 +154,7 @@ def parse_summary(
     comment = comments[-1] if comments else None
     record = {
         "posted": False,
+        "source": source,
         "run_id": run_id,
         "started_at": run_started_at(run_id),
         "bug_id": bug_id,

@@ -114,6 +114,15 @@ def test_bugs_newest_first():
     assert (one["tags"], three["tags"]) == ([], ["new"])
 
 
+def test_shown_runs_keep_daily_history_even_unposted():
+    days = [
+        make_record(started_at=f"2026-10-1{d}T00:00:00+00:00", source="daily") for d in (7, 6, 5)
+    ]
+    test = make_record(started_at="2026-10-14T00:00:00+00:00")
+    assert stats.shown_runs(days) == days
+    assert stats.shown_runs([days[0], test, days[1]]) == [days[0], days[1]]
+
+
 def test_shown_runs_drop_dry_run_history():
     posted = [make_record(started_at=f"2026-10-1{d}T00:00:00+00:00", posted=True) for d in (4, 3)]
     dry = [make_record(started_at=f"2026-10-1{d}T00:00:00+00:00") for d in (4, 3)]

@@ -1,2 +1,2 @@
-# round	directory under $HACKBOT_DIR
-r11	compare-r11
+# Test rounds to publish: round<TAB>directory under $HACKBOT_DIR. None today; the
+# official daily runs come from $HACKBOT_DIR/pilot/<YYYY-MM-DD>/ on their own.

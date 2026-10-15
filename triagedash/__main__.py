@@ -1,4 +1,4 @@
-"""Command line: ingest dry-run outputs, then build the site."""
+"""Command line: ingest the agent's runs, then build the site."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from . import bmo, render, stats, store
-from .dryrun import is_public, orphan_bugs, parse_summary, requestees, summary_bug_id
+from .summary import is_public, orphan_bugs, parse_summary, requestees, summary_bug_id
 from .teams import TEAMS
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,14 +48,36 @@ def read_round(round_dir: Path) -> list[tuple[Path, dict, int]]:
     return runs
 
 
-def ingest_dryrun(args) -> None:
-    manifest = read_manifest(Path(args.manifest).read_text())
-    rounds = [(r, read_round(Path(args.root) / d)) for r, d in manifest]
-    metas = bmo.fetch_meta({bug_id for _, runs in rounds for *_, bug_id in runs}, CACHE)
-    emails = {e for _, runs in rounds for _, s, bug_id in runs for e in requestees(s, bug_id)}
+_DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def day_folders(pilot: Path) -> list[str]:
+    """The official daily runs: one `<YYYY-MM-DD>` folder per day, oldest first."""
+    if not pilot.is_dir():
+        return []
+    return [p.name for p in sorted(pilot.iterdir()) if p.is_dir() and _DAY.match(p.name)]
+
+
+def rounds_to_ingest(root: Path, manifest: str) -> list[tuple[str, Path, str]]:
+    """(round, folder, source) for every daily folder under `root/pilot`, then every test
+    round in the manifest."""
+    daily = [(d, root / "pilot" / d, "daily") for d in day_folders(root / "pilot")]
+    tests = [(r, root / d, "test") for r, d in read_manifest(manifest)]
+    return daily + tests
+
+
+def ingest(args) -> None:
+    """Adds every run of the daily folders and the manifest rounds to data/runs.json."""
+    manifest = Path(args.manifest).read_text() if args.manifest else ""
+    rounds = [
+        (r, source, read_round(folder))
+        for r, folder, source in rounds_to_ingest(Path(args.root), manifest)
+    ]
+    metas = bmo.fetch_meta({bug_id for *_, runs in rounds for *_, bug_id in runs}, CACHE)
+    emails = {e for *_, runs in rounds for _, s, bug_id in runs for e in requestees(s, bug_id)}
     users = bmo.fetch_users(emails, CACHE)
     new = []
-    for round_, runs in rounds:
+    for round_, source, runs in rounds:
         count = 0
         for path, summary, bug_id in runs:
             meta = metas.get(bug_id)
@@ -63,21 +85,27 @@ def ingest_dryrun(args) -> None:
                 print(f"skip {path}: bug {bug_id} is not public")
                 continue
             record = parse_summary(
-                summary, bug_id=bug_id, run_id=path.parent.name, meta=meta, users=users
+                summary,
+                bug_id=bug_id,
+                run_id=path.parent.name,
+                meta=meta,
+                users=users,
+                source=source,
             )
             if record["team"] is None:
                 print(f"skip {path}: bug {bug_id} is in no team's component")
                 continue
             new.append(record)
             count += 1
-        print(f"{round_}: {count} runs")
+        print(f"{round_} ({source}): {count} runs")
     store.save(RUNS, store.merge_records(store.load(RUNS, []), new))
 
 
 def page_clock(records: list[dict], now: datetime) -> datetime:
-    """Dry runs are a frozen snapshot, so their clock is the newest run. Posted runs are
-    live, so their clock is the build time."""
-    if any(r["posted"] for r in records):
+    """Test rounds are a frozen snapshot, so their clock is the newest run. History runs
+    (posted or daily) are live, so their clock is the build time, and the periods and the
+    `new` tag age out if the runs stop."""
+    if any(map(stats.is_history, records)):
         return now
     return max(datetime.fromisoformat(r["started_at"]) for r in records if r["started_at"])
 
@@ -105,10 +133,10 @@ def build(args) -> None:
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(prog="triagedash")
     sub = parser.add_subparsers(required=True)
-    p = sub.add_parser("ingest-dryrun", help="add the dry-run rounds listed in a manifest")
-    p.add_argument("--root", required=True, help="directory the manifest paths are under")
-    p.add_argument("manifest")
-    p.set_defaults(func=ingest_dryrun)
+    p = sub.add_parser("ingest", help="add the daily runs and the manifest's test rounds")
+    p.add_argument("--root", required=True, help="the hackbot folder: pilot/<day>/ and rounds")
+    p.add_argument("--manifest", help="test rounds: round<TAB>directory under --root")
+    p.set_defaults(func=ingest)
     p = sub.add_parser("build", help="write the static site")
     p.add_argument("--out", default="site")
     p.set_defaults(func=build)

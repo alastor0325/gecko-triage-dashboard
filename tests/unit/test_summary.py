@@ -1,4 +1,4 @@
-from triagedash.dryrun import (
+from triagedash.summary import (
     EMAIL,
     clean_real_name,
     is_public,
@@ -15,9 +15,10 @@ from triagedash.dryrun import (
 from .conftest import make_record, make_summary
 
 
-def parse(summary, meta, bug_id=100):
+def parse(summary, meta, bug_id=100, **kw):
+    kw = {"users": {}, "source": "test", **kw}
     return parse_summary(
-        summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta, users={}
+        summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta, **kw
     )
 
 
@@ -189,10 +190,7 @@ def test_requestees():
 def test_needinfo_gets_the_public_name_and_keeps_its_nick(meta):
     changes = {"flags": [{"name": "needinfo", "status": "?", "requestee": "dev@example.com"}]}
     users = {"dev@example.com": {"real_name": "Pat Doe [:pdoe]", "nick": "pdoe"}}
-    summary = make_summary(changes=changes)
-    r = parse_summary(
-        summary, bug_id=100, run_id="local-20261014-174025-eb0234", meta=meta, users=users
-    )
+    r = parse(make_summary(changes=changes), meta, users=users)
     assert r["needinfo"] == [{"role": "assignee", "name": "Pat Doe", "nick": "pdoe"}]
     assert "example.com" not in str(r)
 
@@ -208,3 +206,7 @@ def test_strip_footer_new_form_without_agent_footer():
 def test_parse_keeps_the_agent_version(meta):
     assert parse(make_summary(agent_version="abc123"), meta)["agent_version"] == "abc123"
     assert parse(make_summary(), meta)["agent_version"] is None
+
+
+def test_parse_records_the_source(meta):
+    assert parse(make_summary(), meta, source="daily")["source"] == "daily"

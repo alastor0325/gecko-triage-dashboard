@@ -18,18 +18,18 @@ follow-up signals.
 
 | Source | Input | Run key | Where it runs |
 |---|---|---|---|
-| `dryrun` (today) | `~/hackbot/<round>/local-*/summary.json`, listed in `data/rounds.tsv` | `local-<UTC time>-<hex>` | Alastor's Mac |
-| `pilot` | `~/hackbot/pilot/log.jsonl`, plus the `summary.json` that each line names | `local-<UTC time>-<hex>` | Alastor's Mac |
+| `test` (rounds 1 to 10) | `~/hackbot/<round>/local-*/summary.json`, listed in `data/rounds.tsv` | `local-<UTC time>-<hex>` | Alastor's Mac |
+| `daily` (from round 11) | `~/hackbot/pilot/<YYYY-MM-DD>/local-*/summary.json`, later with `pilot/log.jsonl` | `local-<UTC time>-<hex>` | Alastor's Mac |
 | `hackbot` | `GET /runs?agent=gecko-triage`, plus `GET /runs/{id}/actions` | `run_id`, a uuid4 | Mac first, then the GitHub Action |
 
-Each adapter turns its input into the record shape in `triagedash/dryrun.py`. The stats, the
+Each adapter turns its input into the record shape in `triagedash/summary.py`. The stats, the
 page and the scrubbing do not change. The same runtime writes the local `summary.json` and
 `RunDoc.summary` (hackbot-runtime `finalize_run` reads the same file), so the
 findings-and-actions part is shared code.
 
 New record fields, the same for every source:
 
-- `source`: `dryrun`, `pilot` or `hackbot`.
+- `source`: `test`, `daily` or `hackbot`.
 - `outcome`: `posted`, `partly posted`, `held`, `rejected`, `shadow`, `skipped`, `failed`
   or `not posted` (dry runs). This replaces the single `posted` flag.
 - `posted_at` (UTC), and `applied`: one entry per action with `ok` and the HTTP status. The
