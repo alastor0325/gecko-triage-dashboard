@@ -63,6 +63,7 @@
   .pos button { font: inherit; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; padding: 0 6px; }
   .card-title { font-family: var(--serif); font-variation-settings: "opsz" 30, "wght" 600, "SOFT" 30;
     font-size: 19px; line-height: 1.3; margin: 0 0 14px; overflow-wrap: anywhere; }
+  .card-meta { color: var(--muted); font-size: 12px; margin: -10px 0 14px; }
   .timeline { list-style: none; margin: 0; padding: 0; }
   .timeline > li { border-top: 1px solid var(--rule-soft); padding: 10px 0; }
   .when { color: var(--muted); margin-bottom: 8px; }
@@ -164,6 +165,7 @@ const bugList = ids => ids.map(bug).join(", ");
 // Dates are shown, and runs are put into days, in the viewer's own time zone.
 const day = d => new Date(d).toLocaleDateString("en-US", {month: "short", day: "numeric"});
 const dayKey = d => new Date(d).toLocaleDateString("en-CA");
+const date = d => new Date(d).toLocaleDateString("en-US", {year: "numeric", month: "short", day: "numeric"});
 const tag = t => `<span class="tag ${TAGS[t].cls}">${esc(t)}</span>`;
 const TAG_ORDER = Object.keys(TAGS);
 const tags = (list, keep = () => true) => TAG_ORDER.filter(t => keep(t) && list.includes(t)).map(tag).join("");
@@ -279,6 +281,7 @@ function card(b, index, total) {
       <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
+    ${b.filed ? `<p class="card-meta">Filed ${date(b.filed)}</p>` : ""}
     <ol class="timeline">${entry(r)}</ol>
     ${b.earlier.length ? `<details class="earlier"><summary>Earlier runs · ${b.earlier.length}</summary><ol class="timeline">${b.earlier.map(entry).join("")}</ol></details>` : ""}`;
 }

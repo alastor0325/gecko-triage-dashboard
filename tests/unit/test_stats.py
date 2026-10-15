@@ -112,6 +112,7 @@ def test_bugs_newest_first():
     assert one["title"] == "new title"
     assert [r["started_at"][:10] for r in one["runs"]] == ["2026-10-13"]
     assert (one["tags"], three["tags"]) == ([], ["new"])
+    assert one["filed"] == "2026-01-01T00:00:00Z"
 
 
 def test_shown_runs_keep_daily_history_even_unposted():
