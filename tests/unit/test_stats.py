@@ -191,7 +191,7 @@ def test_team_page():
         "color": "#FF0039",
         "harm": True,
     }
-    assert page["risk"][0] == "close"
+    assert "risk" not in page
     assert page["periods"][0] == {
         "key": "1w",
         "label": "1-Week",

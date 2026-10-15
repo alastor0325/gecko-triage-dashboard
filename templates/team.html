@@ -34,23 +34,28 @@
   .rail ol { list-style: none; margin: 0; padding: 0; }
   .rail-item { display: block; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none;
     border: 0; border-bottom: 1px solid var(--rule-soft); padding: 9px 14px 10px; cursor: pointer; }
+  /* Room for the sticky day header when a step scrolls a row into view. */
+  .rail-item { scroll-margin-top: 32px; }
   .rail-item:hover { background: var(--paper); }
   .rail-item.is-active { background: var(--paper-warm); box-shadow: inset 3px 0 0 var(--red); }
   .rail-item:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
   .rail-row1 { display: flex; align-items: baseline; gap: 8px; }
   .rail-id { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
   .rail li { position: relative; }
+  /* A quiet band that stays at the top of the list while its day scrolls. */
+  .rail-day { position: sticky; top: 0; z-index: 1; margin: 0; padding: 12px 14px 5px; color: var(--muted);
+    background: var(--paper); border-bottom: 1px solid var(--rule-soft); }
   /* The bug link sits over the row's number, as a sibling of the row's button: a link
      cannot be inside a button. The number in the button only holds the space. */
   .rail-link { position: absolute; top: 9px; left: 14px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
   .rail-item .rail-id { visibility: hidden; }
-  .rail li:has(.is-active) .rail-link { color: var(--red-deep); }
-  .rail-tags { display: flex; gap: 3px; margin-left: auto; }
+  .rail-group li:has(> .is-active) .rail-link { color: var(--red-deep); }
+  .rail-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px; margin-left: auto; }
   .rail-title { font-size: 12.5px; line-height: 1.35; margin-top: 3px; overflow-wrap: anywhere;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   /* Tags, in the triage dashboard's style: small soft pills, one color per meaning. A
      category pill gets its color from the data (--c); the harmful one is solid. */
-  .tag, .rail-cat, .when, .card-meta, .changes dt, details.earlier > summary, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  .tag, .rail-cat, .when, .card-meta, .changes dt, .rail-day, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em; }
   .tag { padding: 1px 6px; border-radius: 3px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
   .tag.new { background: rgba(63, 94, 63, 0.14); color: #3F5E3F; }
@@ -64,6 +69,7 @@
   .tag.cat { background: color-mix(in srgb, var(--c) 13%, transparent); color: color-mix(in srgb, var(--c) 80%, black); }
   .tag.cat.harm { background: var(--c); color: var(--surface); }
   .rail-cat, .changes dt, .ni-role { color: var(--muted); font-weight: 500; }
+  .rail-cat { white-space: nowrap; }
   /* Anything that takes a bug off the team. */
   .rail-cat.harm, .changes dt.harm { color: var(--red-deep); font-weight: 600; }
   .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
@@ -74,7 +80,9 @@
   .card-meta { color: var(--muted); margin: -8px 0 14px; }
   .timeline { list-style: none; margin: 0; padding: 0; }
   .timeline > li { border-top: 1px solid var(--rule-soft); padding: 10px 0; }
+  .timeline > li + li { margin-top: 12px; padding-top: 14px; }
   .when { color: var(--muted); margin-bottom: 8px; }
+  .timeline > li:first-child .when { color: var(--ink); }
   .changes { display: grid; grid-template-columns: 96px 1fr; gap: 4px 12px; margin: 0; font-size: 13px; line-height: 1.5; }
   .changes dt { padding-top: 3px; }
   .changes dd { margin: 0; overflow-wrap: anywhere; }
@@ -86,8 +94,6 @@
   .comment ol, .comment ul { padding-left: 20px; }
   .comment hr { border: 0; border-top: 1px solid var(--rule); margin: 10px 0; }
   .comment code { font-family: var(--mono); font-size: 11.5px; }
-  details.earlier { border-top: 1px solid var(--rule-soft); padding-top: 8px; }
-  details.earlier > summary { color: var(--muted); cursor: pointer; }
   footer.keys { max-width: 1200px; margin: 0 auto; padding: 0 40px 32px; font-family: var(--mono); font-size: 10px;
     letter-spacing: 0.04em; color: var(--muted); }
   .card a, .bug-link { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
@@ -186,10 +192,17 @@ const date = d => {
   const year = new Date(d).getFullYear();
   return year === new Date().getFullYear() ? day(d) : `${day(d)}, ${year}`;
 };
+// Whole local calendar days from `a` to `b`.
+const daysBetween = (a, b) => (new Date(dayKey(b)) - new Date(dayKey(a))) / DAY_MS;
+// "Today", "Yesterday", else the date: the viewer's local calendar day, read at each draw.
+const dayLabel = d => {
+  const n = daysBetween(d, Date.now());
+  return n === 0 ? "Today" : n === 1 ? "Yesterday" : date(d);
+};
 const time = d => new Date(d).toLocaleTimeString("en-US", {hour: "2-digit", minute: "2-digit", hour12: false});
 // Whole local days from the bug's filing to the bot's first run on it.
 const waited = (filed, firstRun) => {
-  const n = (new Date(dayKey(firstRun)) - new Date(dayKey(filed))) / DAY_MS;
+  const n = daysBetween(filed, firstRun);
   return n <= 0 ? "triaged the same day" : `triaged ${n} ${n === 1 ? "day" : "days"} later`;
 };
 const tag = t => `<span class="tag ${TAGS[t].cls}">${esc(t)}</span>`;
@@ -297,16 +310,15 @@ function drawOverview() {
 function shown() {
   const start = period().start;
   const q = state.q.trim().toLowerCase();
-  const rank = r => DATA.risk.indexOf(r.category);
   const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${CAT_TEXT[b.run.category]} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase().includes(q);
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
     if (!runs.length) return null;
-    // Python sends only the runs the page shows, so any earlier run means the bot came back.
-    const [run, ...earlier] = runs;
-    return {...b, run, earlier, tags: [...b.tags, ...run.tags, ...(earlier.length ? ["again"] : [])]};
+    // Python sends only the runs the page shows, so a second run means the bot came back.
+    const run = runs[0];
+    return {...b, runs, run, tags: [...b.tags, ...run.tags, ...(runs.length > 1 ? ["again"] : [])]};
   }).filter(b => b && matches(b))
-    .sort((a, b) => rank(a.run) - rank(b.run) || b.run.started_at.localeCompare(a.run.started_at));
+    .sort((a, b) => b.run.started_at.localeCompare(a.run.started_at));
 }
 
 // One chip per person asked, as in the triage dashboard: the name, then the role.
@@ -341,25 +353,31 @@ function railItem(b) {
     <span class="rail-title">${esc(b.title)}</span></button>${bug(b.bug_id, "bug-link rail-link")}</li>`;
 }
 
-// The bot's timeline on the bug: the newest run in the period with every change and its
-// whole comment, then the earlier posted runs, folded.
+// The list in day groups, newest first, each under a header with its bug count.
+function railDays(list) {
+  const groups = Map.groupBy(list, b => dayKey(b.run.started_at));
+  return [...groups.values()].map(bs => `<li class="rail-group"><h3 class="rail-day">${esc(dayLabel(bs[0].run.started_at))} · ${bs.length}</h3>
+    <ol>${bs.map(railItem).join("")}</ol></li>`).join("");
+}
+
+// The bot's timeline on the bug: every run in the period, newest first, each with every
+// change and its whole comment.
 function card(b, index, total) {
   const r = b.run;
   // What happened to the run on Bugzilla: a link to the posted comment, or the review result.
   // Hackbot keeps no comment id, so its applied runs link to the bug, not the comment.
   const anchor = e => e.comment_count ? `#c${e.comment_count}` : "";
   const outcome = e => !e.outcome ? ""
-    : e.posted_at ? ` · ${link(bugUrl(b.bug_id, anchor(e)), `${esc(e.outcome)} ${date(e.posted_at)}, ${time(e.posted_at)}`)}`
+    : e.posted_at ? ` · ${link(bugUrl(b.bug_id, anchor(e)), `${esc(e.outcome)} ${esc(dayLabel(e.posted_at))} ${time(e.posted_at)}`)}`
     : ` · ${esc(e.outcome)}`;
   const source = e => HAS_HACKBOT ? ` · ${e.source === "hackbot" ? "Hackbot" : "local"}` : "";
-  // Python sets `warning`. Shown at the top of the card even for an earlier, folded run,
-  // so it cannot be missed.
+  // Python sets `warning`. Shown at the top of the card, above the timeline.
   const NOTICES = {
     "do not apply": e => `Rejected. Do not apply this run in Hackbot: its ${e.pending_actions} pending ${e.pending_actions === 1 ? "action is" : "actions are"} still there, and applying them would post a second comment.`,
     "rejected but posted": () => "This run was rejected, but some of its actions were applied in Hackbot. Check the bug for a second comment.",
   };
   const notice = e => e.warning ? `<p class="notice">${esc(NOTICES[e.warning](e))}</p>` : "";
-  const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
+  const entry = e => `<li><div class="when">${esc(dayLabel(e.started_at))} ${time(e.started_at)} · ${esc(e.decision)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `<div class="card-top">
       <span class="card-id">${bug(b.bug_id)} ${catTag(r.category)} ${tags(b.tags)}</span>
@@ -367,9 +385,8 @@ function card(b, index, total) {
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
     ${b.filed ? `<p class="card-meta">Filed ${date(b.filed)} · ${waited(b.filed, b.first_run)}</p>` : ""}
-    ${[r, ...b.earlier].map(notice).filter(Boolean).join("")}
-    <ol class="timeline">${entry(r)}</ol>
-    ${b.earlier.length ? `<details class="earlier"><summary>Earlier runs · ${b.earlier.length}</summary><ol class="timeline">${b.earlier.map(entry).join("")}</ol></details>` : ""}`;
+    ${b.runs.map(notice).filter(Boolean).join("")}
+    <ol class="timeline">${b.runs.map(entry).join("")}</ol>`;
 }
 
 let current = [];  // the list the last drawBugs() showed
@@ -381,7 +398,7 @@ function drawBugs() {
     `<button type="button" class="lw-filter" role="tab" data-cat="${c}" aria-pressed="${state.cat === c}" aria-selected="${state.cat === c}">${CAT_TEXT[c]} <span class="lw-filter-n">${inCat(c).length}</span></button>`).join("");
   const list = inCat(state.cat);
   if (!list.some(b => b.bug_id === state.bug)) state.bug = list.length ? list[0].bug_id : null;
-  document.getElementById("rail").innerHTML = list.length ? list.map(railItem).join("")
+  document.getElementById("rail").innerHTML = list.length ? railDays(list)
     : `<li class="empty">${state.q ? "No bug matches the search." : "The bot handled no bug in this group in this period."} Choose “All” or a longer period.</li>`;
   const i = list.findIndex(b => b.bug_id === state.bug);
   document.getElementById("card").innerHTML = i < 0 ? `<p class="empty">Choose a bug on the left.</p>` : card(list[i], i, list.length);

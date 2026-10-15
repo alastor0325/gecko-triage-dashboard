@@ -29,9 +29,6 @@ CATEGORIES = ("analyzed", "needs-info", "close")
 CATEGORY_LABEL = {"analyzed": "Analyzed", "needs-info": "Needs info", "close": "Close / Reassign"}
 CATEGORY_COLOR = {"analyzed": "#1B3B6F", "needs-info": "#C89B3C", "close": "#FF0039"}
 DECISION_LABEL = {"triaged": "analyzed"}
-# Most harmful first, for the list: a wrong close or move takes a bug off the team,
-# a wrong S/P misplaces it, and a needinfo only waits on someone.
-RISK = ("close", "analyzed", "needs-info")
 # key: (days, label), as the review-stats period toggle.
 PERIODS = {"1w": (7, "1-Week"), "1m": (30, "1-Month"), "3m": (90, "3-Month")}
 NEW_DAYS = 7
@@ -245,7 +242,6 @@ def team_page(records: list[dict], as_of: datetime, passes: list[dict] = ()) -> 
             {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c], "harm": c == "close"}
             for c in CATEGORIES
         ],
-        "risk": list(RISK),
         "periods": [
             {"key": k, "label": label, "days": days, "start": period_start(as_of, k)}
             for k, (days, label) in PERIODS.items()
