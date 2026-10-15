@@ -58,6 +58,9 @@
   .tag.outline { background: transparent; box-shadow: inset 0 0 0 1px var(--rule); }
   .tag.posted { background: var(--ink); color: var(--paper); }
   .tag.partly { background: transparent; color: var(--red-deep); box-shadow: inset 0 0 0 1px var(--red); }
+  .tag.awaiting { background: rgba(200, 155, 60, 0.2); color: #7A5A12; }
+  .notice { margin: 0 0 14px; padding: 8px 12px; border-left: 3px solid var(--red); background: rgba(255, 0, 57, 0.06);
+    color: var(--red-deep); font-size: 12.5px; line-height: 1.5; }
   .tag.cat { background: color-mix(in srgb, var(--c) 13%, transparent); color: color-mix(in srgb, var(--c) 80%, black); }
   .tag.cat.harm { background: var(--c); color: var(--surface); }
   .rail-cat, .changes dt, .ni-role { color: var(--muted); font-weight: 500; }
@@ -160,10 +163,14 @@ const CATS = ["all", ...DATA.categories.map(c => c.key)];
 const ROLES = {reporter: "reporter", assignee: "assignee", other: "another person", unknown: "unknown person"};
 // Each tag the page can show, in display order: its CSS class, and whether the short view
 // shows it. The short view keeps only the tags that change what to look at first.
-const TAGS = {posted: {cls: "posted", rail: true}, "partly posted": {cls: "partly", rail: true},
+const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "partly", rail: true},
+  "awaiting review": {cls: "awaiting", rail: true},
+  posted: {cls: "posted", rail: true}, "partly posted": {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
 const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
+// Run sources are named only once Hackbot runs exist; until then every run is local.
+const HAS_HACKBOT = DATA.bugs.some(b => b.runs.some(r => r.source === "hackbot"));
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const bugUrl = (id, anchor = "") => `https://bugzilla.mozilla.org/show_bug.cgi?id=${id}${anchor}`;
@@ -251,8 +258,7 @@ function shown() {
     if (!runs.length) return null;
     // Python sends only the runs the page shows, so any earlier run means the bot came back.
     const [run, ...earlier] = runs;
-    const posted = run.posted ? [run.outcome] : [];
-    return {...b, run, earlier, tags: [...posted, ...b.tags, ...run.tags, ...(earlier.length ? ["again"] : [])]};
+    return {...b, run, earlier, tags: [...b.tags, ...run.tags, ...(earlier.length ? ["again"] : [])]};
   }).filter(b => b && matches(b))
     .sort((a, b) => rank(a.run) - rank(b.run) || b.run.started_at.localeCompare(a.run.started_at));
 }
@@ -294,10 +300,20 @@ function railItem(b) {
 function card(b, index, total) {
   const r = b.run;
   // What happened to the run on Bugzilla: a link to the posted comment, or the review result.
+  // Hackbot keeps no comment id, so its applied runs link to the bug, not the comment.
+  const anchor = e => e.comment_count ? `#c${e.comment_count}` : "";
   const outcome = e => !e.outcome ? ""
-    : e.posted_at ? ` · <a href="${bugUrl(b.bug_id, `#c${e.comment_count}`)}">${esc(e.outcome)} ${date(e.posted_at)}, ${time(e.posted_at)}</a>`
+    : e.posted_at ? ` · <a href="${bugUrl(b.bug_id, anchor(e))}">${esc(e.outcome)} ${date(e.posted_at)}, ${time(e.posted_at)}</a>`
     : ` · ${esc(e.outcome)}`;
-  const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
+  const source = e => HAS_HACKBOT ? ` · ${e.source === "hackbot" ? "Hackbot" : "local"}` : "";
+  // Python sets `warning`. Shown at the top of the card even for an earlier, folded run,
+  // so it cannot be missed.
+  const NOTICES = {
+    "do not apply": e => `Rejected. Do not apply this run in Hackbot: its ${e.pending_actions} pending ${e.pending_actions === 1 ? "action is" : "actions are"} still there, and applying them would post a second comment.`,
+    "rejected but posted": () => "This run was rejected, but some of its actions were applied in Hackbot. Check the bug for a second comment.",
+  };
+  const notice = e => e.warning ? `<p class="notice">${esc(NOTICES[e.warning](e))}</p>` : "";
+  const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `<div class="card-top">
       <span class="card-id">${bug(b.bug_id)} ${catTag(r.category)} ${tags(b.tags)}</span>
@@ -305,6 +321,7 @@ function card(b, index, total) {
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
     ${b.filed ? `<p class="card-meta">Filed ${date(b.filed)} · ${waited(b.filed, b.first_run)}</p>` : ""}
+    ${[r, ...b.earlier].map(notice).filter(Boolean).join("")}
     <ol class="timeline">${entry(r)}</ol>
     ${b.earlier.length ? `<details class="earlier"><summary>Earlier runs · ${b.earlier.length}</summary><ol class="timeline">${b.earlier.map(entry).join("")}</ol></details>` : ""}`;
 }
@@ -399,7 +416,8 @@ Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--muted
 Chart.defaults.scale.grid.color = getComputedStyle(document.body).getPropertyValue("--rule-soft");
 const asOf = new Date(DATA.as_of).toLocaleString("en-US", {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZoneName: "short"});
 document.getElementById("header-meta").innerHTML = `__LABEL__ · data as of ${esc(asOf)}`
-  + (DATA.posted ? ` · ${DATA.posted} ${DATA.posted === 1 ? "run" : "runs"} posted to Bugzilla` : ` · <span class="dry-run">nothing posted to Bugzilla yet</span>`);
+  + (DATA.posted ? ` · ${DATA.posted} ${DATA.posted === 1 ? "run" : "runs"} posted to Bugzilla` : ` · <span class="dry-run">nothing posted to Bugzilla yet</span>`)
+  + (DATA.awaiting ? ` · ${DATA.awaiting} awaiting review` : "");
 readHash();
 draw();
 </script>

@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-from . import bmo, render, stats, store
+from . import bmo, hackbot, render, stats, store
 from .summary import is_public, orphan_bugs, parse_summary, requestees, summary_bug_id
 from .teams import TEAMS
 
@@ -73,9 +74,14 @@ def ingest(args) -> None:
         (r, source, read_round(folder))
         for r, folder, source in rounds_to_ingest(Path(args.root), manifest)
     ]
-    metas = bmo.fetch_meta({bug_id for *_, runs in rounds for *_, bug_id in runs}, CACHE)
-    emails = {e for *_, runs in rounds for _, s, bug_id in runs for e in requestees(s, bug_id)}
-    users = bmo.fetch_users(emails, CACHE)
+    hackbot_dir = Path(args.root) / hackbot.DIR
+    docs = list(hackbot.stored(hackbot_dir).values())
+    local = [(s, bug_id) for *_, runs in rounds for _, s, bug_id in runs]
+    remote = [(hackbot.summary_of(d), hackbot.bug_of(d)) for d in docs]
+    metas = bmo.fetch_meta({bug_id for _, bug_id in local + remote}, CACHE)
+    users = bmo.fetch_users(
+        {e for s, bug_id in local + remote for e in requestees(s, bug_id)}, CACHE
+    )
     log = store.load_jsonl(Path(args.root) / "pilot" / "log.jsonl")
     teams = store.log_teams(log)
     new = []
@@ -102,9 +108,33 @@ def ingest(args) -> None:
             new.append(record)
             count += 1
         print(f"{round_} ({source}): {count} runs")
+    if docs:
+        remote_records = hackbot.records(docs, metas, users, hackbot.load_reviews(hackbot_dir))
+        new += remote_records
+        print(f"hackbot: {len(remote_records)} runs")
     records = store.apply_log(store.merge_records(store.load(RUNS, []), new), log)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)
+
+
+def fetch_hackbot(args) -> None:
+    """Downloads the gecko-triage runs from hackbot-api. Off until a key exists."""
+    try:
+        key = hackbot.load_key()
+    except hackbot.KeyFileError as e:
+        raise SystemExit(str(e)) from e
+    if not key:
+        print("off: no key (Keychain item 'hackbot-api' or ~/.config/hackbot/key, mode 600)")
+        return
+    base = os.environ.get("HACKBOT_API_URL", hackbot.DEFAULT_URL)
+    n = hackbot.fetch(hackbot.http_getter(base, key), Path(args.out), hackbot.now_utc())
+    print(f"hackbot: {n} runs downloaded to {args.out}")
+
+
+def review(args) -> None:
+    """Records that a Hackbot run was rejected, in the review log next to the downloads."""
+    hackbot.reject(Path(args.out), args.run_id, args.reject, hackbot.now_utc())
+    print(f"rejected {args.run_id}: do not apply it in Hackbot")
 
 
 def page_clock(records: list[dict], now: datetime) -> datetime:
@@ -143,6 +173,14 @@ def main(argv=None) -> None:
     p.add_argument("--root", required=True, help="the hackbot folder: pilot/<day>/ and rounds")
     p.add_argument("--manifest", help="test rounds: round<TAB>directory under --root")
     p.set_defaults(func=ingest)
+    p = sub.add_parser("fetch-hackbot", help="download gecko-triage runs from hackbot-api")
+    p.add_argument("--out", default=str(hackbot.default_out()))
+    p.set_defaults(func=fetch_hackbot)
+    p = sub.add_parser("review", help="record that a Hackbot run was rejected")
+    p.add_argument("run_id")
+    p.add_argument("--reject", required=True, metavar="REASON")
+    p.add_argument("--out", default=str(hackbot.default_out()))
+    p.set_defaults(func=review)
     p = sub.add_parser("build", help="write the static site")
     p.add_argument("--out", default="site")
     p.set_defaults(func=build)

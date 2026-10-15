@@ -55,7 +55,8 @@ def apply_log(records: list[dict], log: list[dict]) -> list[dict]:
         if line is None:
             out.append(r)
         elif line["review"] != "posted":
-            out.append({**r, "posted": False, "outcome": line["review"]})
+            rejected = line["review"] == "rejected"
+            out.append({**r, "posted": False, "rejected": rejected, "outcome": line["review"]})
         else:
             ok = all(a.get("ok") for a in line.get("applied") or [])
             out.append(

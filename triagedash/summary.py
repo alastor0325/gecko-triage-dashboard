@@ -136,13 +136,15 @@ def parse_summary(
     users: dict[str, dict],
     source: str,
     team: str | None = None,
+    started_at: str | None = None,
 ) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
     summary, groups, creation_time. `users` maps a requestee email to its public Bugzilla
     name and nick. `bug_id` comes from the caller, since a crashed run has no findings.
     `source` is `daily` for an official daily run and `test` for a test round. `team` is
     the team the run was made for, when known; else the bug's component decides, which
-    fails once the bot has moved the bug out of the team."""
+    fails once the bot has moved the bug out of the team. `started_at` is the run's start
+    when its id does not encode it (Hackbot run ids are uuids)."""
     findings = summary.get("findings") or {}
     own, other = update_actions(summary, bug_id)
     other_bugs = [
@@ -157,12 +159,14 @@ def parse_summary(
     comment = comments[-1] if comments else None
     record = {
         "posted": False,
+        "rejected": False,
+        "pending_actions": None,
         "outcome": None,
         "posted_at": None,
         "comment_count": None,
         "source": source,
         "run_id": run_id,
-        "started_at": run_started_at(run_id),
+        "started_at": started_at or run_started_at(run_id),
         "bug_id": bug_id,
         "title": meta.get("summary"),
         "filed": meta.get("creation_time"),

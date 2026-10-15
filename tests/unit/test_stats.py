@@ -78,6 +78,32 @@ def test_team_page_counts_posted_runs():
     assert page["posted"] == 1
 
 
+def test_outcome_tags():
+    assert stats.tags(make_record(posted=True, outcome="posted")) == ["posted"]
+    assert stats.tags(make_record(posted=True, outcome="partly posted")) == ["partly posted"]
+    assert stats.tags(make_record(outcome="awaiting review")) == ["awaiting review"]
+    assert stats.tags(make_record(outcome="apply failed")) == ["apply failed"]
+    assert stats.tags(make_record(outcome="rejected", rejected=True)) == ["rejected"]
+    assert stats.tags(make_record(outcome="posted", posted=True, rejected=True)) == [
+        "rejected",
+        "posted",
+    ]
+
+
+def test_warning():
+    assert stats.warning(make_record(rejected=True, pending_actions=2)) == "do not apply"
+    assert stats.warning(make_record(rejected=True, posted=True)) == "rejected but posted"
+    assert stats.warning(make_record(rejected=True, pending_actions=0)) is None
+    assert stats.warning(make_record()) is None
+
+
+def test_team_page_counts_bugs_awaiting_review():
+    page = stats.team_page(
+        [make_record(outcome="awaiting review", source="hackbot"), make_record(2)], AS_OF
+    )
+    assert page["awaiting"] == 1
+
+
 def test_decision_label():
     assert stats.decision_label("triaged") == "analyzed"
     assert stats.decision_label("wrong_component") == "wrong component"

@@ -90,6 +90,27 @@ bugs' public Bugzilla fields, in one request (cached in `.cache/bmo/`). A re-ing
 replaces a run with the same id, so running it twice is safe. `HACKBOT_DIR` changes the
 input path of `ingest-local.sh`.
 
+## Hackbot runs
+
+Once gecko-triage runs on Hackbot, its runs show next to the local ones, with
+`source: hackbot`. Run the download on the Mac before `ingest-local.sh`:
+
+```
+uv run python -m triagedash fetch-hackbot              # off until a key exists
+uv run python -m triagedash review <run_id> --reject "reason"
+```
+
+- `fetch-hackbot` reads the key from the Keychain item `hackbot-api`, else from
+  `~/.config/hackbot/key` (mode 600 only), and `HACKBOT_API_URL` (default
+  `https://hackbot-api.moz.tools`). It saves each gecko-triage run and its action rows in
+  `~/hackbot/hackbot-runs/<UTC day>/<run_id>.json`, without the requester's email. It
+  never fetches `/artifacts`, so logs with full bug text never reach the dashboard.
+- hackbot-api has no reject state, so `review --reject` writes the rejection to
+  `~/hackbot/hackbot-runs/reviews.jsonl`.
+- A Hackbot run's outcome is `failed`, `rejected`, `applied`, `partly applied`,
+  `apply failed` or `awaiting review`. A rejected run whose actions are still pending
+  gets a red notice in the card: applying it later would post a second comment.
+
 ## Adding a team
 
 Add a `Team` to `TEAMS` in `triagedash/teams.py`, with the components from the agent's

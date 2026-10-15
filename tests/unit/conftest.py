@@ -36,7 +36,9 @@ def make_summary(
 def make_record(bug_id=100, started_at="2026-10-14T10:00:00+00:00", run_id=None, **overrides):
     record = {
         "posted": False,
+        "rejected": False,
         "outcome": None,
+        "pending_actions": None,
         "posted_at": None,
         "comment_count": None,
         "source": "test",

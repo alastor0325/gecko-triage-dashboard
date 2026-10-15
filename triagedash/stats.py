@@ -68,10 +68,31 @@ def close_kind(record: dict) -> str | None:
     return None
 
 
+def outcome_tags(record: dict) -> list[str]:
+    """What happened to the run: rejected by a person, what reached Bugzilla, and what
+    still waits on a person."""
+    out = ["rejected"] if record["rejected"] else []
+    if record["posted"]:
+        out.append(record["outcome"])
+    elif record["outcome"] in ("awaiting review", "apply failed"):
+        out.append(record["outcome"])
+    return out
+
+
+def warning(record: dict) -> str | None:
+    """`do not apply`: a rejected Hackbot run whose actions are still pending; applying them
+    later would post a second comment. `rejected but posted`: it was applied anyway."""
+    if not record["rejected"]:
+        return None
+    if record["posted"]:
+        return "rejected but posted"
+    return "do not apply" if record["pending_actions"] else None
+
+
 def tags(record: dict) -> list[str]:
     """Tags that hold for the run itself. `again` depends on the run that the page
     picks, so the page adds it."""
-    out = []
+    out = outcome_tags(record)
     if "regression" in record["keywords_add"] or record["regressed_by_add"]:
         out.append("regression")
     if any(ni["role"] != "reporter" for ni in record["needinfo"]):
@@ -96,9 +117,9 @@ def period_start(as_of: datetime, key: str) -> str:
 
 def run_view(record: dict) -> dict:
     keep = (
-        "started_at", "posted", "outcome", "posted_at", "comment_count", "severity", "priority",
-        "needinfo", "asked", "dupe_of", "blocks_add", "keywords_add", "regressed_by_add",
-        "other_bugs", "agent_version",
+        "started_at", "source", "posted", "pending_actions", "outcome", "posted_at",
+        "comment_count", "severity", "priority", "needinfo", "asked", "dupe_of", "blocks_add",
+        "keywords_add", "regressed_by_add", "other_bugs", "agent_version",
     )  # fmt: skip
     cat = category(record)
     reclassified = cat != CATEGORY.get(record["decision"])
@@ -111,6 +132,7 @@ def run_view(record: dict) -> dict:
         "move_to": move_label(record["move_to"]),
         "comment_html": render(record["comment"]) if record["comment"] else None,
         "tags": tags(record),
+        "warning": warning(record),
     }
 
 
@@ -138,9 +160,9 @@ def by_category(runs: list[dict]) -> dict[str, int]:
 
 
 def is_history(run: dict) -> bool:
-    """A run that is part of the bug's history: posted, or an official daily run. Test
-    rounds rerun the same bugs, so their runs are never history."""
-    return run["posted"] or run["source"] == "daily"
+    """A run that is part of the bug's history: posted, or an official run (local daily or
+    Hackbot). Test rounds rerun the same bugs, so their runs are never history."""
+    return run["posted"] or run["source"] in ("daily", "hackbot")
 
 
 def shown_runs(bug_runs: list[dict]) -> list[dict]:
@@ -203,5 +225,6 @@ def team_page(records: list[dict], as_of: datetime) -> dict:
             for k, (days, label) in PERIODS.items()
         ],
         "overview": overview(records, as_of),
-        "bugs": bugs(records, as_of),
+        "bugs": (page_bugs := bugs(records, as_of)),
+        "awaiting": sum(b["runs"][0]["outcome"] == "awaiting review" for b in page_bugs),
     }
