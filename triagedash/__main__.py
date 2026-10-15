@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from . import bmo, render, stats, store
-from .dryrun import is_public, orphan_bugs, parse_summary, summary_bug_id
+from .dryrun import is_public, orphan_bugs, parse_summary, requestees, summary_bug_id
 from .teams import TEAMS
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -52,6 +52,8 @@ def ingest_dryrun(args) -> None:
     manifest = read_manifest(Path(args.manifest).read_text())
     rounds = [(r, read_round(Path(args.root) / d)) for r, d in manifest]
     metas = bmo.fetch_meta({bug_id for _, runs in rounds for *_, bug_id in runs}, CACHE)
+    emails = {e for _, runs in rounds for _, s, bug_id in runs for e in requestees(s, bug_id)}
+    users = bmo.fetch_users(emails, CACHE)
     new = []
     for round_, runs in rounds:
         count = 0
@@ -60,7 +62,9 @@ def ingest_dryrun(args) -> None:
             if meta is None or not is_public(meta):
                 print(f"skip {path}: bug {bug_id} is not public")
                 continue
-            record = parse_summary(summary, bug_id=bug_id, run_id=path.parent.name, meta=meta)
+            record = parse_summary(
+                summary, bug_id=bug_id, run_id=path.parent.name, meta=meta, users=users
+            )
             if record["team"] is None:
                 print(f"skip {path}: bug {bug_id} is in no team's component")
                 continue

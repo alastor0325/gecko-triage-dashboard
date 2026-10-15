@@ -34,8 +34,9 @@ def test_close_kind():
 def test_tags():
     assert stats.tags(make_record(keywords_add=["regression"])) == ["regression"]
     assert stats.tags(make_record(regressed_by_add=[5])) == ["regression"]
-    assert stats.tags(make_record(needinfo=["reporter", "other"])) == ["dev needinfo"]
-    assert stats.tags(make_record(needinfo=["reporter"])) == []
+    reporter, dev = {"role": "reporter", "name": None}, {"role": "other", "name": "Dev (:dev)"}
+    assert stats.tags(make_record(needinfo=[reporter, dev])) == ["dev needinfo"]
+    assert stats.tags(make_record(needinfo=[reporter])) == []
 
 
 def test_is_new():

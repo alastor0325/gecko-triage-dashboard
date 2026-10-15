@@ -47,7 +47,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   /* Tags, in the triage dashboard's style: small soft pills, one color per meaning. A
      category pill gets its color from the data (--c); the harmful one is solid. */
-  .tag, .rail-cat, .when, .changes dt, details.earlier > summary { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  .tag, .rail-cat, .when, .changes dt, details.earlier > summary, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em; }
   .tag { padding: 1px 6px; border-radius: 3px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
   .tag.new { background: rgba(63, 94, 63, 0.14); color: #3F5E3F; }
@@ -55,7 +55,7 @@
   .tag.outline { background: transparent; box-shadow: inset 0 0 0 1px var(--rule); }
   .tag.cat { background: color-mix(in srgb, var(--c) 13%, transparent); color: color-mix(in srgb, var(--c) 80%, black); }
   .tag.cat.harm { background: var(--c); color: var(--surface); }
-  .rail-cat, .changes dt { color: var(--muted); font-weight: 500; }
+  .rail-cat, .changes dt, .ni-role { color: var(--muted); font-weight: 500; }
   /* Anything that takes a bug off the team. */
   .rail-cat.harm, .changes dt.harm { color: var(--red-deep); font-weight: 600; }
   .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
@@ -69,6 +69,8 @@
   .changes { display: grid; grid-template-columns: 96px 1fr; gap: 4px 12px; margin: 0; font-size: 13px; line-height: 1.5; }
   .changes dt { padding-top: 3px; }
   .changes dd { margin: 0; overflow-wrap: anywhere; }
+  .ni-chip { display: inline-flex; align-items: baseline; gap: 6px; margin: 0 6px 4px 0; padding: 1px 8px;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--paper); }
   .comment { margin-top: 12px; padding: 2px 14px; background: var(--paper); border-left: 2px solid var(--rule);
     font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); overflow-wrap: anywhere; }
   .comment p, .comment ol, .comment ul { margin: 8px 0; }
@@ -223,7 +225,7 @@ function shown() {
   const start = period().start;
   const q = state.q.trim().toLowerCase();
   const rank = r => r.category ? DATA.risk.indexOf(r.category) : DATA.risk.length;
-  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${CAT_TEXT[b.run.category] || ""}`.toLowerCase().includes(q);
+  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${CAT_TEXT[b.run.category] || ""} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase().includes(q);
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
     if (!runs.length) return null;
@@ -234,13 +236,20 @@ function shown() {
     .sort((a, b) => rank(a.run) - rank(b.run) || b.run.started_at.localeCompare(a.run.started_at));
 }
 
+// One chip per person asked, as in the triage dashboard: the name, then the role.
+const niLabel = ni => ni.nick ? (ni.name ? `${ni.name} (:${ni.nick})` : `:${ni.nick}`) : null;
+const niChip = ni => {
+  const role = esc(ROLES[ni.role]);
+  return `<span class="ni-chip">${niLabel(ni) ? `${esc(niLabel(ni))}<span class="ni-role">${role}</span>` : role}</span>`;
+};
+
 // One row per change, most harmful first. Rows that take the bug off the team are red.
 function changes(r) {
   const rows = [
     r.resolution && ["Closed", `${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`, CAT.close.harm],
     r.move_to && ["Moved", `to ${esc(r.move_to)}`, CAT.close.harm],
     (r.severity || r.priority) && ["S/P", esc([r.severity, r.priority].filter(Boolean).join(" / "))],
-    r.needinfo.length && ["Needinfo", esc(r.needinfo.map(x => ROLES[x] || x).join(", "))],
+    r.needinfo.length && ["Needinfo", r.needinfo.map(niChip).join("")],
     r.blocks_add.length && ["Blocks", bugList(r.blocks_add)],
     r.regressed_by_add.length && ["Regressed by", bugList(r.regressed_by_add)],
     r.keywords_add.length && ["Keywords", esc(r.keywords_add.join(", "))],

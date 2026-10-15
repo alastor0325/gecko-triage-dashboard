@@ -32,7 +32,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "beginner",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -78,7 +82,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "lars",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -146,7 +154,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "other"
+   {
+    "name": "Andreas M. Kirchwitz",
+    "nick": "amk",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -214,7 +226,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "a+bugzilla",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -264,7 +280,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "beginner",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -312,7 +332,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "lars",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -336,7 +360,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "a+bugzilla",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -384,7 +412,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "other"
+   {
+    "name": "Andreas M. Kirchwitz",
+    "nick": "amk",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -522,7 +554,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "limeclipse",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -548,7 +584,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "beginner",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -572,7 +612,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Mishiki Sakana",
+    "nick": "osakana",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -618,7 +662,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Ronald Tilby",
+    "nick": "rontilby",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -670,7 +718,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -790,7 +842,11 @@
   ],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "limeclipse",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -814,7 +870,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Mishiki Sakana",
+    "nick": "osakana",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -840,7 +900,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "beginner",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -914,7 +978,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Ronald Tilby",
+    "nick": "rontilby",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -940,7 +1008,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -966,8 +1038,16 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter",
-   "other"
+   {
+    "name": "Pearl",
+    "nick": "3112513",
+    "role": "reporter"
+   },
+   {
+    "name": "Ori Avtalion",
+    "nick": "saltyhorse",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -993,7 +1073,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1065,7 +1149,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1091,7 +1179,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "other"
+   {
+    "name": "Thomas Nibler",
+    "nick": "tnibler",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1165,7 +1257,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "other"
+   {
+    "name": "Paul Adenot",
+    "nick": "padenot",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1191,7 +1287,11 @@
   ],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "limeclipse",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1217,8 +1317,16 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter",
-   "other"
+   {
+    "name": "Pearl",
+    "nick": "3112513",
+    "role": "reporter"
+   },
+   {
+    "name": "Ori Avtalion",
+    "nick": "saltyhorse",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1242,7 +1350,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Mishiki Sakana",
+    "nick": "osakana",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1266,7 +1378,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Ronald Tilby",
+    "nick": "rontilby",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1340,7 +1456,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Ronald Tilby",
+    "nick": "rontilby",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1364,7 +1484,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Mishiki Sakana",
+    "nick": "osakana",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1388,8 +1512,16 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter",
-   "other"
+   {
+    "name": "Pearl",
+    "nick": "3112513",
+    "role": "reporter"
+   },
+   {
+    "name": "Ori Avtalion",
+    "nick": "saltyhorse",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1415,7 +1547,11 @@
   ],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "limeclipse",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1513,7 +1649,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1587,7 +1727,11 @@
   ],
   "move_to": "Core :: Widget: Gtk",
   "needinfo": [
-   "other"
+   {
+    "name": "Martin Str\u00e1nsk\u00fd",
+    "nick": "stransky",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1643,7 +1787,11 @@
   ],
   "move_to": "Core :: Widget: Gtk",
   "needinfo": [
-   "other"
+   {
+    "name": "Martin Str\u00e1nsk\u00fd",
+    "nick": "stransky",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1671,7 +1819,11 @@
   ],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "limeclipse",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1695,7 +1847,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Mishiki Sakana",
+    "nick": "osakana",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1765,8 +1921,16 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter",
-   "other"
+   {
+    "name": "Pearl",
+    "nick": "3112513",
+    "role": "reporter"
+   },
+   {
+    "name": "Ori Avtalion",
+    "nick": "saltyhorse",
+    "role": "other"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1790,7 +1954,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": "Ronald Tilby",
+    "nick": "rontilby",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1840,7 +2008,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1866,7 +2038,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "beginner",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1940,7 +2116,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,
@@ -1966,7 +2146,11 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
-   "reporter"
+   {
+    "name": null,
+    "nick": "sashawbarish",
+    "role": "reporter"
+   }
   ],
   "other_bugs": [],
   "posted": false,

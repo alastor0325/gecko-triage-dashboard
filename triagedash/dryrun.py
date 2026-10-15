@@ -1,7 +1,8 @@
 """Turns one gecko-triage dry-run `summary.json` into a dashboard record.
 
-A record holds no email address: needinfo requestees become roles, and every string is
-scrubbed in `parse_summary`, because the site is public.
+A record holds no email address, because the site is public: a needinfo requestee becomes
+a role and their public Bugzilla name and nick, and every string is scrubbed in
+`parse_summary`. The page builds the `Name (:nick)` label.
 """
 
 from __future__ import annotations
@@ -30,11 +31,13 @@ def run_started_at(run_id: str, host_tz: tzinfo | None = None) -> str | None:
 
 
 def scrub(value):
-    """Removes emails and `:nick` mentions from a string, or from each string in a list."""
+    """Removes emails and `:nick` mentions from every string, at any depth."""
     if isinstance(value, str):
         return _MENTION.sub(":[person]", EMAIL.sub("[email]", value))
     if isinstance(value, list):
         return [scrub(v) for v in value]
+    if isinstance(value, dict):
+        return {k: scrub(v) for k, v in value.items()}
     return value
 
 
@@ -54,6 +57,52 @@ def summary_bug_id(summary: dict) -> int | None:
 def orphan_bugs(logged: list[int], summaries: list[dict]) -> set[int]:
     """Bugs in a round that have a run log but no summary with findings."""
     return set(logged) - {summary_bug_id(s) for s in summaries}
+
+
+_BRACKETS = re.compile(r"\s*[\[(][^\])]*[\])]")
+
+
+def clean_real_name(real_name: str | None) -> str | None:
+    """`Pat Doe [:pdoe] (PTO)` -> `Pat Doe`: Bugzilla real names often carry the nick and
+    notes in brackets. A name that is only the nick is dropped."""
+    name = _BRACKETS.sub("", real_name or "").strip()
+    return name if name and not name.startswith(":") else None
+
+
+def update_actions(summary: dict, bug_id: int) -> tuple[dict, list[dict]]:
+    """The run's changes to its own bug, merged, and its updates of other bugs."""
+    own: dict = {}
+    other: list[dict] = []
+    for action in summary.get("actions") or []:
+        params = action.get("params") or {}
+        if action.get("type") != "bugzilla.update_bug":
+            continue
+        if params.get("bug_id") == bug_id:
+            own.update(params.get("changes") or {})
+        else:
+            other.append(params)
+    return own, other
+
+
+def needinfo_flags(changes: dict) -> list[dict]:
+    return [f for f in changes.get("flags") or [] if f.get("name") == "needinfo"]
+
+
+def requestees(summary: dict, bug_id: int) -> set[str]:
+    """Every needinfo requestee the run sets on its own bug, so their public names can be
+    looked up in one pass."""
+    own, _ = update_actions(summary, bug_id)
+    return {f["requestee"] for f in needinfo_flags(own) if f.get("requestee")}
+
+
+def needinfo_entry(requestee: str | None, meta: dict, users: dict[str, dict]) -> dict:
+    """Who a needinfo asks: their role on the bug, public real name and bare nick."""
+    user = users.get(requestee) or {}
+    return {
+        "role": needinfo_role(requestee, meta),
+        "name": clean_real_name(user.get("real_name")),
+        "nick": user.get("nick"),
+    }
 
 
 def needinfo_role(requestee: str | None, meta: dict) -> str:
@@ -78,28 +127,24 @@ def _move_target(changes: dict, meta: dict) -> str | None:
     return f"{product} :: {changes.get('component') or meta.get('component')}"
 
 
-def parse_summary(summary: dict, *, bug_id: int, run_id: str, meta: dict) -> dict:
+def parse_summary(
+    summary: dict, *, bug_id: int, run_id: str, meta: dict, users: dict[str, dict]
+) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
-    summary, groups, creation_time. `bug_id` comes from the caller, since a crashed run
-    has no findings."""
+    summary, groups, creation_time. `users` maps a requestee email to its public Bugzilla
+    name and nick. `bug_id` comes from the caller, since a crashed run has no findings."""
     findings = summary.get("findings") or {}
-    own: dict = {}
-    other_bugs: list[dict] = []
-    comment = None
-    for action in summary.get("actions") or []:
-        params = action.get("params") or {}
-        if action.get("type") == "bugzilla.add_comment":
-            comment = params.get("text")
-        if action.get("type") != "bugzilla.update_bug":
-            continue
-        changes = params.get("changes") or {}
-        if params.get("bug_id") == bug_id:
-            own.update(changes)
-        else:
-            other_bugs.append(
-                {"bug_id": params.get("bug_id"), "blocks_add": _added(changes, "blocks")}
-            )
-    flags = [f for f in own.get("flags") or [] if f.get("name") == "needinfo"]
+    own, other = update_actions(summary, bug_id)
+    other_bugs = [
+        {"bug_id": p.get("bug_id"), "blocks_add": _added(p.get("changes") or {}, "blocks")}
+        for p in other
+    ]
+    comments = [
+        (a.get("params") or {}).get("text")
+        for a in summary.get("actions") or []
+        if a.get("type") == "bugzilla.add_comment"
+    ]
+    comment = comments[-1] if comments else None
     record = {
         "posted": False,
         "run_id": run_id,
@@ -113,7 +158,7 @@ def parse_summary(summary: dict, *, bug_id: int, run_id: str, meta: dict) -> dic
         "comment": strip_footer(comment),
         "severity": own.get("severity"),
         "priority": own.get("priority"),
-        "needinfo": [needinfo_role(f.get("requestee"), meta) for f in flags],
+        "needinfo": [needinfo_entry(f.get("requestee"), meta, users) for f in needinfo_flags(own)],
         "blocks_add": _added(own, "blocks"),
         "keywords_add": _added(own, "keywords"),
         "regressed_by_add": _added(own, "regressed_by"),
@@ -122,7 +167,7 @@ def parse_summary(summary: dict, *, bug_id: int, run_id: str, meta: dict) -> dic
         "dupe_of": own.get("dupe_of"),
         "other_bugs": other_bugs,
     }
-    return {k: scrub(v) for k, v in record.items()}
+    return scrub(record)
 
 
 def is_public(meta: dict) -> bool:

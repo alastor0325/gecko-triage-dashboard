@@ -66,7 +66,7 @@ def tags(record: dict) -> list[str]:
     out = []
     if "regression" in record["keywords_add"] or record["regressed_by_add"]:
         out.append("regression")
-    if any(role != "reporter" for role in record["needinfo"]):
+    if any(ni["role"] != "reporter" for ni in record["needinfo"]):
         out.append("dev needinfo")
     return out
 

@@ -2,10 +2,12 @@ from datetime import timedelta, timezone
 
 from triagedash.dryrun import (
     EMAIL,
+    clean_real_name,
     is_public,
     needinfo_role,
     orphan_bugs,
     parse_summary,
+    requestees,
     run_started_at,
     scrub,
     strip_footer,
@@ -16,7 +18,9 @@ from .conftest import make_record, make_summary
 
 
 def parse(summary, meta, bug_id=100):
-    return parse_summary(summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta)
+    return parse_summary(
+        summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta, users={}
+    )
 
 
 def test_run_started_at_is_utc():
@@ -24,6 +28,13 @@ def test_run_started_at_is_utc():
     assert run_started_at("local-20261014-174025-eb0234", taipei) == "2026-10-14T09:40:25+00:00"
     assert run_started_at("local-20261014-174025-eb0234").endswith("+00:00")
     assert run_started_at("something-else") is None
+
+
+def test_scrub_walks_dicts():
+    assert scrub({"a": ["x@example.com"], "b": {"c": ":jdoe"}}) == {
+        "a": ["[email]"],
+        "b": {"c": ":[person]"},
+    }
 
 
 def test_scrub_removes_emails_and_mentions():
@@ -49,7 +60,7 @@ def test_record_holds_no_email_in_any_field(meta):
     changes = {"flags": [{"name": "needinfo", "status": "?", "requestee": "reporter@example.com"}]}
     summary = make_summary(changes=changes, comment="Asked x@example.com.")
     record = parse(summary, {**meta, "summary": "Crash, cc z@example.com"})
-    assert record["needinfo"] == ["reporter"]
+    assert record["needinfo"] == [{"role": "reporter", "name": None, "nick": None}]
     assert not EMAIL.search(str(record))
 
 
@@ -148,3 +159,36 @@ def test_strip_footer():
     assert strip_footer(text) == "Thanks.\n\n---\n\nKeep this.\n"
     assert strip_footer("No footer here.") == "No footer here."
     assert strip_footer(None) is None
+
+
+def test_clean_real_name():
+    assert clean_real_name("Pat Doe [:pdoe] (PTO)") == "Pat Doe"
+    assert clean_real_name(":pdoe") is None
+    assert clean_real_name("") is None
+    assert clean_real_name(None) is None
+
+
+def test_requestees():
+    s = make_summary(changes={"flags": [{"name": "needinfo", "requestee": "a@example.com"}]})
+    s["actions"].append(
+        {
+            "type": "bugzilla.update_bug",
+            "params": {
+                "bug_id": 9,
+                "changes": {"flags": [{"name": "needinfo", "requestee": "b@example.com"}]},
+            },
+        }
+    )
+    assert requestees(s, 100) == {"a@example.com"}
+    assert requestees({"traceback": "x"}, 100) == set()
+
+
+def test_needinfo_gets_the_public_name_and_keeps_its_nick(meta):
+    changes = {"flags": [{"name": "needinfo", "status": "?", "requestee": "dev@example.com"}]}
+    users = {"dev@example.com": {"real_name": "Pat Doe [:pdoe]", "nick": "pdoe"}}
+    summary = make_summary(changes=changes)
+    r = parse_summary(
+        summary, bug_id=100, run_id="local-20261014-174025-eb0234", meta=meta, users=users
+    )
+    assert r["needinfo"] == [{"role": "assignee", "name": "Pat Doe", "nick": "pdoe"}]
+    assert "example.com" not in str(r)
