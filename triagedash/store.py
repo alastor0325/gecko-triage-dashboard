@@ -22,6 +22,14 @@ def merge_records(existing: list[dict], new: list[dict]) -> list[dict]:
     return sorted(by_id.values(), key=order)
 
 
+def merge_passes(existing: list[dict], new: list[dict]) -> list[dict]:
+    """The daily selection passes, one per team and time, oldest first. Only the team, the
+    time and the count are kept."""
+    keep = ("team", "at", "selected")
+    by_key = {(p["team"], p["at"]): {k: p[k] for k in keep} for p in existing + new}
+    return sorted(by_key.values(), key=lambda p: (p["at"], p["team"]))
+
+
 def load(path: Path, default):
     return json.loads(path.read_text()) if path.exists() else default
 

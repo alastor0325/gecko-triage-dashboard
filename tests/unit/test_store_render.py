@@ -95,3 +95,15 @@ def test_log_teams():
         "a": "media",
         "b": None,
     }
+
+
+def test_merge_passes_dedupes_and_keeps_only_safe_fields():
+    old = {"team": "media", "at": "2026-10-14T05:40:00+00:00", "selected": 22, "who": "x@y.z"}
+    new = [
+        {"team": "media", "at": "2026-10-16T05:40:00+00:00", "selected": 0, "who": "x@y.z"},
+        {"team": "media", "at": "2026-10-15T05:40:00+00:00", "selected": 3},
+        {"team": "media", "at": "2026-10-15T05:40:00+00:00", "selected": 3},
+    ]
+    merged = store.merge_passes([old], new)
+    assert [p["at"][:10] for p in merged] == ["2026-10-14", "2026-10-15", "2026-10-16"]
+    assert all(set(p) == {"team", "at", "selected"} for p in merged)

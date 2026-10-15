@@ -65,6 +65,12 @@ day. There are two kinds of run:
 - **Test rounds** (`source: test`): the rounds listed in `data/rounds.tsv`, none today.
   They rerun the same bugs as tests, so only each bug's newest test run is shown.
 
+`data/passes.json` has one line per daily selection pass (team, UTC time, bugs selected),
+from `~/hackbot/pilot/passes.jsonl`. With it, "Bugs handled per day" marks a day with no
+bar as `0` (the bot ran and found no bug) or `×` (no run recorded). Today, and every day
+from the first Hackbot run on, get no mark: a Hackbot pass that selects no bug leaves no
+trace.
+
 The site is public, so the records keep no email address: a needinfo becomes the person's
 role (`reporter`, `assignee` or `other`) and their public Bugzilla name and nick, looked
 up at ingest, and every string is scrubbed of emails and `:nick` mentions. The card shows

@@ -208,12 +208,33 @@ def overview(records: list[dict], as_of: datetime) -> dict:
     return out
 
 
-def team_page(records: list[dict], as_of: datetime) -> dict:
-    """Records are one team's. The page holds only the longest period."""
+def ran_at(records: list[dict], passes: list[dict], start: str) -> list[str]:
+    """When the bot is known to have run since `start`, oldest first: each daily pass, also
+    one that selected no bug, and each official run. A test round is not a daily pass."""
+    times = [p["at"] for p in passes] + [
+        r["started_at"] for r in records if r["source"] in ("daily", "hackbot") and r["started_at"]
+    ]
+    return sorted(t for t in set(times) if t >= start)
+
+
+def known_until(records: list[dict], as_of: datetime) -> str:
+    """The end of the days on which a missing run is known to mean "no run": the page clock,
+    or the first Hackbot run, because a Hackbot pass that selects no bug leaves no trace."""
+    hackbot = [r["started_at"] for r in records if r["source"] == "hackbot"]
+    return min([as_of.isoformat(), *hackbot])
+
+
+def team_page(records: list[dict], as_of: datetime, passes: list[dict] = ()) -> dict:
+    """Records and passes are one team's. The page holds only the longest period."""
     longest = max(PERIODS, key=lambda k: PERIODS[k][0])
+    ran = ran_at(records, passes, period_start(as_of, longest))
+    until = known_until(records, as_of)
     records = in_period(records, as_of, longest)
     return {
         "as_of": as_of.isoformat(),
+        "ran_at": ran,
+        "known_until": until,
+        "first_run": min([*ran, *(r["started_at"] for r in records)], default=None),
         "posted": sum(r["posted"] for r in records),
         "categories": [
             {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c], "harm": c == "close"}

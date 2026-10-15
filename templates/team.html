@@ -126,7 +126,7 @@
     </section>
     <section>
       <h2>Bugs handled per day</h2>
-      <div class="chart-box"><canvas id="chart-daily"></canvas></div>
+      <div class="chart-box"><canvas id="chart-daily" role="img"></canvas></div>
     </section>
     <section>
       <div class="split">
@@ -213,11 +213,24 @@ function horizontalBar(id, counts, color) {
     options: {indexAxis: "y", plugins: {legend: {display: false}},
       scales: {x: {beginAtZero: true, ticks: {precision: 0}}, y: {grid: {display: false}}}}});
 }
-// Bugs handled per local day, by the category of that day's newest run on each bug. Days
-// with no run count zero, so the time axis has no gaps.
+const RAN_DAYS = new Set(DATA.ran_at.map(dayKey));
+const KNOWN_UNTIL = dayKey(DATA.known_until);
+const MARKS = {"0": "Ran, no bug to triage", "×": "No run recorded"};
+// The mark under a day with no bar: "0" when the bot ran and found no bug, "×" when no run
+// is recorded. None from KNOWN_UNTIL on (today, or once Hackbot runs), and none on a page
+// that knows no daily pass.
+function mark(k, total) {
+  if (total || !RAN_DAYS.size) return "";
+  if (RAN_DAYS.has(k)) return "0";
+  return k >= KNOWN_UNTIL ? "" : "×";
+}
+// Bugs handled per local day, by the category of that day's newest run on each bug. The
+// axis starts at the first run, and has no gaps after it.
 function daily() {
   const days = DATA.periods.find(p => p.key === state.period).days;
-  const keys = Array.from({length: days}, (_, i) => dayKey(new Date(DATA.as_of) - (days - 1 - i) * DAY_MS));
+  const first = DATA.first_run ? dayKey(DATA.first_run) : "";
+  const keys = Array.from({length: days}, (_, i) => dayKey(new Date(DATA.as_of) - (days - 1 - i) * DAY_MS))
+    .filter(k => k >= first);
   const perDay = Object.fromEntries(keys.map(k => [k, {}]));
   for (const b of DATA.bugs) {
     for (const r of b.runs) {  // newest first, so the first run seen on a day wins
@@ -225,8 +238,33 @@ function daily() {
       if (perDay[k] && !(b.bug_id in perDay[k])) perDay[k][b.bug_id] = r.category;
     }
   }
-  return keys.map(k => ({label: day(k + "T12:00:00"), ...Object.fromEntries(DATA.categories.map(c =>
-    [c.key, Object.values(perDay[k]).filter(cat => cat === c.key).length]))}));
+  return keys.map(k => {
+    const counts = Object.fromEntries(DATA.categories.map(c =>
+      [c.key, Object.values(perDay[k]).filter(cat => cat === c.key).length]));
+    return {label: day(k + "T12:00:00"), mark: mark(k, Object.keys(perDay[k]).length), ...counts};
+  });
+}
+// Draws each day's mark on the base line, in the axis font. Small on thin columns, and
+// left to the tooltip when a column is too thin for a glyph.
+const markPlugin = {id: "marks", afterDatasetsDraw(c) {
+  const {ctx, scales: {x, y}} = c;
+  const width = x.width / Math.max(1, c.data.labels.length);
+  if (width < 6) return;
+  ctx.save();
+  ctx.font = `${width < 12 ? 9.5 : 11}px ${Chart.defaults.font.family}`;
+  ctx.fillStyle = Chart.defaults.color;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  c.data.datasets.at(-1).marks.forEach((m, i) => m && ctx.fillText(m, x.getPixelForValue(i), y.getPixelForValue(0) - 2));
+  ctx.restore();
+}};
+function markSummary(perDay) {
+  const out = ["Bugs handled per day."];
+  for (const [m, text] of Object.entries(MARKS)) {
+    const labels = perDay.filter(d => d.mark === m).map(d => d.label);
+    if (labels.length) out.push(`${text}: ${labels.join(", ")}.`);
+  }
+  return out.join(" ");
 }
 
 function drawOverview() {
@@ -238,9 +276,16 @@ function drawOverview() {
   document.getElementById("summary-grid").innerHTML = CATS.map(c => `<button type="button" class="stat expandable" data-open-cat="${c}">
     <div class="label">${c === "all" ? "Bugs handled" : CAT_TEXT[c]}</div><div class="value">${o.counts[c]}</div>
     <div class="sub">${c === "all" ? "each bug once, by its newest run" : share(o.counts[c])}</div></button>`).join("");
-  chart("chart-daily", {type: "bar",
-    data: {labels: perDay.map(d => d.label), datasets: DATA.categories.map(c => ({label: c.label, data: perDay.map(d => d[c.key]), backgroundColor: c.color, maxBarThickness: 28}))},
-    options: {plugins: {legend: {labels: {boxWidth: 10, boxHeight: 10}}},
+  // The last dataset has no bars: it carries each day's mark to the plugin and the tooltip.
+  const datasets = [...DATA.categories.map(c => ({label: c.label, data: perDay.map(d => d[c.key]), backgroundColor: c.color, maxBarThickness: 28})),
+    {label: "", data: perDay.map(() => 0), marks: perDay.map(d => d.mark)}];
+  document.getElementById("chart-daily").setAttribute("aria-label", markSummary(perDay));
+  chart("chart-daily", {type: "bar", plugins: [markPlugin],
+    data: {labels: perDay.map(d => d.label), datasets},
+    options: {interaction: {mode: "index", intersect: false},
+      plugins: {legend: {labels: {boxWidth: 10, boxHeight: 10, filter: item => !datasets[item.datasetIndex].marks}},
+        tooltip: {filter: item => item.dataset.marks ? !!item.dataset.marks[item.dataIndex] : item.raw > 0,
+          callbacks: {label: item => item.dataset.marks ? MARKS[item.dataset.marks[item.dataIndex]] : `${item.dataset.label}: ${item.formattedValue}`}}},
       scales: {x: {stacked: true, grid: {display: false}, ticks: {maxRotation: 0, autoSkip: true, maxTicksLimit: 10}},
         y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}}});
   horizontalBar("chart-close", o.close_kinds, CAT.close.color);

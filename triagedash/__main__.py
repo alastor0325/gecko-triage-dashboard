@@ -16,6 +16,7 @@ from .teams import TEAMS
 
 ROOT = Path(__file__).resolve().parent.parent
 RUNS = ROOT / "data" / "runs.json"
+PASSES = ROOT / "data" / "passes.json"
 CACHE = ROOT / ".cache" / "bmo"
 _RUN_LOG = re.compile(r"run-(\d+)\.log$")
 
@@ -115,6 +116,10 @@ def ingest(args) -> None:
     records = store.apply_log(store.merge_records(store.load(RUNS, []), new), log)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)
+    pilot_passes = store.load_jsonl(Path(args.root) / "pilot" / "passes.jsonl")
+    passes = store.merge_passes(store.load(PASSES, []), pilot_passes)
+    print(f"passes: {len(passes)}")
+    store.save(PASSES, passes)
 
 
 def fetch_hackbot(args) -> None:
@@ -148,6 +153,7 @@ def page_clock(records: list[dict], now: datetime) -> datetime:
 
 def build(args) -> None:
     records = store.load(RUNS, [])
+    passes = store.load(PASSES, [])
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name in ("review-stats.css", "favicon.svg"):
@@ -158,7 +164,9 @@ def build(args) -> None:
         mine = [r for r in records if r["team"] == team.slug]
         if not mine:
             continue
-        pages[team.slug] = page = stats.team_page(mine, page_clock(mine, datetime.now(UTC)))
+        clock = page_clock(mine, datetime.now(UTC))
+        team_passes = [p for p in passes if p["team"] == team.slug]
+        pages[team.slug] = page = stats.team_page(mine, clock, team_passes)
         (out / team.slug).mkdir(exist_ok=True)
         (out / team.slug / "index.html").write_text(render.team_html(team_template, team, page))
     landing = (render.TEMPLATES / "index.html").read_text()

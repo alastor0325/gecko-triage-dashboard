@@ -204,3 +204,34 @@ def test_team_page_keeps_only_the_longest_period():
     old = make_record(1, started_at="2026-06-01T00:00:00+00:00")
     page = stats.team_page([old, make_record(2)], AS_OF)
     assert [b["bug_id"] for b in page["bugs"]] == [2]
+
+
+def test_ran_at_has_passes_and_official_runs_only():
+    passes = [{"team": "media", "at": "2026-10-13T05:00:00+00:00", "selected": 0}]
+    records = [
+        make_record(1, source="daily", started_at="2026-10-12T05:00:00+00:00"),
+        make_record(2, source="test", posted=True, started_at="2026-10-11T05:00:00+00:00"),
+        make_record(3, source="daily", started_at="2026-09-01T05:00:00+00:00"),
+    ]
+    ran = stats.ran_at(records, passes, "2026-10-01T00:00:00+00:00")
+    assert ran == ["2026-10-12T05:00:00+00:00", "2026-10-13T05:00:00+00:00"]
+
+
+def test_known_until_is_the_clock_or_the_first_hackbot_run():
+    assert stats.known_until([make_record(source="daily")], AS_OF) == AS_OF.isoformat()
+    records = [
+        make_record(1, source="hackbot", started_at="2026-10-13T05:00:00+00:00"),
+        make_record(2, source="hackbot", started_at="2026-10-12T05:00:00+00:00"),
+    ]
+    assert stats.known_until(records, AS_OF) == "2026-10-12T05:00:00+00:00"
+
+
+def test_team_page_day_marks_data():
+    passes = [{"team": "media", "at": "2026-10-13T05:00:00+00:00", "selected": 0}]
+    page = stats.team_page([make_record(source="daily")], AS_OF, passes)
+    assert page["ran_at"] == ["2026-10-13T05:00:00+00:00", "2026-10-14T10:00:00+00:00"]
+    assert page["known_until"] == AS_OF.isoformat()
+    assert page["first_run"] == "2026-10-13T05:00:00+00:00"
+    test_page = stats.team_page([make_record()], AS_OF)
+    assert test_page["ran_at"] == []
+    assert test_page["first_run"] == "2026-10-14T10:00:00+00:00"
