@@ -25,6 +25,7 @@ def test_old_and_new_name_of_analyzed():
     assert stats.run_view(make_record(decision="analyzed"))["decision"] == "analyzed"
     assert stats.acted(make_record(decision="analyzed"))
     assert not stats.acted(make_record(decision="brand_new"))
+    assert not stats.acted(make_record(decision="needs_info", outcome="skipped"))
 
 
 def test_category():

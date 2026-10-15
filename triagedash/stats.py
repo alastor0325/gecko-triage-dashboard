@@ -106,9 +106,14 @@ def is_new(filed: str | None, as_of: datetime) -> bool:
 
 
 def acted(record: dict) -> bool:
-    """A run whose decision has a category. Failed runs, preflight skips and runs that ended
-    before they decided changed nothing."""
-    return not record["error"] and record["decision"] in CATEGORY and bool(record["started_at"])
+    """A run whose decision has a category. Failed runs, preflight skips, runs that ended
+    before they decided, and runs the pilot log marks skipped changed nothing."""
+    return (
+        not record["error"]
+        and record["decision"] in CATEGORY
+        and record["outcome"] != "skipped"
+        and bool(record["started_at"])
+    )
 
 
 def period_start(as_of: datetime, key: str) -> str:
