@@ -8,7 +8,7 @@ a role and their public Bugzilla name and nick, and every string is scrubbed in
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime, tzinfo
+from datetime import UTC, datetime
 
 from .teams import team_for
 
@@ -17,17 +17,13 @@ EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _MENTION = re.compile(r"(?<![\w/:]):[A-Za-z][\w-]*\b")
 
 
-def run_started_at(run_id: str, host_tz: tzinfo | None = None) -> str | None:
-    """`local-20261014-174025-eb0234` -> the start time in UTC. The name holds the time
-    of the host that ran the agent; `host_tz` defaults to this machine's zone, since
-    ingest runs on that host."""
+def run_started_at(run_id: str) -> str | None:
+    """`local-20261014-174025-eb0234` -> `2026-10-14T17:40:25+00:00`. hackbot-runtime
+    names a local run by its start time in UTC."""
     m = _RUN_ID.search(run_id)
     if not m:
         return None
-    local = datetime.strptime(m.group(1), "%Y%m%d-%H%M%S")
-    if host_tz is not None:
-        local = local.replace(tzinfo=host_tz)
-    return local.astimezone(UTC).isoformat()
+    return datetime.strptime(m.group(1), "%Y%m%d-%H%M%S").replace(tzinfo=UTC).isoformat()
 
 
 def scrub(value):

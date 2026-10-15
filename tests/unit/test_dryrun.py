@@ -1,5 +1,3 @@
-from datetime import timedelta, timezone
-
 from triagedash.dryrun import (
     EMAIL,
     clean_real_name,
@@ -23,10 +21,8 @@ def parse(summary, meta, bug_id=100):
     )
 
 
-def test_run_started_at_is_utc():
-    taipei = timezone(timedelta(hours=8))
-    assert run_started_at("local-20261014-174025-eb0234", taipei) == "2026-10-14T09:40:25+00:00"
-    assert run_started_at("local-20261014-174025-eb0234").endswith("+00:00")
+def test_run_started_at_reads_the_name_as_utc():
+    assert run_started_at("local-20261014-174025-eb0234") == "2026-10-14T17:40:25+00:00"
     assert run_started_at("something-else") is None
 
 
