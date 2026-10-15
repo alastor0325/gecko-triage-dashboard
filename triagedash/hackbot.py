@@ -172,7 +172,7 @@ def outcome(run: dict, actions: list[dict], review: dict | None) -> dict:
     elif status["failed"] and not status["pending"]:
         result = "apply failed"
     else:
-        result = "awaiting review"
+        result = store.AWAITING_REVIEW
     return {
         "outcome": result,
         "rejected": rejected,

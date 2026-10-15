@@ -83,6 +83,22 @@ def test_apply_log_partly_posted_and_rejected():
     assert (r["posted"], r["outcome"]) == (False, "rejected")
 
 
+def test_apply_log_pending_line_awaits_review():
+    run = store.unreviewed(make_record(2080668, run_id="local-20261015-055005-cf67f6"))
+    pending = {**LOG_LINE, "review": "pending", "applied": [], "posted_at": None}
+    (r,) = apply_log([run], [pending])
+    assert (r["posted"], r["rejected"], r["outcome"]) == (False, False, "awaiting review")
+    (r,) = apply_log([run], [])
+    assert r["outcome"] == "awaiting review"
+    (r,) = apply_log([run], [LOG_LINE])
+    assert r["outcome"] == "posted"
+
+
+def test_unreviewed_daily_run_awaits_review_unless_it_failed():
+    assert store.unreviewed(make_record())["outcome"] == "awaiting review"
+    assert store.unreviewed(make_record(error=True))["outcome"] == "failed"
+
+
 def test_load_jsonl(tmp_path):
     p = tmp_path / "log.jsonl"
     p.write_text('{"a": 1}\n\n{"a": 2}\n')

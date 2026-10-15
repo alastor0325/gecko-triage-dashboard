@@ -103,7 +103,7 @@ def ingest(args) -> None:
                 source=source,
                 team=store.local_team(teams, run_id),
             )
-            new.append(record)
+            new.append(store.unreviewed(record) if source == "daily" else record)
             count += 1
         print(f"{round_} ({source}): {count} runs")
     if docs:

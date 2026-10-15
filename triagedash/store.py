@@ -65,20 +65,29 @@ def local_team(teams: dict[str, str | None], run_id: str) -> str | None:
     return teams.get(run_id, LOCAL_TEAM)
 
 
+AWAITING_REVIEW = "awaiting review"
+
+
+def unreviewed(record: dict) -> dict:
+    """A daily run before its log line exists: it waits for review, unless it failed."""
+    return {**record, "outcome": "failed" if record["error"] else AWAITING_REVIEW}
+
+
 def apply_log(records: list[dict], log: list[dict]) -> list[dict]:
     """Marks the runs that the pilot log lists with what happened when they were reviewed.
     A posted run whose writes all succeeded is `posted`, else `partly posted`. Other
-    reviews (rejected, skipped, shadow) are kept as the outcome. The log's bot account is
-    never copied."""
+    reviews (rejected, skipped, shadow) are kept as the outcome, and a `pending` line is
+    `awaiting review`. The log's bot account is never copied."""
     by_run = {line["run_id"]: line for line in log}
     out = []
     for r in records:
         line = by_run.get(r["run_id"])
+        review = line and line["review"]
         if line is None:
             out.append(r)
-        elif line["review"] != "posted":
-            rejected = line["review"] == "rejected"
-            out.append({**r, "posted": False, "rejected": rejected, "outcome": line["review"]})
+        elif review != "posted":
+            outcome = AWAITING_REVIEW if review == "pending" else review
+            out.append({**r, "posted": False, "rejected": review == "rejected", "outcome": outcome})
         else:
             ok = all(a.get("ok") for a in line.get("applied") or [])
             out.append(

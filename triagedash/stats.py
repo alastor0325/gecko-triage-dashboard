@@ -11,7 +11,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 
 from .markdown import render
-from .store import order
+from .store import AWAITING_REVIEW, order
 
 # The agent's decision, grouped as the local triage dashboard groups its drafts.
 CATEGORY = {
@@ -74,7 +74,7 @@ def outcome_tags(record: dict) -> list[str]:
     out = ["rejected"] if record["rejected"] else []
     if record["posted"]:
         out.append(record["outcome"])
-    elif record["outcome"] in ("awaiting review", "apply failed"):
+    elif record["outcome"] in (AWAITING_REVIEW, "apply failed"):
         out.append(record["outcome"])
     return out
 
@@ -247,5 +247,5 @@ def team_page(records: list[dict], as_of: datetime, passes: list[dict] = ()) -> 
         ],
         "overview": overview(records, as_of),
         "bugs": (page_bugs := bugs(records, as_of)),
-        "awaiting": sum(b["runs"][0]["outcome"] == "awaiting review" for b in page_bugs),
+        "awaiting": sum(b["runs"][0]["outcome"] == AWAITING_REVIEW for b in page_bugs),
     }
