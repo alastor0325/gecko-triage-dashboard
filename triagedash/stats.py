@@ -96,8 +96,9 @@ def period_start(as_of: datetime, key: str) -> str:
 
 def run_view(record: dict) -> dict:
     keep = (
-        "started_at", "severity", "priority", "needinfo", "asked", "dupe_of", "blocks_add",
-        "keywords_add", "regressed_by_add", "other_bugs", "agent_version",
+        "started_at", "posted", "outcome", "posted_at", "comment_count", "severity", "priority",
+        "needinfo", "asked", "dupe_of", "blocks_add", "keywords_add", "regressed_by_add",
+        "other_bugs", "agent_version",
     )  # fmt: skip
     cat = category(record)
     reclassified = cat != CATEGORY.get(record["decision"])
@@ -191,7 +192,7 @@ def team_page(records: list[dict], as_of: datetime) -> dict:
     records = in_period(records, as_of, longest)
     return {
         "as_of": as_of.isoformat(),
-        "posted": any(r["posted"] for r in records),
+        "posted": sum(r["posted"] for r in records),
         "categories": [
             {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c], "harm": c == "close"}
             for c in CATEGORIES

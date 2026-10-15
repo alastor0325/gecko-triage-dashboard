@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from triagedash import render, stats, store
+from triagedash.store import apply_log
 from triagedash.teams import TEAMS
 
 from .conftest import make_record
@@ -39,3 +40,51 @@ def test_landing_row_counts_1_week():
     )
     out = render.team_row(1, TEAMS[0], page)
     assert "<strong>1</strong>bugs handled<br>1 closed or moved" in out
+
+
+LOG_LINE = {
+    "run_id": "local-20261015-055005-cf67f6",
+    "bug_id": 2080668,
+    "review": "posted",
+    "posted_at": "2026-10-15T07:06:17Z",
+    "applied": [
+        {"type": "add_comment+update_bug", "bug_id": 2080668, "ok": True},
+        {"type": "update_bug", "bug_id": 1914151, "ok": True},
+    ],
+    "comment_count": 2,
+    "bot_account": "bot@example.com",
+}
+
+
+def test_apply_log_marks_a_posted_run():
+    run = make_record(2080668, run_id="local-20261015-055005-cf67f6")
+    other = make_record(1, run_id="other")
+    out = apply_log([run, other], [LOG_LINE])
+    posted = next(r for r in out if r["run_id"] == run["run_id"])
+    assert (posted["posted"], posted["outcome"], posted["posted_at"], posted["comment_count"]) == (
+        True,
+        "posted",
+        "2026-10-15T07:06:17Z",
+        2,
+    )
+    assert next(r for r in out if r["run_id"] == "other")["outcome"] is None
+    assert "example.com" not in str(out)
+
+
+def test_apply_log_partly_posted_and_rejected():
+    run = make_record(2080668, run_id="local-20261015-055005-cf67f6")
+    partly = {
+        **LOG_LINE,
+        "applied": [{**LOG_LINE["applied"][0]}, {**LOG_LINE["applied"][1], "ok": False}],
+    }
+    (r,) = apply_log([run], [partly])
+    assert (r["posted"], r["outcome"]) == (True, "partly posted")
+    (r,) = apply_log([run], [{**LOG_LINE, "review": "rejected", "applied": [], "posted_at": None}])
+    assert (r["posted"], r["outcome"]) == (False, "rejected")
+
+
+def test_load_jsonl(tmp_path):
+    p = tmp_path / "log.jsonl"
+    p.write_text('{"a": 1}\n\n{"a": 2}\n')
+    assert store.load_jsonl(p) == [{"a": 1}, {"a": 2}]
+    assert store.load_jsonl(tmp_path / "missing.jsonl") == []

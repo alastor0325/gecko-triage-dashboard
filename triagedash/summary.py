@@ -154,6 +154,9 @@ def parse_summary(
     comment = comments[-1] if comments else None
     record = {
         "posted": False,
+        "outcome": None,
+        "posted_at": None,
+        "comment_count": None,
         "source": source,
         "run_id": run_id,
         "started_at": run_started_at(run_id),

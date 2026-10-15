@@ -73,6 +73,11 @@ def test_acted():
     assert not stats.acted(make_record(started_at=None))
 
 
+def test_team_page_counts_posted_runs():
+    page = stats.team_page([make_record(posted=True), make_record(2)], AS_OF)
+    assert page["posted"] == 1
+
+
 def test_decision_label():
     assert stats.decision_label("triaged") == "analyzed"
     assert stats.decision_label("wrong_component") == "wrong component"
@@ -151,7 +156,7 @@ def test_overview():
 def test_team_page():
     page = stats.team_page([make_record()], AS_OF)
     assert page["as_of"] == "2026-10-14T12:00:00+00:00"
-    assert page["posted"] is False
+    assert page["posted"] == 0
     assert [c["key"] for c in page["categories"]] == ["analyzed", "needs-info", "close"]
     assert page["categories"][2] == {
         "key": "close",

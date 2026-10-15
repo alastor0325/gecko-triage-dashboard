@@ -98,7 +98,10 @@ def ingest(args) -> None:
             new.append(record)
             count += 1
         print(f"{round_} ({source}): {count} runs")
-    store.save(RUNS, store.merge_records(store.load(RUNS, []), new))
+    log = store.load_jsonl(Path(args.root) / "pilot" / "log.jsonl")
+    records = store.apply_log(store.merge_records(store.load(RUNS, []), new), log)
+    print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
+    store.save(RUNS, records)
 
 
 def page_clock(records: list[dict], now: datetime) -> datetime:
