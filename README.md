@@ -53,8 +53,9 @@ its landing page with this dashboard's text.
 
 `data/runs.json` has one record per agent run, and it is committed. `data/rounds.tsv`
 lists each dry-run round and its directory (the round name is used in the ingest log only). The site is public, so the records keep no
-email address: a needinfo becomes a role (`reporter`, `assignee` or `other`), and every
-string is scrubbed of emails and `:nick` mentions. Restricted bugs are never ingested. A
+email address: a needinfo becomes the person's role (`reporter`, `assignee` or `other`)
+and their public Bugzilla name and nick, looked up at ingest, and every string is scrubbed
+of emails and `:nick` mentions. The card shows who each needinfo asks. Restricted bugs are never ingested. A
 run's team comes from its bug's component. Times are stored in UTC, and the page shows them in the viewer's time zone; the per-day
 chart counts by the viewer's local day.
 
