@@ -19,7 +19,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from . import store
-from .summary import parse_summary
+from .summary import is_public, parse_summary
 
 DEFAULT_URL = "https://hackbot-api.moz.tools"
 KEYCHAIN_SERVICE = "hackbot-api"
@@ -201,7 +201,7 @@ def to_record(doc: dict, meta: dict, users: dict[str, dict], review: dict | None
         meta=meta,
         users=users,
         source="hackbot",
-        team=run["inputs"].get("team"),
+        team=team_of(doc),
         started_at=run["created_at"],
     )
     result = outcome(run, doc["actions"], review)
@@ -212,18 +212,21 @@ def bug_of(doc: dict) -> int:
     return doc["run"]["inputs"]["bug_id"]
 
 
+def team_of(doc: dict) -> str | None:
+    return doc["run"]["inputs"].get("team")
+
+
 def summary_of(doc: dict) -> dict:
     return doc["run"].get("summary") or {}
 
 
 def records(docs: list[dict], metas: dict, users: dict, reviews: dict) -> list[dict]:
-    """The records of every downloaded run on a public bug of a known team."""
+    """The records of every downloaded run on a public bug. `store.shown` then keeps the
+    runs made for a shown team."""
     out = []
     for doc in docs:
         meta = metas.get(bug_of(doc))
-        if meta is None or meta.get("groups"):
+        if meta is None or not is_public(meta):
             continue
-        record = to_record(doc, meta, users, reviews.get(doc["run"]["run_id"]))
-        if record["team"] is not None:
-            out.append(record)
+        out.append(to_record(doc, meta, users, reviews.get(doc["run"]["run_id"])))
     return out

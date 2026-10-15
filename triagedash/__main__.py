@@ -101,11 +101,8 @@ def ingest(args) -> None:
                 meta=meta,
                 users=users,
                 source=source,
-                team=teams.get(run_id),
+                team=store.local_team(teams, run_id),
             )
-            if record["team"] is None:
-                print(f"skip {path}: bug {bug_id} is in no team's component")
-                continue
             new.append(record)
             count += 1
         print(f"{round_} ({source}): {count} runs")
@@ -113,7 +110,8 @@ def ingest(args) -> None:
         remote_records = hackbot.records(docs, metas, users, hackbot.load_reviews(hackbot_dir))
         new += remote_records
         print(f"hackbot: {len(remote_records)} runs")
-    records = store.apply_log(store.merge_records(store.load(RUNS, []), new), log)
+    merged = store.shown(store.merge_records(store.load(RUNS, []), new))
+    records = store.apply_log(merged, log)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)
     pilot_passes = store.load_jsonl(Path(args.root) / "pilot" / "passes.jsonl")

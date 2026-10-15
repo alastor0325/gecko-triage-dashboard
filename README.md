@@ -74,8 +74,10 @@ trace.
 The site is public, so the records keep no email address: a needinfo becomes the person's
 role (`reporter`, `assignee` or `other`) and their public Bugzilla name and nick, looked
 up at ingest, and every string is scrubbed of emails and `:nick` mentions. The card shows
-who each needinfo asks. Restricted bugs are never ingested. A run's team is the team it
-was made for (`inputs.team` in the pilot log), else its bug's component. Times are stored
+who each needinfo asks. Restricted bugs are never ingested. The dashboard is for the media
+team only, so it shows only runs made for team `media`: `inputs.team` in the pilot log or
+in the Hackbot run, and `media` for a local run with no log line yet. A run made for no
+team, or for another team, is not shown. Times are stored
 in UTC (a run folder is named by its UTC start time), and the page shows them in the
 viewer's time zone; the per-day chart counts by the viewer's local day.
 
@@ -120,7 +122,8 @@ uv run python -m triagedash review <run_id> --reject "reason"
 ## Adding a team
 
 Add a `Team` to `TEAMS` in `triagedash/teams.py`, with the components from the agent's
-`teams/<team>/team.toml`. Runs on bugs in those components then go to that team.
+`teams/<team>/team.toml` (the landing page lists them). Runs whose input names that team
+then go to its page. Local runs are all `LOCAL_TEAM` (media) today.
 
 ## Publishing
 

@@ -16,7 +16,7 @@ from .conftest import make_record, make_summary
 
 
 def parse(summary, meta, bug_id=100, **kw):
-    kw = {"users": {}, "source": "test", **kw}
+    kw = {"users": {}, "source": "test", "team": "media", **kw}
     return parse_summary(
         summary, bug_id=bug_id, run_id="local-20261014-174025-eb0234", meta=meta, **kw
     )
@@ -86,10 +86,6 @@ def test_parse_fields(meta):
     assert r["posted"] is False
     assert r["error"] is False
     assert r["move_to"] is None
-
-
-def test_team_comes_from_component(meta):
-    assert parse(make_summary(), {**meta, "component": "Graphics"})["team"] is None
 
 
 def test_parse_duplicate_with_meta_bug_on_dupe_target(meta):
@@ -212,7 +208,6 @@ def test_parse_records_the_source(meta):
     assert parse(make_summary(), meta, source="daily")["source"] == "daily"
 
 
-def test_team_from_the_run_input_wins_over_the_component(meta):
+def test_team_comes_from_the_run_input_not_the_component(meta):
     moved = {**meta, "component": "Widget: Gtk"}
-    assert parse(make_summary(), moved)["team"] is None
     assert parse(make_summary(), moved, team="media")["team"] == "media"

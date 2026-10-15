@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from triagedash import hackbot
+from triagedash import hackbot, store
 
 RUN = {
     "run_id": "11111111-2222-4333-8444-555555555555",
@@ -154,3 +154,19 @@ def test_to_record_failed_run_is_an_error():
     }
     r = hackbot.to_record(doc, META, users={}, review=None)
     assert (r["error"], r["outcome"]) == (True, "failed")
+
+
+def test_records_keep_public_runs_and_their_team():
+    def doc(run_id, bug_id, team):
+        run = {**hackbot.slim(RUN), "run_id": run_id, "inputs": {"bug_id": bug_id, "team": team}}
+        return {"run": run, "actions": [PENDING]}
+
+    docs = [doc("a", 1, "media"), doc("b", 1, None), doc("c", 1, "graphics"), doc("d", 2, "media")]
+    metas = {1: META, 2: {**META, "groups": ["core-security"]}}
+    out = hackbot.records(docs, metas, {}, {})
+    assert [(r["run_id"], r["team"]) for r in out] == [
+        ("a", "media"),
+        ("b", None),
+        ("c", "graphics"),
+    ]
+    assert [r["run_id"] for r in store.shown(out)] == ["a"]

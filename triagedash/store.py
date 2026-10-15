@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .teams import LOCAL_TEAM, is_shown
+
 
 def when(record: dict) -> str:
     return record["started_at"] or ""
@@ -49,6 +51,18 @@ def load_jsonl(path: Path) -> list[dict]:
 def log_teams(log: list[dict]) -> dict[str, str | None]:
     """The team each logged run was made for, by run id."""
     return {line["run_id"]: (line.get("inputs") or {}).get("team") for line in log}
+
+
+def shown(records: list[dict]) -> list[dict]:
+    """The records the dashboard shows: the runs made for a team of TEAMS. Applied to the
+    whole archive, so a run stored under an older rule is dropped too."""
+    return [r for r in records if is_shown(r["team"])]
+
+
+def local_team(teams: dict[str, str | None], run_id: str) -> str | None:
+    """The team a local run was made for: its log line's, else LOCAL_TEAM. A run that waits
+    for review may have no log line yet."""
+    return teams.get(run_id, LOCAL_TEAM)
 
 
 def apply_log(records: list[dict], log: list[dict]) -> list[dict]:

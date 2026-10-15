@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from triagedash import render, stats, store
 from triagedash.store import apply_log
-from triagedash.teams import TEAMS
+from triagedash.teams import TEAMS, is_shown
 
 from .conftest import make_record
 
@@ -107,3 +107,23 @@ def test_merge_passes_dedupes_and_keeps_only_safe_fields():
     merged = store.merge_passes([old], new)
     assert [p["at"][:10] for p in merged] == ["2026-10-14", "2026-10-15", "2026-10-16"]
     assert all(set(p) == {"team", "at", "selected"} for p in merged)
+
+
+def test_local_team_is_the_log_lines_else_media():
+    teams = store.log_teams(
+        [{"run_id": "a", "inputs": {"team": "media"}}, {"run_id": "b", "inputs": {"team": None}}]
+    )
+    assert store.local_team(teams, "a") == "media"
+    assert store.local_team(teams, "b") is None
+    assert store.local_team(teams, "awaiting-review") == "media"
+
+
+def test_only_the_media_team_is_shown():
+    assert is_shown("media")
+    assert not is_shown(None)
+    assert not is_shown("graphics")
+
+
+def test_shown_drops_runs_of_no_team_or_another_team():
+    records = [make_record(1, team="media"), make_record(2, team=None), make_record(3, team="gfx")]
+    assert [r["bug_id"] for r in store.shown(records)] == [1]

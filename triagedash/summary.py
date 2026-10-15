@@ -10,8 +10,6 @@ from __future__ import annotations
 import re
 from datetime import UTC, datetime
 
-from .teams import team_for
-
 _RUN_ID = re.compile(r"local-(\d{8}-\d{6})-[0-9a-f]+$")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _MENTION = re.compile(r"(?<![\w/:]):[A-Za-z][\w-]*\b")
@@ -135,15 +133,14 @@ def parse_summary(
     meta: dict,
     users: dict[str, dict],
     source: str,
-    team: str | None = None,
+    team: str | None,
     started_at: str | None = None,
 ) -> dict:
     """`meta` is the bug's public Bugzilla data: creator, assigned_to, product, component,
     summary, groups, creation_time. `users` maps a requestee email to its public Bugzilla
     name and nick. `bug_id` comes from the caller, since a crashed run has no findings.
     `source` is `daily` for an official daily run and `test` for a test round. `team` is
-    the team the run was made for, when known; else the bug's component decides, which
-    fails once the bot has moved the bug out of the team. `started_at` is the run's start
+    the team the run was made for, from the run's input. `started_at` is the run's start
     when its id does not encode it (Hackbot run ids are uuids)."""
     findings = summary.get("findings") or {}
     own, other = update_actions(summary, bug_id)
@@ -170,7 +167,7 @@ def parse_summary(
         "bug_id": bug_id,
         "title": meta.get("summary"),
         "filed": meta.get("creation_time"),
-        "team": team or team_for(meta.get("product"), meta.get("component")),
+        "team": team,
         "error": summary.get("status") != "ok" or bool(summary.get("error")),
         "decision": findings.get("decision"),
         "comment": strip_footer(comment),
