@@ -7,6 +7,15 @@ from .conftest import make_record
 AS_OF = datetime(2026, 10, 14, 12, tzinfo=UTC)
 
 
+def test_analyzed_that_asks_for_artifacts_needs_info():
+    assert stats.category(make_record(decision="triaged", asked=["media profile"])) == "needs-info"
+    assert stats.category(make_record(decision="triaged", asked=[])) == "analyzed"
+    assert stats.category(make_record(decision="duplicate", asked=["log"])) == "close"
+    v = stats.run_view(make_record(decision="triaged", asked=["media profile"]))
+    assert v["decision"] == "analyzed, still asks for artifacts"
+    assert stats.run_view(make_record(decision="triaged"))["decision"] == "analyzed"
+
+
 def test_category():
     assert stats.category(make_record(decision="triaged")) == "analyzed"
     assert stats.category(make_record(decision="needs_info")) == "needs-info"

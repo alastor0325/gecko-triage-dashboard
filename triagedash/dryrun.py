@@ -158,6 +158,7 @@ def parse_summary(
         "comment": strip_footer(comment),
         "severity": own.get("severity"),
         "priority": own.get("priority"),
+        "asked": list(findings.get("asked") or []),
         "needinfo": [needinfo_entry(f.get("requestee"), meta, users) for f in needinfo_flags(own)],
         "blocks_add": _added(own, "blocks"),
         "keywords_add": _added(own, "keywords"),

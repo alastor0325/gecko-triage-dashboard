@@ -1,5 +1,6 @@
 [
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080218,
   "comment": "Thanks for the demo page and the media profile. The profile shows the problem clearly.\n\n**Findings**\n\n- The H.264 video track waits for network data, and the audio clock keeps running.\n- The state machine enters buffering six times. Each time, it returns to decoding after 40 ms to 1 s, while the video data request is still pending.\n- Video then falls behind the clock. The decoder skips to the next keyframe twice, at media time 8 s and 16 s. Keyframes in this file are 8 s apart.\n- Each skip loses about 5.7 s of video. The picture freezes on the last frame until the clock reaches the keyframe.\n\nThe skip decision is `ShouldRequestNextKeyFrame()` in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoderStateMachine.cpp#687). The open question is why buffering exits while video data is still missing.\n\n**Next step**\n\nThis data is sufficient to start an investigation. Suggest that this bug blocks the dropped-frames meta bug 1416090.\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: none \u00b7 unread: none",
@@ -22,6 +23,10 @@
   "title": "Video freezes, then skips several seconds ahead, when an MP4 with audio is downloaded in bursts"
  },
  {
+  "asked": [
+   "media log",
+   "about:support"
+  ],
   "blocks_add": [],
   "bug_id": 2080421,
   "comment": "Thank you for the clear steps.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nPlease start logging before you connect the earbuds, while Windows shows no output device.\n\nCould you please also attach the text of `about:support` to this bug?\n\nThis bug relates to meta bug 2011679.\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: media log, about:support \u00b7 unread: none",
@@ -50,6 +55,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080317,
   "comment": "The crash report confirms a Rust panic in the parent process on macOS arm64. It fires in the CoreAudio device-collection-changed callback on the cubeb dispatch queue.\n\nThe stack runs from `audiounit_collection_changed_callback` through `audiounit_get_devices_of_type` ([mod.rs](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#2122)) into `get_channel_count` ([mod.rs](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#1732)). The failing `assert_ne!(id, kAudioObjectUnknown)` is inlined, so the report does not show which callee fired. The candidates are `get_device_streams` and `get_stream_virtual_format` in [device_property.rs](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#394).\n\nVolume is low but steady: 20 crashes since mid-July across release, beta, ESR and nightly, all on macOS. The signature was first reported in January 2024.\n\nBug 1902801 had the same `left: 0, right: 0` panic in `get_device_streams` and was fixed in June 2024. This signature predates that fix and continues after it, so it is a separate problem. Comment 0 attributes the code to bug 1575883; that attribution is unverified, and no regressor is confirmed.\n\nThis takes down the parent process, so the whole browser goes down. Suggest a human consider raising the severity field. No A/V meta bug matches this crash.\n\nThe next step is for a cubeb developer to look at the device enumeration in the collection-changed path. :[person] already has a needinfo from comment 0.\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: none \u00b7 unread: none",
@@ -72,6 +78,9 @@
   "title": "Crash in [@ cubeb_coreaudio::backend::get_channel_count]"
  },
  {
+  "asked": [
+   "regression range"
+  ],
   "blocks_add": [],
   "bug_id": 2059006,
   "comment": "Thanks for the Nightly test and the log. The profile in comment 3 is enough to start an investigation. Related: bug 2007762. Suggest blocking meta bug 1766429.\n\n**Next steps**\n\nYou mention the problem came back after an update. Could you please find the regression range?\n\nPlease find the regression range with mozregression:\n\n1. Install it from https://mozilla.github.io/mozregression/.\n2. Run it with the first known bad and the last known good versions.\n3. Follow the steps that show the problem on each build it opens.\n4. Paste the final \"pushlog\" link into this bug.\n\nIf unsure, use Firefox 140 as the good version.\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: regression range \u00b7 unread: none",
@@ -100,6 +109,7 @@
   "title": "Audio/video desynchronisation after pause/play"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2067925,
   "comment": "Thanks for the full vmmaps and the decoding test.\n\nBoth vmmaps show the same pattern. The RDD process holds thousands of `rw-` shared-memory regions of exactly 8112 KiB each: 3,270 on September 24 and 2,694 on September 28. They are fully swapped and make up nearly the whole footprint. IOSurface regions stay below 32 MiB, and the growth continues with hardware decoding off. This rules out the IOSurface and VideoToolbox theory in comment 2.\n\nEach region is 507 pages of 16 KiB, which fits one 1920x1080 buffer at 4 bytes per pixel, rounded up to the page size. This points to a frame-sized shared-memory buffer that is allocated again and again and never unmapped. The next step is for a developer to find which RDD shared-memory allocation has this size.\n\nBug 2043826 on Windows and bug 1837553 on Linux also report RDD growth. Neither shows this region pattern, so this bug stays separate for now.\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: none \u00b7 unread: memory report (archive refused)",
@@ -122,6 +132,7 @@
   "title": "macOS: RDD process reaches 34.6 GB physical footprint after ~80 h while about:memory accounts for only 8.5 MiB heap"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 1971032,
   "comment": null,
@@ -144,6 +155,10 @@
   "title": "After switching tab video playback stops on Arte OpenH264 GMPErr:7 GMPDecodeErr"
  },
  {
+  "asked": [
+   "media log",
+   "about:support"
+  ],
   "blocks_add": [],
   "bug_id": 2049170,
   "comment": "Thanks, Ostap and Andreas. Could you please capture a profile while the opening audio repeats? A capture from either of you helps.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nPlease also attach the full text of `about:support` from the same Firefox.\n\nSuggest linking this bug to meta bug 1904915 (YouTube playback).\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: media log, about:support \u00b7 unread: screen recording (video refused)",
@@ -172,6 +187,7 @@
   "title": "First 1-3 seconds of audio replayed when switching tracks on music.youtube.com"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2069633,
   "comment": null,
@@ -194,6 +210,7 @@
   "title": "MSE: Delayed media-segment appends after a seek can trigger terminal MEDIA_ERR_DECODE (avcodec_send_packet: End of file)"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080218,
   "comment": "Thanks for the demo page and the profile. The profile is a media capture and it shows the problem clearly.\n\n**Findings from the profile**\n\n1. Only `bbb.mp4`, the file with audio, played. Video is H.264 through system FFmpeg, and audio is AAC through ffvpx.\n2. The state machine enters buffering six times, but each stay is short. Twice it returns to decoding before any video data arrives, at 14.2 s and 25.2 s.\n3. The audio clock keeps running while the video queue is empty. Its lead over the last video frame grows to 3.4 s.\n4. The state machine then skips video to the next keyframe twice. Video jumps from 2.58 s to 8.00 s, then from 10.46 s to 16.00 s.\n5. There are no `NS_ERROR_DOM_MEDIA_*` errors.\n\n**Next step**\n\nBuffering exits on available audio while video is still starved. The video-only file buffers correctly, which fits this pattern. The next step is to check the exit conditions of the buffering heuristics in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoderStateMachine.cpp#3172) for a starved video track.\n\nThis belongs under the dropped-frames meta bug 1416090.\n\nThe bug has enough data to start an investigation. Nothing more is needed from the reporter.\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: none \u00b7 unread: none",
@@ -216,6 +233,11 @@
   "title": "Video freezes, then skips several seconds ahead, when an MP4 with audio is downloaded in bursts"
  },
  {
+  "asked": [
+   "media log",
+   "about:support",
+   "about:memory report"
+  ],
   "blocks_add": [],
   "bug_id": 2067925,
   "comment": "Thanks for the vmmaps. Both show thousands of identical 8,112 KiB `SM=SHM` regions, fully swapped, with hardware decoding on and off. This rules out the IOSurface path.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nPlease do the capture on https://campbert.at/de if you can.\n\nPlease attach your about:support.\n\nPlease attach the about:memory report from the 20.9 GiB state; it is missing.\n\n---\n\nIf you'd like to provide feedback on this comment, please use the \ud83d\udc4d or \ud83d\udc4e reaction.\n\nmedia-triage \u00b7 rules 0.1.0 \u00b7 asked: media log, about:support, about:memory report \u00b7 unread: none",
@@ -244,6 +266,7 @@
   "title": "macOS: RDD process reaches 34.6 GB physical footprint after ~80 h while about:memory accounts for only 8.5 MiB heap"
  },
  {
+  "asked": [],
   "blocks_add": [
    1416090
   ],
@@ -268,6 +291,10 @@
   "title": "Video freezes, then skips several seconds ahead, when an MP4 with audio is downloaded in bursts"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -298,6 +325,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080317,
   "comment": "The crash report confirms the stack in the description.\n\n**Analysis**\n\nThe crash occurs in the parent process on macOS 27 (arm64), so the full browser closes. A Rust `assert_ne!` against `kAudioObjectUnknown` fails with the value 0. The crashing thread is a libdispatch thread that runs `audiounit_collection_changed_callback`. This callback calls `audiounit_get_devices_of_type`, which calls `get_channel_count` at [mod.rs](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#2122). Thus the crash occurs when the system audio device list changes, for example when a device connects or disconnects.\n\nThe description says that a stream ID of 0 gets to `get_stream_virtual_format` in [device_property.rs](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#394). The stack agrees with this cause, but it cannot prove it. The report has no frames for `get_device_streams` and `get_stream_virtual_format`, probably because the compiler inlined them into [mod.rs](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#1732).\n\nBug 1902801 fixed the same assert with the value 0 in `get_device_streams` in June 2024, on the aggregate device path. This signature continues on release, beta, ESR and Nightly after that fix. Thus bug 1902801 did not fix this path, and this bug is not a duplicate of it.\n\n**Next steps**\n\nThe crash closes the full browser, so a person can consider a higher severity. The volume is low: 9 crashes on all channels in the last 30 days. The next step is for a cubeb developer to examine `get_device_streams` and the stream loop in `get_channel_count`. The open needinfo on :[person] from the description stays.\n",
@@ -320,6 +348,10 @@
   "title": "Crash in [@ cubeb_coreaudio::backend::get_channel_count]"
  },
  {
+  "asked": [
+   "timestamped audio log",
+   "regression range"
+  ],
   "blocks_add": [
    1766429
   ],
@@ -350,6 +382,9 @@
   "title": "Audio/video desynchronisation after pause/play"
  },
  {
+  "asked": [
+   "about:memory report"
+  ],
   "blocks_add": [],
   "bug_id": 2067925,
   "comment": "Thank you for the two new vmmap captures and the test result.\n\n**Analysis**\n\nBoth vmmap files show the same pattern. Almost all of the RDD footprint is `shared memory` regions (`SM=SHM`) of exactly 8,112 KiB each. There are 3,270 regions (25.3 GiB) on September 24, and 2,694 regions (20.8 GiB) on September 28. Each region has the size of one 1920x1080 frame at 4 bytes per pixel, rounded up to 16 KiB pages. All of them are fully swapped out, and most of them are adjacent in the address space.\n\nIOSurface memory is small in both captures: 31.9 MiB and 27.3 MiB. The growth also continues with `media.hardware-video-decoding.enabled` set to `false`. Thus the VideoToolbox and IOSurface path from comment 2 is not the cause. This looks like frame-sized shared buffers that the RDD process keeps after it stops using them.\n\nThe next step for a developer is to find which RDD code allocates shared memory of this size, and why it does not release it. Bug 2043826 on Windows and bug 1837553 on Linux report similar RDD growth. This bug has more data than those two bugs.\n\nThe anonymized about:memory report from comment 0 is a gzip archive. The triage tools cannot open it, so this analysis does not include it.\n\n**Next steps**\n\nComment 5 says that a new about:memory report from the 20.9 GiB state is attached. The bug does not have this attachment.\n\nCould you please attach that about:memory report?\n",
@@ -378,6 +413,7 @@
   "title": "macOS: RDD process reaches 34.6 GB physical footprint after ~80 h while about:memory accounts for only 8.5 MiB heap"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 1971032,
   "comment": null,
@@ -400,6 +436,10 @@
   "title": "After switching tab video playback stops on Arte OpenH264 GMPErr:7 GMPDecodeErr"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    1904915
   ],
@@ -430,6 +470,7 @@
   "title": "First 1-3 seconds of audio replayed when switching tracks on music.youtube.com"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2069633,
   "comment": null,
@@ -452,6 +493,7 @@
   "title": "MSE: Delayed media-segment appends after a seek can trigger terminal MEDIA_ERR_DECODE (avcodec_send_packet: End of file)"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
   "comment": "Thank you for the synthetic reproducer and the control stream.\n\n**Analysis**\n\nThis looks like a problem in MSE buffering, not in the decoder. The first HEVC fragment plays, so the decoder works. The second segment reaches `SourceBuffer`, but the buffered range stays at `(0, 5.875)` and no error reaches the page. The problem occurs only when HEVC video and a negative audio `tfdt` (`2^64-1008`) are together. H.264 video with the same audio plays to the end.\n\nBug 2026875 changed [MoofParser.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mp4/MoofParser.cpp) to read this type of `tfdt` as a signed value. Firefox 157 has that fix. Thus this stream uses a path that the fix does not cover, or a later change broke that path. The next step is to play the attached stream and find why [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mediasource/TrackBuffersManager.cpp) adds no buffered data for the second segment. A fix must make the stream play, or report a decode error to the page instead of a silent stall.\n\nThe triage tooling cannot open the attached zip archive. Thus this analysis uses only the log lines in comment 0. The sample and the steps are sufficient to start an investigation. No media meta bug matches this problem.\n",
@@ -474,6 +516,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "asked": [],
   "blocks_add": [
    1746557
   ],
@@ -498,6 +541,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
   "comment": "The crash report and the code agree with the analysis in comment 0.\n\n**Analysis**\n\nThe crash is on the main thread of a content process, on Nightly 160 and Windows 11, after 40 seconds of uptime. Frame 5 is the `ThenValue` of the lambda in `MediaDecoder::RequestDebugInfo` ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#1648)).\n\n`MediaDecoderStateMachine::RequestDebugInfo` ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoderStateMachine.cpp#4744)) gives its promise `p` only to the runnable that it dispatches to `OwnerThread()`. If the dispatch fails, nothing settles `p`, and only a `MOZ_ASSERT` checks the result. The pending `FirstFrameLoaded` callback ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#844)) is then destroyed without a result. The crash report has no browser shutdown annotations, so the cause of the dispatch failure is not known yet.\n\nThe check that crashes is in [MozPromise.h](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/xpcom/threads/MozPromise.h#541), under `MOZ_DIAGNOSTIC_ASSERT_ENABLED`. Thus this crash occurs only in debug, Nightly and Developer Edition builds. In Release, the only effect is a lost `first_frame_loaded` telemetry record. The Release and ESR counts in comment 0 come from other `MozPromise` callers with the same signature.\n\n**Regression**\n\nBug 1888265 (part 2 and part 5) added this `FirstFrameLoaded` call and the `MOZ_ASSERT`. We suggest that a developer sets `regressed_by` to bug 1888265.\n\n**Next steps**\n\nThe bug has enough data to start a fix. :[person] already has an open needinfo from comment 0. No media meta bug matches this crash. The bug already blocks the Clouseau meta bug 1396527.\n",
@@ -522,6 +566,7 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
   "comment": null,
@@ -544,6 +589,11 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "regression range"
+  ],
   "blocks_add": [],
   "bug_id": 2077879,
   "comment": "Thank you for the report.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please attach the full text of `about:support` to this bug?\n\nCould you please tell us: does this happen on all videos, or only on F1TV?\n\nPlease find the regression range with mozregression:\n\n1. Install it from https://mozilla.github.io/mozregression/.\n2. Run it with the first known bad and the last known good versions.\n3. Follow the steps that show the problem on each build it opens.\n4. Paste the final \"pushlog\" link into this bug.\n\nUse 157 as the last known good version and 158 as the first known bad version.\n",
@@ -572,6 +622,10 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -602,6 +656,12 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "sample file",
+   "other codecs"
+  ],
   "blocks_add": [],
   "bug_id": 2080409,
   "comment": "Thanks for the detailed report.\n\n**Analysis**\n\nThe error message comes from [RemoteMediaManagerChild.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/ipc/RemoteMediaManagerChild.cpp#357). Firefox asks the MF Media Engine CDM utility process for a decoder, but that process accepts only EME playback. Your file is not encrypted, so the request fails. Bug 2043087 reports the same error for HEVC playback through MSE.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please attach the text from `about:support` to this bug? Open `about:support`. Click **Copy text to clipboard**. Paste the text into a comment.\n\nCould you please attach a short sample file that shows the problem? If the file is private, send it to [email].\n\nDoes this happen with one codec only (H.264, H.265, AV1, VP9)?\n",
@@ -630,6 +690,7 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2078058,
   "comment": null,
@@ -652,6 +713,11 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "other videos"
+  ],
   "blocks_add": [],
   "bug_id": 2078267,
   "comment": "Thank you for the report.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nThe error shows after a long time. Keep the logging on until the error shows, then click **Stop Logging**.\n\nCould you please add the data from `about:support` to this bug?\n\n1. Open `about:support`.\n2. Click **Copy text to clipboard**.\n3. Paste the text in a new comment.\n\nDoes this happen on all videos, or only certain ones?\n",
@@ -680,6 +746,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "asked": [],
   "blocks_add": [
    1665980
   ],
@@ -706,6 +773,10 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "asked": [
+   "profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -736,6 +807,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [
    1746557
   ],
@@ -760,6 +832,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
   "comment": "Thank you for the synthetic sample and the control stream.\n\n**Analysis**\n\nThis bug has enough data to start an investigation. Your Gecko log shows that `SourceBuffer` accepts the second segment. But `buffered` stays at `[0, 5.875]`, and no error reaches the page. Our tools cannot open the zip attachment, so this analysis uses the log lines in comment 0.\n\nBug 2065822 can be related. On macOS, [MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mp4/MP4Demuxer.cpp#475) marks an HEVC CRA picture as a non-keyframe since bug 2049615. With MSE, `TrackBuffersManager` then drops every sample until the next IDR picture. x265 uses open GOP by default, so the second segment can start on a CRA picture. This can explain why only HEVC fails, but not why the control stream plays. Thus this bug is not a duplicate of bug 2065822.\n\nBug 2026875 fixed the parse of a negative audio `tfdt`, and Firefox 157 contains that fix.\n\n**Next steps**\n\nA developer can use the attached stream to check these items:\n\n1. Find the type of the first video picture in `seg1.mp4`.\n2. Test the patch on bug 2065822 with this stream.\n3. Find why the negative audio `tfdt` changes the result.\n\nSeparately, the stall must give the page an error. A silent stop gives the page no signal to recover.\n",
@@ -782,6 +855,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
   "comment": "Thank you for the clear testcase and the comparisons.\n\n**Analysis**\n\nThis looks like an Opus timing problem after a keyframe seek in WebM. The attached testcase contains VP9 video and Opus audio. The problem occurs when `fastSeek()` moves the playback position to a video keyframe. An accurate seek through `currentTime` stays in sync. MP4 with AAC and WebM with Vorbis also stay in sync.\n\n**Next steps**\n\nThe attached testcase is self-contained and is sufficient to start an investigation. The next step is for a developer to reproduce the problem with a media log. We need no more data from you now. As a workaround, a page can set `currentTime` in place of calling `fastSeek()`.\n",
@@ -804,6 +878,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
   "comment": "The crash report confirms the analysis in comment 0.\n\n**Analysis**\n\nThe crash is on the main thread of a content process, on Windows 11 with Nightly 160. Frame 5 is the `->Then()` lambda in `MediaDecoder::RequestDebugInfo` ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#1662)). That lambda returns the promise from `MediaDecoderStateMachine::RequestDebugInfo` ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoderStateMachine.cpp#4744)). When the dispatch to the state machine task queue fails, that function ignores the error outside debug builds. Nothing resolves or rejects the returned promise, so the chained `FirstFrameLoaded` ThenValue dies without a result.\n\nThe crash comes from the check in `ThenValueBase::AssertIsDead` ([MozPromise.h](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/xpcom/threads/MozPromise.h#543)). This check runs only when `MOZ_DIAGNOSTIC_ASSERT_ENABLED` is set, thus release builds do not crash. In release builds, Firefox only skips the `first_frame_loaded` telemetry for that load. Crash-stats shows 159 crashes with this crash reason since 2026-04-13, all in content processes on Nightly, DevEdition and Beta. Other MozPromise crashes share this signature, so the release counts in comment 0 come from different causes.\n\nBug 1888265 added the `RequestDebugInfo` call in `MediaDecoder::FirstFrameLoaded` ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#844)). The `FirstFrameLoaded` call site in the crash reason did not exist before that change. Bug 1896281 tracked the same crash reason in CI. Bug 1899996 tracked the related `MOZ_ASSERT` failure in `MediaDecoderStateMachine::RequestDebugInfo`. A bot closed both bugs as incomplete, and no fix landed.\n\n**Next steps**\n\nThe data on this bug is sufficient to start a fix. We recommend the direction in comment 0: reject `p` when `OwnerThread()->Dispatch` fails.\n",
@@ -830,6 +905,11 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "asked": [
+   "profile",
+   "about:support",
+   "regression range"
+  ],
   "blocks_add": [],
   "bug_id": 2077879,
   "comment": "Thank you for the report and for the check of Firefox 157 with mozregression.\n\n**Analysis**\n\nThe changeset you link comes from bug 1856520. It changes how Windows shows DRM video in an overlay. The black screen in Moonlight is a different problem from this video freeze. We recommend a separate bug for it in the Graphics component.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nThe freeze starts after 10 to 15 minutes. Click **Stop Logging** soon after the video freezes.\n\nCould you please add the text of `about:support` to this bug?\n\n1. Open `about:support`.\n2. Click **Copy text to clipboard**.\n3. Paste the text in a new comment.\n\nPlease find the regression range with mozregression:\n\n1. Install it from https://mozilla.github.io/mozregression/.\n2. Run it with the first known bad and the last known good versions.\n3. Follow the steps that show the problem on each build it opens.\n4. Paste the final \"pushlog\" link into this bug.\n\nUse 157 as the last good version and 158 as the first bad version. Play the video for at least 15 minutes on each build.\n",
@@ -860,6 +940,11 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "sample file"
+  ],
   "blocks_add": [],
   "bug_id": 2080409,
   "comment": "Thank you for the detailed report.\n\n**Analysis**\n\nThe error text comes from [RemoteMediaManagerChild.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/ipc/RemoteMediaManagerChild.cpp#443). Firefox shows it when a video decoder request without EME goes to the MF Media Engine CDM process. Bug 2043087 shows the same error text for HEVC video with MSE on Windows.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please open `about:support`, click **Copy text to clipboard**, and attach the text to this bug?\n\nCould you please attach a short sample file that shows the problem? If the file is private, send it to [email].\n",
@@ -888,6 +973,10 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -918,6 +1007,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [
    1665980
   ],
@@ -946,6 +1036,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2078058,
   "comment": null,
@@ -968,6 +1059,11 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "other videos"
+  ],
   "blocks_add": [],
   "bug_id": 2078267,
   "comment": "Thank you for the report.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nThe error shows after a long time. Keep the logging on until the error message shows, then do step 6.\n\nCould you please also add your `about:support` information?\n\n1. Open `about:support`.\n2. Click **Copy text to clipboard**.\n3. Paste the text into a comment on this bug.\n\nDoes this happen on all videos, or only certain ones? For example, does a different live stream also stop?\n",
@@ -996,6 +1092,10 @@
   "title": "ms.now live video aborted"
  },
  {
+  "asked": [
+   "profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -1026,6 +1126,10 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    1445470
   ],
@@ -1061,6 +1165,9 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "asked": [
+   "media profile"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -1091,6 +1198,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [
    2011679
   ],
@@ -1115,6 +1223,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
   "comment": "The analysis in comment 0 is correct for the current code.\n\n**Analysis**\n\n`MediaDecoderStateMachine::RequestDebugInfo` creates the promise `p` and dispatches a runnable that resolves it ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoderStateMachine.cpp#4752)). If the dispatch to the owner `TaskQueue` fails, the runnable is destroyed. Only a debug `MOZ_ASSERT` checks `rv`, and the function returns `p` unsettled.\n\nThe reader's `Then` callback in [MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#1666) returns that `p`, so its completion promise chains onto `p`. When the last reference to `p` drops, `AssertIsDead` finds the pending `FirstFrameLoaded` callback from [MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#844) and crashes.\n\nThe crash comes from code in [MozPromise.h](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/xpcom/threads/MozPromise.h#543) under `MOZ_DIAGNOSTIC_ASSERT_ENABLED`. Thus it crashes the content process only in Nightly, DevEdition and debug builds. In release builds, the promise is destroyed without a crash, and the first-frame telemetry probe is lost.\n\nThe crash report shows a content process on Windows 11, Nightly 160, with an uptime of 40 seconds. It has no shutdown annotations. It is not known why the `TaskQueue` refuses the dispatch while `mShuttingDown` is still false.\n\nBug 1888265 ([00865b70298e](https://hg.mozilla.org/mozilla-central/rev/00865b70298e)) changed the check on `rv` from `MOZ_DIAGNOSTIC_ASSERT` to `MOZ_ASSERT`. Before that change, a failed dispatch crashed at the dispatch site. The missing reject is older than that change. Bug 1896281 tracked the same crash reason as an intermittent test failure.\n\n**Next steps**\n\nSuggested fix: when `OwnerThread()->Dispatch` fails, return `GenericPromise::CreateAndReject(rv, __func__)` or reject `p`. The `FirstFrameLoaded` callback already handles a reject. Also update `HTMLMediaElement::MozRequestDebugInfo`, which has `MOZ_ASSERT_UNREACHABLE` on a reject ([HTMLMediaElement.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mediaelement/HTMLMediaElement.cpp#2408)). The existing `mShuttingDown` reject can already reach that assert.\n",
@@ -1137,6 +1246,10 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "asked": [
+   "profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -1167,6 +1280,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [
    1746557
   ],
@@ -1197,6 +1311,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "asked": [],
   "blocks_add": [
    1665980
   ],
@@ -1225,6 +1340,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
   "comment": "Thank you for the test page and the clear narrowing.\n\n**Analysis**\n\nAfter `fastSeek()`, the audio starts one WebM cluster before the video keyframe. In the attached clip, this is 2 seconds. Two steps cause this together:\n\n1. For a fast seek, the audio seek target is the time where the video seek landed ([MediaFormatReader.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaFormatReader.cpp#3200)). This is a keyframe at a cluster start. `WebMDemuxer::SeekInternal` subtracts the Opus seek preroll (80 ms) from the target before the cue lookup ([WebMDemuxer.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/webm/WebMDemuxer.cpp#1172)). Thus the audio seek finds the previous cluster.\n2. In a fast seek, `AccurateSeekingState::HandleAudioDecoded` pushes the first audio sample with no trim ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoderStateMachine.cpp#1822)). Only the accurate seek drops audio up to the target, in `DropAudioUpToSeekTarget`. The clock starts at the keyframe, so the audio stays behind the video.\n\nThis agrees with each case that you tested. Vorbis and MP4 have no seek preroll. Setting `currentTime` does an accurate seek. A seek to the first keyframe clamps to the start time. Your `fastSeek(3.9)` case lands before the old position, so `AdjustFastSeekIfNeeded` changes it to an accurate seek.\n\n**Next steps**\n\nThe suggested fix is to drop and trim the audio up to the video keyframe time in a fast seek. This can reuse `DropAudioUpToSeekTarget` with the keyframe time as the target. A second change can apply the seek preroll to the audio track only. A WebM and Opus mochitest can cover this. We need no more data from you.\n",
@@ -1247,6 +1363,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
   "comment": "Thank you for the detailed report and the ffmpeg commands.\n\n**Analysis**\n\nThe cause seems to be two code paths that act together. The fix from bug 2026875 works: the parser reads the audio `tfdt` correctly as -1008.\n\n1. `MP4TrackDemuxer::GetNextSample` moves an audio sample with a negative start time to 0 and makes its duration almost 0 ([MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mp4/MP4Demuxer.cpp#531)). The decode time does not change.\n2. `TrackBuffersManager::ProcessFrames` then uses this short duration as the longest frame duration ([TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mediasource/TrackBuffersManager.cpp#2286)). The next audio sample starts about 21 ms later, so MSE detects a discontinuity ([TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mediasource/TrackBuffersManager.cpp#2124)). The discontinuity resets all tracks, and the video track then needs a keyframe.\n3. On macOS, the demuxer marks an HEVC sample as a keyframe only when it is an IDR frame ([MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/mp4/MP4Demuxer.cpp#479)). Bug 2049615 added this check for seeking. x265 uses open GOP by default, so segment 1 starts with a CRA frame. MSE drops all video samples in segment 1, and the buffered range stops at 5.875 s.\n\nThis also explains the H.264 result: its segment 1 starts with an IDR frame. The `make_zero` stream plays because the demuxer does not shorten any audio sample.\n\nThis analysis comes from the code only. Nobody has confirmed it with a log or a build yet. Our tools cannot open the zip attachment, but the ffmpeg commands in comment 0 are sufficient to make a test stream. Bug 2017567 is related work on time overflow in MSE.\n\n**Next steps**\n\nWe can fix this in one of two places, or in both:\n\n- Do not let a trimmed audio sample set the longest frame duration for the discontinuity check.\n- Apply the IDR-only HEVC rule on seek only, or let MSE accept a CRA frame as a random access point.\n\nPaul, could you please confirm this cause? You made the change in bug 2049615.\n",
@@ -1275,6 +1392,11 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "asked": [
+   "profile",
+   "about:support",
+   "regression range"
+  ],
   "blocks_add": [],
   "bug_id": 2077879,
   "comment": "Thank you for the report and for the check with Firefox 157.\n\n**Next steps**\n\nCould you please do the steps below? Keep hardware acceleration off, as you use it now.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please also copy the full text of `about:support` and paste it into this bug?\n\nPlease find the regression range with mozregression:\n\n1. Install it from https://mozilla.github.io/mozregression/.\n2. Run it with the first known bad and the last known good versions.\n3. Follow the steps that show the problem on each build it opens.\n4. Paste the final \"pushlog\" link into this bug.\n\nUse 157 as the last good version and 158 as the first bad version. On each build, play a stream for at least 20 minutes before you mark the build as good.\n",
@@ -1305,6 +1427,10 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "asked": [
+   "profile",
+   "about:support"
+  ],
   "blocks_add": [
    1445470
   ],
@@ -1340,6 +1466,11 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "codec check"
+  ],
   "blocks_add": [],
   "bug_id": 2080409,
   "comment": "Thank you for the clear report.\n\n**Analysis**\n\nBug 2043087 shows the same error text, but it uses MSE. In both bugs, the error comes from the same check in [RemoteMediaManagerChild.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/ipc/RemoteMediaManagerChild.cpp#443).\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please also attach your `about:support` text to this bug? Do these steps:\n\n1. Open `about:support`.\n2. Click **Copy text to clipboard**.\n3. Paste the text into a new comment or a text attachment.\n\nDoes this happen with one codec only (H.264, H.265, AV1, VP9)? For example, does an H.264 recording play on the same computer?\n",
@@ -1368,6 +1499,10 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "asked": [
+   "profile",
+   "about:support"
+  ],
   "blocks_add": [],
   "bug_id": 2078267,
   "comment": "Thank you for the report.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nThe error shows after a long time. Start the capture before you open the live stream. Stop it after the error shows.\n\nCould you please also open `about:support`, click **Copy text to clipboard**, and paste the text into this bug?\n",
@@ -1396,6 +1531,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "asked": [],
   "blocks_add": [
    2011679
   ],
@@ -1420,6 +1556,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
   "comment": "This crash comes from a promise in `MediaDecoderStateMachine::RequestDebugInfo` that nothing settles. The analysis in comment 0 matches the current code.\n\n**Analysis**\n\n`MediaDecoder::FirstFrameLoaded` requests debug info for telemetry and chains a `FirstFrameLoaded` callback on the result ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#844)). After the reader step, `MediaDecoder::RequestDebugInfo` returns the promise from the state machine ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoder.cpp#1666)).\n\n`MediaDecoderStateMachine::RequestDebugInfo` gives its `GenericPromise::Private` to a runnable for the state machine task queue ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaDecoderStateMachine.cpp#4744)). When `Dispatch` fails, the task queue destroys the runnable. The code checks `rv` only with `MOZ_ASSERT` and returns the unsettled promise. When the last reference goes, `AssertIsDead` finds the pending `FirstFrameLoaded` callback and crashes. The crash reason \"dispatchRv: not dispatched\" and frames 0 to 6 match this path.\n\nThe check that crashes exists only when `MOZ_DIAGNOSTIC_ASSERT_ENABLED` is set, which is Nightly, Developer Edition and debug builds ([MozPromise.h](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/xpcom/threads/MozPromise.h#30)). In the last 30 days, 21 crashes have this crash reason. All of them are on Nightly and Developer Edition, on Windows and macOS. The release and ESR counts in comment 0 are for the same generic signature, but they have other causes. In release builds, this path loses one telemetry sample and does not crash.\n\nOne point is not proven: why the dispatch fails while `mShuttingDown` is still false. A possible trigger is the thread pool that refuses work at XPCOM shutdown, but the crash data does not confirm it.\n\n**Related bugs**\n\nBug 1888265 (Firefox 126) added the `FirstFrameLoaded` to `RequestDebugInfo` chain. The same bug changed the dispatch check from `MOZ_DIAGNOSTIC_ASSERT` to `MOZ_ASSERT`, so the failure now shows as this promise crash. Bug 1896281 shows the same crash reason in `test_DifferentStreamStartTimes.html`. BugBot closed it as an inactive intermittent.\n\n**Next steps**\n\nSuggested fix direction:\n\n1. In `MediaDecoderStateMachine::RequestDebugInfo`, reject `p` with `rv` when `Dispatch` fails. The `FirstFrameLoaded` callback already handles a rejection.\n2. Check `MediaFormatReader::RequestDebugInfo` for the same problem ([MediaFormatReader.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/MediaFormatReader.cpp#3437)). It uses `InvokeAsync`, which does not settle its promise when the dispatch fails.\n3. As an option, keep the `FirstFrameLoaded` request in a `MozPromiseRequestHolder` and disconnect it in `MediaDecoder::Shutdown`.\n",
@@ -1446,6 +1583,11 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "other videos"
+  ],
   "blocks_add": [],
   "bug_id": 2078267,
   "comment": "Thank you for the report.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nThe error shows only after a long time. Click **Stop Logging** soon after the error shows.\n\nCould you please add your about:support data?\n\n1. Open `about:support`.\n2. Click **Copy text to clipboard**.\n3. Paste the text into a comment on this bug.\n\nCould you please tell us if this happens on all videos, or only on ms.now/live?\n",
@@ -1474,6 +1616,11 @@
   "title": "ms.now live video aborted"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "sample file"
+  ],
   "blocks_add": [],
   "bug_id": 2080409,
   "comment": "Thank you for the detailed report.\n\n**Analysis**\n\nThe error text comes from [RemoteMediaManagerChild.cpp](https://searchfox.org/firefox-main/rev/64cfaf34e56f4c82eea77d032ec592c083b5b161/dom/media/ipc/RemoteMediaManagerChild.cpp#443). Bug 2043087 (open) and bug 1976591 (fixed in Firefox 142) show the same error text for HEVC video.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please add your `about:support` text to this bug? To get it, open `about:support` and click **Copy text to clipboard**. Then paste it into a comment.\n\nCould you please send the MP4 file to [email]?\n",
@@ -1502,6 +1649,11 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "asked": [
+   "profile",
+   "about:support",
+   "repro URL"
+  ],
   "blocks_add": [],
   "bug_id": 2078058,
   "comment": "Thank you for the detailed report and the screenshots.\n\n**Analysis**\n\nThe `media.rdd-retryonfailure.enabled` pref does not control a decode retry loop. It only stops Firefox from launching the RDD process again after a launch failure, in [RDDProcessManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/ipc/RDDProcessManager.cpp#124).\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nFor this bug, open https://cn.aliyun.com/ in step 5. Wait 10 seconds before you click **Stop Logging**.\n\nCould you please attach the full text of `about:support`? Click **Copy text to clipboard** on that page and paste it here.\n\nOri, could you please give the URL of a page that shows the problem for you? Could you please also capture a profile on that page with the same steps?\n\nThe `crashhelper.exe` crashes are a different problem in the crash reporter. We recommend a separate bug in Toolkit :: Crash Reporting.\n",
@@ -1535,6 +1687,12 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "regression range",
+   "other sites"
+  ],
   "blocks_add": [],
   "bug_id": 2077879,
   "comment": "Thank you for the report and for the check on Firefox 157.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please attach the text from `about:support`? On that page, click **Copy text to clipboard**. Then paste the text into a comment.\n\nCould you please tell us if this also happens on other video sites, or only on F1TV?\n\nPlease find the regression range with mozregression:\n\n1. Install it from https://mozilla.github.io/mozregression/.\n2. Run it with the first known bad and the last known good versions.\n3. Follow the steps that show the problem on each build it opens.\n4. Paste the final \"pushlog\" link into this bug.\n\nUse Firefox 157 as the last good version and Firefox 158 as the first bad version. Let each build play for about 20 minutes before you mark it as good.\n",
@@ -1565,6 +1723,7 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
   "comment": "Thank you for the clear test case. The test file uses VP9 video and Opus audio, with a video keyframe every 2 seconds and an Opus SeekPreRoll of 80 ms.\n\n**Analysis**\n\nOn a `fastSeek()`, the audio starts one keyframe interval (2 seconds) before the video. Firefox then plays that early audio without a trim.\n\n1. The video seeks first, to the keyframe before the target: 6.0 s for `fastSeek(7.9)`. The reader then seeks the audio to that keyframe time ([MediaFormatReader.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaFormatReader.cpp#3202)).\n2. For Opus, `WebMDemuxer::SeekInternal` subtracts the 80 ms SeekPreRoll from the target ([WebMDemuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/webm/WebMDemuxer.cpp#1182)). It seeks with the cues of the video track ([WebMDemuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/webm/WebMDemuxer.cpp#1165)). Thus the target of 5.92 s lands on the cue at 4.0 s.\n3. On a fast seek, `AccurateSeekingState` pushes the first audio sample as it is ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaDecoderStateMachine.cpp#1823)). Only an accurate seek calls `DropAudioUpToSeekTarget`. The playback position becomes 6.0 s, so the audio from 4.0 s plays about 2 seconds late.\n\nThe variants in comment 0 agree with this cause. Vorbis has no SeekPreRoll, so its audio lands on the 6.0 s cue. A `currentTime` seek is accurate and drops the early audio. For `fastSeek(3.9)` from 1 s, the audio lands at 0 s, before the old position. Then `AdjustFastSeekIfNeeded` changes the seek to an accurate seek ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaDecoderStateMachine.cpp#2064)).\n\nThis case is related to bug 1188313 (A/V sync after a fast seek) and bug 945863 (Opus SeekPreRoll in WebM). Both bugs are fixed.\n\n**Next steps**\n\nThe suggested fix: on a fast seek, drop the decoded audio before the time where the video seek landed. Keep the SeekPreRoll, because the Opus decoder needs that audio. Another option is to not subtract the SeekPreRoll when the seek uses the video cues. No action is necessary from you.\n",
@@ -1587,6 +1746,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "asked": [],
   "blocks_add": [
    1746557
   ],
@@ -1611,6 +1771,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
   "comment": "Thank you for the synthetic reproducer and the control stream.\n\n**Analysis**\n\nThe triage tools cannot open zip attachments. This analysis uses the commands and the log lines in comment 0. It comes from the code only, and nobody has run the stream yet.\n\nTwo problems combine, and only in macOS builds (`MOZ_APPLEMEDIA`):\n\n1. **A false discontinuity in the audio track.** [MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mp4/MP4Demuxer.cpp#531) moves the negative start of the first AAC frame to 0. This makes the frame about 0.33 ms long. [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2286) then uses this short value as `mLongestFrameDuration`. The second frame starts about 21 ms later, so the check at [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2124) detects a discontinuity. This calls `ResetAppendState()` on all tracks, and sets \"need random access point\" on the video track too. The video of segment 0 is already processed at this time, so the video track starts segment 1 with the flag set.\n2. **On macOS, HEVC CRA frames are not keyframes.** Since bug 2049615, [MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mp4/MP4Demuxer.cpp#479) accepts only IDR frames as keyframes. x265 uses open GOP by default, so segment 1 probably has CRA frames and no IDR frame. Thus [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2038) drops every video frame of segment 1. `buffered` is the intersection of the audio and video ranges, so it stays at `[0, 5.875]`.\n\nThis agrees with the table in comment 0. x264 uses closed GOP, so segment 1 starts on an IDR frame and the flag clears at once. The `make_zero` control does not trim the first audio frame, so no false discontinuity occurs.\n\n**Related bugs**\n\nBug 2065822 reports the same CRA problem for MSE on macOS, and bug 2049615 also caused it. The patch on bug 2065822 makes every IRAP frame a keyframe, and that also unblocks this stream. This bug stays open for the first problem: a trimmed pre-roll frame must not cause a false discontinuity. Bug 2026875 did not cause this. It only lets the negative decode time reach the older trimming code.\n\n**Next steps**\n\nFor the discontinuity, the suggested fix is in `ProcessFrames`. Use the full frame duration (`mOriginalPresentationWindow` when it is set) for `mLongestFrameDuration` and `mLastFrameDuration`. Windows and Linux are probably not affected, because the CRA rule exists only in macOS builds. We suggest that a person with edit rights sets the OS field to macOS. Nothing more is necessary from the reporter.\n",
@@ -1637,6 +1798,10 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -1667,6 +1832,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
   "comment": "Thank you for the clear test case and the variations.\n\n**Analysis**\n\nThis looks like an interaction between the fast seek path and the Opus seek preroll in the WebM demuxer. The analysis below comes from a code read. No log confirms it yet.\n\n1. On a fast seek, the video seeks first to the keyframe K. Then [MediaFormatReader.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaFormatReader.cpp#3196) sets the audio seek time to K.\n2. `WebMDemuxer::SeekInternal` uses the video cues and subtracts `mSeekPreroll` from the target. Opus sets 80 ms, and Vorbis sets 0. See [WebMDemuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/webm/WebMDemuxer.cpp#1165).\n3. The cue lookup for K minus 80 ms finds the keyframe before K. Thus the audio starts about one keyframe interval too early.\n4. A fast seek pushes the first audio sample with no trim. Only an accurate seek calls `DropAudioUpToSeekTarget`. See [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaDecoderStateMachine.cpp#1820).\n5. The audio clock then plays the early audio as if it starts at K. The audio stays behind the video.\n\nThis agrees with each of your variations. A `currentTime` seek trims the audio. Vorbis has no preroll, and MP4 uses a different demuxer. A seek to the first keyframe clamps to the start time. The short forward seek becomes an accurate seek in `AdjustFastSeekIfNeeded`.\n\n**Next steps**\n\nA suggested fix is to trim the decoded audio up to K in the fast seek path. The trim must come after the decoder, so that the Opus decoder still gets its preroll. Another option is to apply the preroll only to the audio cue lookup in `WebMDemuxer::SeekInternal`. A mochitest with this test case can cover the fix. No action is necessary from you at this time.\n",
@@ -1689,6 +1855,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "asked": [],
   "blocks_add": [
    1746557
   ],
@@ -1713,6 +1880,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "asked": [],
   "blocks_add": [
    1665980
   ],
@@ -1747,6 +1915,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
   "comment": "The analysis in comment 0 is correct. `MediaDecoderStateMachine::RequestDebugInfo` can return a promise that nothing settles.\n\n**Analysis**\n\n`MediaDecoderStateMachine::RequestDebugInfo` creates a `GenericPromise::Private` and dispatches a runnable that resolves it ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaDecoderStateMachine.cpp#4751)). When the state machine `TaskQueue` is already shut down, the dispatch fails with `NS_ERROR_ILLEGAL_DURING_SHUTDOWN` and the queue deletes the runnable. Only a debug `MOZ_ASSERT` checks the result, and the function returns the pending promise ([MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaDecoderStateMachine.cpp#4760)). The `FirstFrameLoaded` telemetry `Then()` waits on this promise ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaDecoder.cpp#844)). When the last reference drops, `MozPromise` finds the pending `ThenValue` and crashes. The crash stack and the reason \"dispatchRv: not dispatched\" match this chain.\n\nBug 1888265 added the `FirstFrameLoaded` `Then()` in Firefox 126. Thus this crash is a regression from that bug. The check that crashes is a `MOZ_DIAGNOSTIC_ASSERT`. Thus the crash occurs only in Nightly, Developer Edition and debug builds. The release and ESR counts in comment 0 are different crashes with the same generic signature. All recent crash reports with the `FirstFrameLoaded` reason come from the content process, on Windows, macOS and Linux.\n\nBug 1896281 and bug 1899996 show the same failure in CI tests. Both bugs closed as INCOMPLETE without a fix. Suggest adding them to \"See Also\".\n\n**Next steps**\n\nThe recommended fix is in `MediaDecoderStateMachine::RequestDebugInfo`: when `OwnerThread()->Dispatch` fails, reject `p` with `rv`. The `FirstFrameLoaded` callback already handles a rejection. As an option, the lambda in `MediaDecoder::RequestDebugInfo` can return a rejected promise after shutdown ([MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/MediaDecoder.cpp#1660)). `MediaSource` calls the same function, and the fix also protects that caller ([MediaSource.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/MediaSource.cpp#682)).\n",
@@ -1773,6 +1942,7 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "asked": [],
   "blocks_add": [
    1665980
   ],
@@ -1807,6 +1977,12 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "other sites",
+   "regression range"
+  ],
   "blocks_add": [],
   "bug_id": 2077879,
   "comment": "Thank you for the report and for the check on Firefox 157.\n\n**Analysis**\n\nThe change that you link is from bug 1856520. It landed in Firefox 120, so it does not explain this new problem in Firefox 158.\n\n**Next steps**\n\nUse Firefox 158 with hardware acceleration off. Keep the logging on until the video freezes.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please attach the full text of `about:support` from Firefox 158?\n\nDoes this happen on all videos, or only on F1TV?\n\nPlease find the regression range with mozregression:\n\n1. Install it from https://mozilla.github.io/mozregression/.\n2. Run it with the first known bad and the last known good versions.\n3. Follow the steps that show the problem on each build it opens.\n4. Paste the final \"pushlog\" link into this bug.\n\nUse 157 as the good version and 158 as the bad version. Turn off hardware acceleration in each build that mozregression opens.\n",
@@ -1837,6 +2013,11 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "asked": [
+   "profile",
+   "about:support",
+   "sample file"
+  ],
   "blocks_add": [],
   "bug_id": 2080409,
   "comment": "Thank you for the detailed report.\n\n**Analysis**\n\nBug 2043087 reports the same error text for HEVC streams that use MSE. Bug 1976591 fixed the same error for a local HEVC file in Firefox 142. This bug stays separate for now, because your case does not use MSE.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nCould you please attach the full text of `about:support` to this bug?\n\nCould you please attach the MP4 file, or a short clip that shows the same problem?\n\nIf the file is private, please send it to [email].\n",
@@ -1865,6 +2046,7 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
   "comment": "Thank you for the synthetic stream and the clear steps.\n\n**Analysis**\n\nThis looks like two faults in the MSE path that combine. The `tfdt` change from bug 2026875 works and reads the audio start as -1008. This cause comes from a code review only. No media log confirms it yet.\n\n1. The demuxer moves the first AAC sample with a negative time to 0 and makes its duration very short ([MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mp4/MP4Demuxer.cpp#514)). It does not change the decode timestamp of the sample.\n2. MSE then uses this short duration as the longest frame duration. The next audio frame looks like a gap, and `TrackBuffersManager` reports a discontinuity ([TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2124)).\n3. The discontinuity sets the \"need random access point\" flag on all tracks, also on the video track ([TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2153)).\n4. On macOS, the demuxer marks an HEVC frame as a keyframe only if it is an IDR frame ([MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mp4/MP4Demuxer.cpp#475)). This rule came from bug 2049615. By default, x265 makes open GOP streams, so the second segment starts with a CRA frame. MSE then drops all later video frames ([TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2038)), and `buffered` stays at the end of the first segment.\n\nThis explains your table. x264 makes closed GOP streams, so each segment starts with an IDR frame and the video track recovers. The `make_zero` control has no negative time, so no false discontinuity occurs. The IDR rule applies only to macOS builds, so Windows and Linux probably do not show this stall.\n\n**Next steps**\n\nSuggested fix direction:\n\n1. When the demuxer moves a negative audio time to 0, also adjust the decode timestamp. As an alternative, skip this change for MSE.\n2. Accept a CRA frame as a random access point for MSE buffering. Use the IDR rule only where the decoder starts after a seek.\n\nA developer can confirm the cause with `MOZ_LOG=MediaSource:5,MediaSourceSamples:5` and the stream from comment 0. The log must show \"Discontinuity detected\" in the first segment, then \"skipping sample\" for the video frames of the second segment. Bug 2049615 can be the regressor together with bug 2026875, but no test confirms this. A comparison of Firefox 153 and 154 on macOS can confirm it.\n\nThe triage bot cannot open the zip attachment. It used the ffmpeg commands and the log lines in comment 0.\n",
@@ -1887,6 +2069,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "asked": [],
   "blocks_add": [
    2011679
   ],
@@ -1911,6 +2094,10 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [
+   "profile",
+   "about:support"
+  ],
   "blocks_add": [],
   "bug_id": 2078058,
   "comment": "Thank you for the detailed report and the screenshots.\n\n**Analysis**\n\nThe PDF shows the RDD process at 550% to 620% CPU on cn.aliyun.com. The RDD process goes back to idle when the tab closes. The bug has no profile yet, so we cannot see which decoder in the RDD process is busy.\n\nThe `crashhelper.exe` crashes are a different problem. Please report them in a separate bug in Toolkit :: Crash Reporting. The profile capture below does not use crash reporting, so it works on your computer.\n\n**Next steps**\n\nCaution: the capture must show the problem. Remove `media.autoplay.default` and `media.rdd-retryonfailure.enabled` from your `user.js` file first. Then close all Firefox windows and start Firefox again. Open https://cn.aliyun.com/ and wait until the Data Decoder CPU is high in `about:processes`. During the capture, let the high CPU continue for about 10 seconds.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nPlease also open `about:support`, click **Copy text to clipboard**, and paste the text into this bug.\n\nOri, could you please capture a profile in the same way on a site that shows the problem for you? Could you please also add the URL of that site?\n",
@@ -1944,6 +2131,11 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support",
+   "all videos?"
+  ],
   "blocks_add": [],
   "bug_id": 2078267,
   "comment": "Thank you for the report.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\nThe error shows only after a long time. Keep the logging on until the error shows. Then click **Stop Logging**.\n\nCould you please also add your `about:support` data to this bug?\n\n1. Open `about:support`.\n2. Click **Copy text to clipboard**.\n3. Paste the text into a new comment.\n\nDoes this happen on all videos, or only certain ones?\n",
@@ -1972,6 +2164,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "asked": [],
   "blocks_add": [
    2011679
   ],
@@ -1996,6 +2189,10 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -2026,6 +2223,10 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -2056,6 +2257,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
   "comment": "Thank you for the clear reproducer. Our tools cannot read archives, so we did not open the zip attachment. This analysis comes from the bug text and the code.\n\n**Analysis**\n\nTwo defects combine to cause the stall. Both are in the MSE path, and the second one occurs only on macOS.\n\n1. The first AAC frame starts at -1008/48000 s. [MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mp4/MP4Demuxer.cpp#514) moves its start time to 0 and cuts its duration to 16/48000 s. The bug 2026875 fix reads the `tfdt` correctly, so that fix is not the cause.\n2. [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2286) uses this short duration as the longest frame duration of the audio track. The gap to the next audio frame is more than two times that value. Thus the discontinuity check in [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2124) fires on a continuous stream. It sets the \"need random access point\" flag on all tracks, and the video track is one of them.\n3. On macOS, [MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mp4/MP4Demuxer.cpp#476) marks an HEVC sample as a keyframe only when it is an IDR picture. By default, x265 makes open GOP streams, so the second segment probably starts on a CRA picture. Then [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasource/TrackBuffersManager.cpp#2038) drops every video frame of that segment and reports no error.\n\nThe `buffered` range is the intersection of the tracks, so it stays at the end of the first segment. This also explains your controls. With `make_zero`, no audio start time is negative, so no false discontinuity occurs. x264 makes closed GOP streams, so the H.264 segment starts on an IDR picture and clears the flag. We expect this stream to play on Windows and Linux, because there the CRA picture keeps its sync flag. We did not test this.\n\nStep 3 is the same defect as bug 2065822. Bug 2049615 added that IDR check in Firefox 154, so we mark it as the regressor. Step 2 is a separate defect, and it stays after bug 2065822 is fixed.\n\n**Next steps**\n\nThe suggested fix has two parts:\n\n1. Fix bug 2065822: treat every HEVC IRAP picture (CRA, BLA) as a random access point in `MP4Demuxer`. Handle the VideoToolbox RASL limit in `AppleVTDecoder`.\n2. In `TrackBuffersManager::ProcessFrames`, use the untrimmed frame duration for the gap check. The `mOriginalPresentationWindow` field holds it when the demuxer trims a frame.\n\nA release build gives no signal when MSE drops all frames of a segment. A console warning can help pages find this problem. We suggest that a developer adds a dependency on bug 2065822. A `MediaSource:5` log of the reproducer can confirm the chain. Look for \"Discontinuity detected\" in the first segment, then \"skipping sample\" for the video of the second segment.\n",
@@ -2082,6 +2284,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
   "comment": "Thank you for the report. This is the same problem as bug 1914151. After a pause, the audio comes back with a short fade on wireless headphones, and only in Firefox.\n\n**Analysis**\n\nWhen you pause a video, Firefox stops the audio stream to the output device. [AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasink/AudioSinkWrapper.cpp#356) keeps the stream running only during a seek, and only when `media.audio.reuse-stream-on-seek` is true. This looks like the Bluetooth headphones go to sleep when the stream stops. On resume, the headphones need a short time to wake up, so the start of the audio is lost.\n\nThe seek work in bug 2059525 does not change the pause case. Bug 1914151 tracks the pause case, so we close this bug as its duplicate. Please follow bug 1914151 for updates.\n\nWe suggest that a developer adds bug 1914151 to the Bluetooth meta bug 2011679.\n",
@@ -2104,6 +2307,9 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [
+   "media profile"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -2134,6 +2340,9 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [
+   "media profile"
+  ],
   "blocks_add": [
    2011679
   ],
@@ -2164,6 +2373,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [
    2011679
   ],
@@ -2188,6 +2398,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [
    2011679
   ],
@@ -2212,6 +2423,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
   "comment": "Thank you for the detailed report.\n\nThis is the same problem as bug 1914151. In that bug, wireless headphones also lose about half a second of audio after a pause or a seek, and only in Firefox. The likely cause is the same. Firefox stops its audio output on pause, and the headphones go into a sleep mode. When playback starts again, the headphones need a moment to wake up, so the audio fades in.\n\nYour report adds new data. The problem also occurs on macOS with Cowin E7 headphones, and Safari and Chrome do not show it. Bugzilla adds a link to this bug in bug 1914151, so the developers can see these details. Please follow bug 1914151 for updates.\n\nA reporter on bug 1914151 found a temporary workaround: keep a paused media file open in another app, such as VLC.\n\nSuggest that a developer also make bug 1914151 block the Bluetooth meta bug 2011679.\n",
@@ -2234,6 +2446,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
   "comment": "Thank you for the clear report.\n\n**Analysis**\n\nThis looks like the same problem as bug 1914151. In both bugs, the audio fades in after a pause on wireless headphones, and only in Firefox.\n\nWhen you pause a video, Firefox stops the audio stream ([AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasink/AudioSinkWrapper.cpp#356)). This looks like the cause: some Bluetooth headphones go to a power-save state when the stream stops. They then fade the audio in when the stream starts again.\n\nThe `media.audio.reuse-stream-on-seek` pref keeps the stream open during a seek, and it is already on for macOS. It does not apply to a pause, so it does not help here. Bug 2059525 tracks this pref on other platforms.\n\n**Next steps**\n\nWe mark this bug as a duplicate of bug 1914151, so that one bug tracks the pause case. Your macOS and Cowin E7 details help that bug, because it has only Windows reports. We suggest that a developer adds bug 1914151 to the Bluetooth meta bug 2011679. You do not need to do anything now.\n",
@@ -2256,6 +2469,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
   "comment": "Thank you for the detailed report.\n\nThis is the same problem as bug 1671323. When you pause a video, Firefox stops the audio output stream. [AudioSink.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/mediasink/AudioSink.cpp#411) calls `AudioStream::Pause()`, which calls `cubeb_stream_stop` in [AudioStream.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/AudioStream.cpp#433). When you resume, Firefox starts the stream again. Some Bluetooth headphones need a short time to wake up, so the first part of the audio is quiet or lost.\n\nBug 1671323 tracks the fix: keep the stream open and play silence for a short time after a pause on Bluetooth devices. Your report adds macOS and the Cowin E7 headphones to the affected setups. On macOS, `media.audio.reuse-stream-on-seek` already keeps the stream open during a seek, but not during a pause.\n\nThe next step is to continue in bug 1671323. That bug now also blocks the Bluetooth meta bug 2011679.\n",
@@ -2285,6 +2499,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
   "comment": "Thank you for the clear report.\n\n**Analysis**\n\nThis is the same problem as bug 1914151. In that bug, a wireless headset fades in after a pause or a seek, and only in Firefox.\n\nWhen you pause a video, [AudioStream.cpp](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/dom/media/AudioStream.cpp#433) stops the system audio stream with `cubeb_stream_stop`. The Bluetooth headphones can then go idle. When playback starts again, the headphones need a short time to wake up, and the first word fades in.\n\nThis report adds new details for bug 1914151: macOS, Firefox 157 and Cowin E7 headphones. On macOS, `media.audio.reuse-stream-on-seek` is already on ([StaticPrefList.yaml](https://searchfox.org/firefox-main/rev/416e49d66aacd49d5c51619e1b6d314e3961c8d7/modules/libpref/init/StaticPrefList.yaml#14343)). Thus a seek keeps the stream running. A pause does not use that mode, so it still stops the stream. Bug 1134263 and bug 2059525 track the seek case.\n\nBug 1914151 reports one possible workaround: keep another media app open with its audio paused. This may also help on macOS.\n\n**Next steps**\n\nWe close this bug as a duplicate of bug 1914151. Follow bug 1914151 for updates. The Bluetooth meta bug 2011679 now tracks bug 1914151.\n",

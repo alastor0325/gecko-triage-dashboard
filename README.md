@@ -17,8 +17,10 @@ change the view, Shift+Left/Right the period, and the URL hash keeps both
 (`#overview/1w`, `#bugs/1m/close/2080127`).
 
 The categories are those of the local triage dashboard, from the bot's decision. Each bug
-is in exactly one: **Analyzed** (`triaged`), **Needs info** (`needs_info`) and **Close /
-Reassign** (`duplicate`, `invalid`, `wrong_component`, `incomplete`, `stalled`).
+is in exactly one: **Analyzed** (`triaged`: the team can start on a fix), **Needs info**
+(`needs_info`, and any `triaged` run that still asks for artifacts such as a profile or a
+log) and **Close / Reassign** (`duplicate`, `invalid`, `wrong_component`, `incomplete`,
+`stalled`). S/P can be set in Analyzed and in Needs info.
 
 - **Overview**: the count of bugs handled and of each category (a click on a tile opens
   the Bugs view on that category); bugs handled per day,

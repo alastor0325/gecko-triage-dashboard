@@ -34,7 +34,10 @@ SEVERITIES = ("S1", "S2", "S3", "S4")
 
 
 def category(record: dict) -> str | None:
-    return CATEGORY.get(record["decision"])
+    """Analyzed means the team can start on a fix, so a triaged run that still asks for
+    artifacts (a profile, a log) needs info."""
+    cat = CATEGORY.get(record["decision"])
+    return "needs-info" if cat == "analyzed" and record["asked"] else cat
 
 
 def decision_label(decision: str | None) -> str:
@@ -87,13 +90,18 @@ def period_start(as_of: datetime, key: str) -> str:
 
 def run_view(record: dict) -> dict:
     keep = (
-        "started_at", "severity", "priority", "needinfo", "dupe_of", "blocks_add",
+        "started_at", "severity", "priority", "needinfo", "asked", "dupe_of", "blocks_add",
         "keywords_add", "regressed_by_add", "other_bugs",
     )  # fmt: skip
     return {
         **{k: record[k] for k in keep},
         "category": category(record),
-        "decision": decision_label(record["decision"]),
+        "decision": decision_label(record["decision"])
+        + (
+            ", still asks for artifacts"
+            if category(record) != CATEGORY.get(record["decision"])
+            else ""
+        ),
         "resolution": resolution_label(record["resolution"]),
         "move_to": move_label(record["move_to"]),
         "comment_html": render(record["comment"]) if record["comment"] else None,

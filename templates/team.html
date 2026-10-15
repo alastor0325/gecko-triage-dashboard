@@ -250,6 +250,7 @@ function changes(r) {
     r.move_to && ["Moved", `to ${esc(r.move_to)}`, CAT.close.harm],
     (r.severity || r.priority) && ["S/P", esc([r.severity, r.priority].filter(Boolean).join(" / "))],
     r.needinfo.length && ["Needinfo", r.needinfo.map(niChip).join("")],
+    r.asked.length && ["Asked for", esc(r.asked.join(", "))],
     r.blocks_add.length && ["Blocks", bugList(r.blocks_add)],
     r.regressed_by_add.length && ["Regressed by", bugList(r.regressed_by_add)],
     r.keywords_add.length && ["Keywords", esc(r.keywords_add.join(", "))],
