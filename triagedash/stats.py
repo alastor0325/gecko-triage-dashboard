@@ -160,6 +160,7 @@ def bugs(records: list[dict], as_of: datetime) -> list[dict]:
             "bug_id": bug_id,
             "title": bug_runs[0]["title"],
             "filed": (filed := bug_runs[0]["filed"]),
+            "first_run": bug_runs[-1]["started_at"],
             "tags": ["new"] if is_new(filed, as_of) else [],
             "runs": [run_view(r) for r in shown_runs(bug_runs)],
         }

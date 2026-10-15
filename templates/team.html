@@ -47,7 +47,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   /* Tags, in the triage dashboard's style: small soft pills, one color per meaning. A
      category pill gets its color from the data (--c); the harmful one is solid. */
-  .tag, .rail-cat, .when, .changes dt, details.earlier > summary, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  .tag, .rail-cat, .when, .card-meta, .changes dt, details.earlier > summary, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em; }
   .tag { padding: 1px 6px; border-radius: 3px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
   .tag.new { background: rgba(63, 94, 63, 0.14); color: #3F5E3F; }
@@ -63,7 +63,7 @@
   .pos button { font: inherit; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; padding: 0 6px; }
   .card-title { font-family: var(--serif); font-variation-settings: "opsz" 30, "wght" 600, "SOFT" 30;
     font-size: 19px; line-height: 1.3; margin: 0 0 14px; overflow-wrap: anywhere; }
-  .card-meta { color: var(--muted); font-size: 12px; margin: -10px 0 14px; }
+  .card-meta { color: var(--muted); margin: -8px 0 14px; }
   .timeline { list-style: none; margin: 0; padding: 0; }
   .timeline > li { border-top: 1px solid var(--rule-soft); padding: 10px 0; }
   .when { color: var(--muted); margin-bottom: 8px; }
@@ -162,10 +162,20 @@ const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const bug = (id, cls = "bug-link") => `<a class="${cls}" href="https://bugzilla.mozilla.org/show_bug.cgi?id=${id}">${id}</a>`;
 const bugList = ids => ids.map(bug).join(", ");
+const DAY_MS = 864e5;
 // Dates are shown, and runs are put into days, in the viewer's own time zone.
 const day = d => new Date(d).toLocaleDateString("en-US", {month: "short", day: "numeric"});
 const dayKey = d => new Date(d).toLocaleDateString("en-CA");
-const date = d => new Date(d).toLocaleDateString("en-US", {year: "numeric", month: "short", day: "numeric"});
+// Like day(), plus the year when it is not this year.
+const date = d => {
+  const year = new Date(d).getFullYear();
+  return year === new Date().getFullYear() ? day(d) : `${day(d)}, ${year}`;
+};
+// Whole local days from the bug's filing to the bot's first run on it.
+const waited = (filed, firstRun) => {
+  const n = (new Date(dayKey(firstRun)) - new Date(dayKey(filed))) / DAY_MS;
+  return n <= 0 ? "triaged the same day" : `triaged ${n} ${n === 1 ? "day" : "days"} later`;
+};
 const tag = t => `<span class="tag ${TAGS[t].cls}">${esc(t)}</span>`;
 const TAG_ORDER = Object.keys(TAGS);
 const tags = (list, keep = () => true) => TAG_ORDER.filter(t => keep(t) && list.includes(t)).map(tag).join("");
@@ -191,7 +201,7 @@ function horizontalBar(id, counts, color) {
 // with no run count zero, so the time axis has no gaps.
 function daily() {
   const days = DATA.periods.find(p => p.key === state.period).days;
-  const keys = Array.from({length: days}, (_, i) => dayKey(new Date(DATA.as_of) - (days - 1 - i) * 864e5));
+  const keys = Array.from({length: days}, (_, i) => dayKey(new Date(DATA.as_of) - (days - 1 - i) * DAY_MS));
   const perDay = Object.fromEntries(keys.map(k => [k, {}]));
   for (const b of DATA.bugs) {
     for (const r of b.runs) {  // newest first, so the first run seen on a day wins
@@ -281,7 +291,7 @@ function card(b, index, total) {
       <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>
-    ${b.filed ? `<p class="card-meta">Filed ${date(b.filed)}</p>` : ""}
+    ${b.filed ? `<p class="card-meta">Filed ${date(b.filed)} · ${waited(b.filed, b.first_run)}</p>` : ""}
     <ol class="timeline">${entry(r)}</ol>
     ${b.earlier.length ? `<details class="earlier"><summary>Earlier runs · ${b.earlier.length}</summary><ol class="timeline">${b.earlier.map(entry).join("")}</ol></details>` : ""}`;
 }
