@@ -1,72 +1,86 @@
-# Live sources: from dry runs to real runs
+# Live sources: dry runs, then the pilot, then Hackbot
 
-Status: proposal, not built. Facts about hackbot-api are from bugbug `82b12879`
-(`services/hackbot-api/app/routers/runs.py`, `schemas.py`, `auth.py`,
-`actions_applier.py`, `action_handlers/bugzilla_handler.py`).
+Status: proposal, not built. The pilot is on hold until Alastor discusses it again.
+Facts about hackbot-api are from bugbug `82b12879`. Facts about the pilot are from
+`~/firefox-bug-investigation/gecko-triage-hackbot/pilot-plan.md`, which is planned and not
+built.
 
-## Today
+## Principle
 
-`scripts/ingest-local.sh` reads `~/hackbot/<round>/local-*/summary.json` on Alastor's Mac,
-adds public Bugzilla data (title, component, filed date, needinfo names), scrubs it and
-writes `data/runs.json`. The Pages workflow only builds the committed data. Nothing reaches
-the site unless someone ingests and pushes.
+The dashboard reports exactly what gecko-triage did, so its source of truth is the run
+records: one record for each run the agent made, whatever happened to the run. Bugzilla is
+not a source of runs. A search on Bugzilla cannot list the runs that failed, were rejected,
+were skipped or changed nothing, and it can miss bugs. Bugzilla only adds details to a
+known run: the bug title and component, needinfo names, the comment link, and later the
+follow-up signals.
 
-## The question
+## One record shape, one adapter per source
 
-When gecko-triage runs for real, where does the dashboard read what the bot did?
+| Source | Input | Run key | Where it runs |
+|---|---|---|---|
+| `dryrun` (today) | `~/hackbot/<round>/local-*/summary.json`, listed in `data/rounds.tsv` | `local-<UTC time>-<hex>` | Alastor's Mac |
+| `pilot` | `~/hackbot/pilot/log.jsonl`, plus the `summary.json` that each line names | `local-<UTC time>-<hex>` | Alastor's Mac |
+| `hackbot` | `GET /runs?agent=gecko-triage`, plus `GET /runs/{id}/actions` | `run_id`, a uuid4 | Mac first, then the GitHub Action |
 
-## Option A: public Bugzilla (recommended for the first live version)
+Each adapter turns its input into the record shape in `triagedash/dryrun.py`. The stats, the
+page and the scrubbing do not change. The same runtime writes the local `summary.json` and
+`RunDoc.summary` (hackbot-runtime `finalize_run` reads the same file), so the
+findings-and-actions part is shared code.
 
-Once a run is posted, everything the team sees is on the bug:
+New record fields, the same for every source:
 
-| Dashboard field | Bugzilla source |
-|---|---|
-| a run, its time | a comment with `comment_tag=gecko-triage`; its `creation_time` |
-| the comment, the link | the comment text and its `count` (`show_bug.cgi?id=N#cK`) |
-| asked, unread | the footer line `gecko-triage · rules <v> · asked: … · unread: …` |
-| S/P, needinfo, blocks, keywords, regressed_by, move, resolution, dupe_of | the bug history entry with the same `when` as the comment, by the bot account |
-| category | from those changes plus `asked`, with the same rules as today |
-| follow-up signals | later history entries by other accounts (S/P changed, reopened, moved back) |
+- `source`: `dryrun`, `pilot` or `hackbot`.
+- `outcome`: `posted`, `partly posted`, `held`, `rejected`, `shadow`, `skipped`, `failed`
+  or `not posted` (dry runs). This replaces the single `posted` flag.
+- `posted_at` (UTC), and `applied`: one entry per action with `ok` and the HTTP status. The
+  dupe_of bug's meta bug update is its own entry, because it is a separate PUT that can fail
+  on its own.
+- `comment_count`, for a link to `show_bug.cgi?id=N#cK`. Hackbot does not keep the comment
+  id, so its adapter looks up the tagged comment on Bugzilla.
+- `agent_version`: the agent commit, or at least the footer rules version.
+- `team`, from the run's inputs rather than from today's component. This also holds after a
+  bug moves out of the team.
 
-- Read with no key, from the GitHub Action, on a daily schedule.
-- Find bugs with one search on the team's components and `comment_tag=gecko-triage`,
-  changed since the last build.
-- It shows exactly what reached Bugzilla. A refused update is visibly missing.
+## Keeping what we have
 
-Limits:
-- No held, failed or skipped runs. These are operator data, not part of the MVP.
-- The decision is derived, not read. It needs the footer to stay stable, so the agent
-  and this repo must change the footer together.
-- If people post manual triage from the same account, history entries must be matched
-  to the tagged comment by time.
+- `data/runs.json` is the dashboard's own archive. It is committed, so git keeps every past
+  version. A source can stop (the pilot) or lose data (Hackbot has no retention policy in
+  its code), and the records already ingested stay.
+- Records are keyed by `(source, run_id)`. Local ids and Hackbot uuids cannot collide.
+- Runs are grouped by bug. A bug's history can hold dry runs, pilot runs and Hackbot runs,
+  each labelled by source. Dry runs keep today's rule: never history and never `again`.
 
-## Option B: the Hackbot run store
+## Switch steps
 
-`GET /runs?agent=gecko-triage` (paged by `limit` and `offset`, newest first, no date
-filter), then `GET /runs/{id}/actions` for each action's `status`, `result` and
-`applied_at`. `RunDoc.summary` is the same summary.json that is read today, so the
-record mapping barely changes. `run_id` (a uuid4) becomes the record key.
+1. Pilot: ingest `log.jsonl` daily on the Mac. Every line becomes a record, so skipped,
+   failed, rejected and shadow runs are visible too.
+2. Stop the pilot, then do a last pilot ingest. The pilot plan already stops the pilot
+   before Hackbot starts, so the same bug does not get both on one day.
+3. Turn on the Hackbot adapter. It pages back from the newest run until it reaches a run
+   it already has, then fetches again the runs that are still running or have pending
+   actions, because their state can change after the first read. With no date filter in
+   the API, it starts from the switch date.
+4. Pilot records stay. The page shows both sources, and the header names the sources it
+   holds, so "dry run" stops being the label for everything.
 
-Gaps:
-- **Key:** one shared `X-API-Key` that can also start runs and apply actions, which write
-  to Bugzilla. It must not go in a repo secret without the Hackbot team's agreement. Ask
-  them for a read-only key or a read-only export.
-- **Missing fields:** no comment id (Option A can fill it), no approver, and no start or
-  finish time in the API (use `created_at` and `updated_at`).
-- **Retention:** no policy in the code.
-- **Logs:** never read `logs/agent.log` through `/artifacts`. It holds full bug,
-  attachment and code content. Read `summary` and `actions` only, scrubbed as today.
+## Open decisions (Alastor's)
 
-Its value is what Bugzilla cannot show: held runs waiting for approval, failed runs, and
-what the bot would have done.
+1. Failed runs: show them as their own group with the error reason, outside the three
+   categories. With agent commit `bcd6e792`, an `analyzed` run that still asks for data
+   fails with an error, so today those runs would vanish from the dashboard.
+2. Pilot log: one line for every run, not only reviewed ones, plus an `inputs` object in
+   the `RunDoc.inputs` shape. gecko-triage proposed both. The dashboard needs both for a
+   complete report.
+3. Agent version: a small agent change that writes the agent version into findings. Then
+   Hackbot runs carry it too. Today they have only the footer rules version.
+4. Hackbot read access: there is one shared `X-API-Key`, and it can also apply actions,
+   which write to Bugzilla. Interim: run the Hackbot ingest on the Mac and push only the
+   scrubbed data, if Alastor accepts the key on his Mac. Later: ask the Hackbot team for a
+   read-only key or export, and move the ingest to the GitHub Action.
+5. Shadow mode after the switch: the pilot plan has none.
 
-## Plan
+## Never read
 
-1. Pilot: ingest `pilot/log.jsonl` with its summary.json files. The log has `posted_at`,
-   `applied` and `comment_id`, and sets `posted`.
-2. Live, first version: Option A in the GitHub Action, daily. No key, no Mac.
-3. Later, if held or failed runs matter: Option B with a read-only key from the Hackbot
-   team, merged on `run_id` and on the bug plus the comment time.
-
-Each source is one adapter that produces the record shape in `triagedash/dryrun.py`. The
-stats, the page and the scrubbing stay as they are.
+`logs/agent.log` and other files under `/runs/{id}/artifacts`. They hold full bug,
+attachment and code content. Only `summary` and the action rows are read, and they are
+scrubbed as today.
