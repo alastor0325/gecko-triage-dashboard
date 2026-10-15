@@ -65,13 +65,16 @@ def close_kind(record: dict) -> str | None:
     return None
 
 
+# Outcomes that need a look. `posted` and `awaiting review` are the normal path, so they
+# get no tag; the run line in the card still says them.
+PROBLEM_OUTCOMES = ("partly posted", "apply failed")
+
+
 def outcome_tags(record: dict) -> list[str]:
-    """What happened to the run: rejected by a person, what reached Bugzilla, and what
-    still waits on a person."""
+    """What went wrong with the run: rejected by a person, or not all of it reached
+    Bugzilla."""
     out = ["rejected"] if record["rejected"] else []
-    if record["posted"]:
-        out.append(record["outcome"])
-    elif record["outcome"] in (AWAITING_REVIEW, "apply failed"):
+    if record["outcome"] in PROBLEM_OUTCOMES:
         out.append(record["outcome"])
     return out
 

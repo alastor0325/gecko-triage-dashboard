@@ -61,9 +61,7 @@
   .tag.new { background: rgba(63, 94, 63, 0.14); color: #3F5E3F; }
   .tag.regression { background: rgba(200, 155, 60, 0.2); color: #7A5A12; }
   .tag.outline { background: transparent; box-shadow: inset 0 0 0 1px var(--rule); }
-  .tag.posted { background: var(--ink); color: var(--paper); }
   .tag.partly { background: transparent; color: var(--red-deep); box-shadow: inset 0 0 0 1px var(--red); }
-  .tag.awaiting { background: rgba(200, 155, 60, 0.2); color: #7A5A12; }
   .notice { margin: 0 0 14px; padding: 8px 12px; border-left: 3px solid var(--red); background: rgba(255, 0, 57, 0.06);
     color: var(--red-deep); font-size: 12.5px; line-height: 1.5; }
   .tag.cat { background: color-mix(in srgb, var(--c) 13%, transparent); color: color-mix(in srgb, var(--c) 80%, black); }
@@ -170,8 +168,7 @@ const ROLES = {reporter: "reporter", assignee: "assignee", other: "another perso
 // Each tag the page can show, in display order: its CSS class, and whether the short view
 // shows it. The short view keeps only the tags that change what to look at first.
 const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "partly", rail: true},
-  "awaiting review": {cls: "awaiting", rail: true},
-  posted: {cls: "posted", rail: true}, "partly posted": {cls: "partly", rail: true},
+  "partly posted": {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
 const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
@@ -310,7 +307,7 @@ function drawOverview() {
 function shown() {
   const start = period().start;
   const q = state.q.trim().toLowerCase();
-  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${CAT_TEXT[b.run.category]} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase().includes(q);
+  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.outcome ?? ""} ${CAT_TEXT[b.run.category]} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase().includes(q);
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
     if (!runs.length) return null;

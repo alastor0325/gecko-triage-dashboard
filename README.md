@@ -115,7 +115,7 @@ uv run python -m triagedash review <run_id> --reject "reason"
   never fetches `/artifacts`, so logs with full bug text never reach the dashboard.
 - hackbot-api has no reject state, so `review --reject` writes the rejection to
   `~/hackbot/hackbot-runs/reviews.jsonl`.
-- A Hackbot run's outcome is `failed`, `rejected`, `applied`, `partly applied`,
+- A Hackbot run's outcome is `failed`, `rejected`, `posted`, `partly posted`,
   `apply failed` or `awaiting review`. A rejected run whose actions are still pending
   gets a red notice in the card: applying it later would post a second comment.
 
