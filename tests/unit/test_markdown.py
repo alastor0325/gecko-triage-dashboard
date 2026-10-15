@@ -18,7 +18,7 @@ def test_inline_marks():
     )
     assert (
         render("[file](https://searchfox.org/a?b=1)")
-        == '<p><a href="https://searchfox.org/a?b=1">file</a></p>'
+        == '<p><a href="https://searchfox.org/a?b=1" target="_blank" rel="noopener">file</a></p>'
     )
 
 

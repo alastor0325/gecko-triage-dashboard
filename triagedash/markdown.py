@@ -19,7 +19,7 @@ _BLOCKS = re.compile(r"\n\s*\n")
 def inline(text: str) -> str:
     out = _CODE.sub(r"<code>\1</code>", html.escape(text, quote=True))
     out = _BOLD.sub(r"<strong>\1</strong>", out)
-    return _LINK.sub(r'<a href="\2">\1</a>', out)
+    return _LINK.sub(r'<a href="\2" target="_blank" rel="noopener">\1</a>', out)
 
 
 def block(text: str) -> str:

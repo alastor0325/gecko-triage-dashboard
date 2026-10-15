@@ -174,7 +174,8 @@ const HAS_HACKBOT = DATA.bugs.some(b => b.runs.some(r => r.source === "hackbot")
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const bugUrl = (id, anchor = "") => `https://bugzilla.mozilla.org/show_bug.cgi?id=${id}${anchor}`;
-const bug = (id, cls = "bug-link") => `<a class="${cls}" href="${bugUrl(id)}">${id}</a>`;
+const link = (href, text, cls = "") => `<a${cls ? ` class="${cls}"` : ""} href="${href}" target="_blank" rel="noopener">${text}</a>`;
+const bug = (id, cls = "bug-link") => link(bugUrl(id), id, cls);
 const bugList = ids => ids.map(bug).join(", ");
 const DAY_MS = 864e5;
 // Dates are shown, and runs are put into days, in the viewer's own time zone.
@@ -303,7 +304,7 @@ function card(b, index, total) {
   // Hackbot keeps no comment id, so its applied runs link to the bug, not the comment.
   const anchor = e => e.comment_count ? `#c${e.comment_count}` : "";
   const outcome = e => !e.outcome ? ""
-    : e.posted_at ? ` · <a href="${bugUrl(b.bug_id, anchor(e))}">${esc(e.outcome)} ${date(e.posted_at)}, ${time(e.posted_at)}</a>`
+    : e.posted_at ? ` · ${link(bugUrl(b.bug_id, anchor(e)), `${esc(e.outcome)} ${date(e.posted_at)}, ${time(e.posted_at)}`)}`
     : ` · ${esc(e.outcome)}`;
   const source = e => HAS_HACKBOT ? ` · ${e.source === "hackbot" ? "Hackbot" : "local"}` : "";
   // Python sets `warning`. Shown at the top of the card even for an earlier, folded run,
