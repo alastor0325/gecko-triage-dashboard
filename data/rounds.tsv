@@ -1,17 +1,2 @@
 # round	directory under $HACKBOT_DIR
-dry1	artifacts
-dry2	artifacts-v2
-r1	compare-r1
-r2	compare-r2
-r3	compare-r3
-r4	compare-r4
-r5a	compare-r5a
-r5b	compare-r5b
-r6a	compare-r6a
-r6b	compare-r6b
-r7a	compare-r7a
-r7b	compare-r7b
-r8a	compare-r8a
-r8b	compare-r8b
-r9a	compare-r9a
-r9b	compare-r9b
+r11	compare-r11
