@@ -12,6 +12,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   /* Local to this dashboard; everything else is review-stats.css. */
+  /* Keep room for the scrollbar in both views, so the centered page does not jump
+     sideways when one view is short enough to need no scrollbar. */
+  html { scrollbar-gutter: stable; }
   .chart-box { position: relative; height: 280px; }
   /* A bar chart grows with its rows (--rows, set by the script), so bars stay thin. */
   .chart-box.rows { height: max(120px, calc(var(--rows) * 34px + 40px)); }
