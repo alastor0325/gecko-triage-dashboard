@@ -153,11 +153,18 @@ def test_parse_keeps_the_comment_scrubbed(meta):
 
 def test_strip_footer():
     text = (
-        "Thanks.\n\n---\n\nKeep this.\n\n---\n\nIf you'd like to give feedback...\n\n"
+        "Thanks.\n\n---\n\nKeep this.\n\n---\n\n"
+        "If you'd like to give feedback on this comment...\n\n"
         "gecko-triage · rules 0.1.0 · asked: none · unread: none"
     )
-    assert strip_footer(text) == "Thanks.\n\n---\n\nKeep this.\n"
+    assert strip_footer(text) == "Thanks.\n\n---\n\nKeep this."
     assert strip_footer("No footer here.") == "No footer here."
+    assert (
+        strip_footer("Body.\n\n---\n\nA normal last section.")
+        == "Body.\n\n---\n\nA normal last section."
+    )
+    old_agent_name = "Body.\n\n---\n\nmedia-triage · rules 0.1.0 · asked: none · unread: none"
+    assert strip_footer(old_agent_name) == "Body."
     assert strip_footer(None) is None
 
 
@@ -192,3 +199,11 @@ def test_needinfo_gets_the_public_name_and_keeps_its_nick(meta):
     )
     assert r["needinfo"] == [{"role": "assignee", "name": "Pat Doe", "nick": "pdoe"}]
     assert "example.com" not in str(r)
+
+
+def test_strip_footer_new_form_without_agent_footer():
+    text = (
+        "Thanks.\n\n---\n\nKeep this.\n\n---\n\n"
+        "To give feedback on this comment, add a thumbs-up or thumbs-down reaction."
+    )
+    assert strip_footer(text) == "Thanks.\n\n---\n\nKeep this."

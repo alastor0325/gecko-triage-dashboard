@@ -41,13 +41,17 @@ def scrub(value):
     return value
 
 
-_FOOTER = re.compile(r"\n-{3,}\n(?:(?!\n-{3,}\n).)*gecko-triage · rules [^\n]*\s*$", re.S)
+# hackbot-runtime's COMMENT_FOOTER_SEPARATOR (hackbot_runtime.actions.bugzilla); keep in
+# step. The trailer after it holds the feedback sentence, which the agent rewrites, and on
+# older runs the agent's `gecko-triage · rules …` line, so it is found by these markers.
+_TRAILER_SEPARATOR = "\n\n---\n\n"
+_TRAILER_MARKERS = ("feedback on this comment", "triage · rules ")
 
 
 def strip_footer(comment: str | None) -> str | None:
-    """Drops the fixed footer that ends every bot comment: the `---` rule, the feedback
-    line and the `gecko-triage · rules` signature."""
-    return _FOOTER.sub("", comment) if comment else comment
+    """Drops the trailer that ends every bot comment."""
+    head, sep, tail = (comment or "").rpartition(_TRAILER_SEPARATOR)
+    return head if sep and any(m in tail for m in _TRAILER_MARKERS) else comment
 
 
 def summary_bug_id(summary: dict) -> int | None:
