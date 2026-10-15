@@ -828,7 +828,7 @@
   "move_to": null,
   "needinfo": [],
   "other_bugs": [],
-  "outcome": "awaiting review",
+  "outcome": "skipped",
   "pending_actions": null,
   "posted": false,
   "posted_at": null,
@@ -990,5 +990,44 @@
   "started_at": "2026-10-15T22:20:45+00:00",
   "team": "media",
   "title": "`loading=lazy` on media elements: reload on attribute change, extra `abort`/`emptied` events, missing poster, load event not delayed with pref off"
+ },
+ {
+  "agent_version": "7cc9cfe6",
+  "asked": [],
+  "blocks_add": [
+   2053144,
+   1766429
+  ],
+  "bug_id": 2082667,
+  "comment": "Thank you for the mozregression range and the pref test.\n\n**Analysis**\n\nThe attached profile shows one ffvpx Vulkan AV1 decoder in the RDD process. YouTube creates it to test decoder support. The decoder closes at once and does not decode a frame. After the `VkDevice` is destroyed, the RDD process CPU use goes up and stays up until the profile ends. No thread that Firefox registers is busy, so the busy thread is probably a driver thread. The attached log also stops during the Vulkan device setup on the RTX 4060.\n\nThe regressor is bug 2067742. It adds `VK_NV_optical_flow` to the optional device extensions in [hwcontext_vulkan.c](https://searchfox.org/firefox-main/rev/9046137a91a4614ad5be3448370a8265de01affc/media/ffvpx/libavutil/hwcontext_vulkan.c#806). With that extension, ffvpx also creates an optical flow queue on NVIDIA hardware, see [hwcontext_vulkan.c](https://searchfox.org/firefox-main/rev/9046137a91a4614ad5be3448370a8265de01affc/media/ffvpx/libavutil/hwcontext_vulkan.c#1775). ffvpx only decodes, so it does not need this queue. [VulkanDeviceHolder.cpp](https://searchfox.org/firefox-main/rev/9046137a91a4614ad5be3448370a8265de01affc/dom/media/platforms/ffmpeg/VulkanDeviceHolder.cpp#85) cannot turn off the optional extensions.\n\nThis cause is probable but not confirmed. A native backtrace of the busy RDD thread can confirm it.\n\n**Fix direction**\n\nThe simplest fix is a Mozilla patch for ffvpx that removes `VK_NV_OPTICAL_FLOW_EXTENSION_NAME` from `optional_device_exts`. A wider fix is a decode-only `VkDevice` without the encode queues and the optical flow queue. That also makes the decoder support test faster. Until a fix lands, set `media.hardware-video-decoding-vulkan.enabled` to `false` as a workaround, as comment 9 shows.\n\nThis bug blocks bug 2053144 (Vulkan video decoding on Linux) and bug 1766429 (Linux playback).\n\n**Next steps**\n\nMartin, could you please look at this fix direction for the ffvpx Vulkan update from bug 2067742? Tymur said in comment 10 that he also checks the problem.",
+  "comment_count": 13,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-15T21:26:41Z",
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Martin Str\u00e1nsk\u00fd",
+    "nick": "stransky",
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-10-15T23:08:28Z",
+  "priority": "P2",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261015-230007-5817de",
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-10-15T23:00:07+00:00",
+  "team": "media",
+  "title": "Visiting youtube.com without playing any video makes Data Decoder use 100% CPU even after tab is closed"
  }
 ]
