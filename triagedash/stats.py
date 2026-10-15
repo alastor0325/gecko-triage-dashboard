@@ -96,7 +96,7 @@ def period_start(as_of: datetime, key: str) -> str:
 def run_view(record: dict) -> dict:
     keep = (
         "started_at", "severity", "priority", "needinfo", "asked", "dupe_of", "blocks_add",
-        "keywords_add", "regressed_by_add", "other_bugs",
+        "keywords_add", "regressed_by_add", "other_bugs", "agent_version",
     )  # fmt: skip
     cat = category(record)
     reclassified = cat != CATEGORY.get(record["decision"])

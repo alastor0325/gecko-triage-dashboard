@@ -1,5 +1,6 @@
 [
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080218,
@@ -23,6 +24,7 @@
   "title": "Video freezes, then skips several seconds ahead, when an MP4 with audio is downloaded in bursts"
  },
  {
+  "agent_version": null,
   "asked": [
    "media log",
    "about:support"
@@ -55,6 +57,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080317,
@@ -78,6 +81,7 @@
   "title": "Crash in [@ cubeb_coreaudio::backend::get_channel_count]"
  },
  {
+  "agent_version": null,
   "asked": [
    "regression range"
   ],
@@ -109,6 +113,7 @@
   "title": "Audio/video desynchronisation after pause/play"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2067925,
@@ -132,6 +137,7 @@
   "title": "macOS: RDD process reaches 34.6 GB physical footprint after ~80 h while about:memory accounts for only 8.5 MiB heap"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 1971032,
@@ -155,6 +161,7 @@
   "title": "After switching tab video playback stops on Arte OpenH264 GMPErr:7 GMPDecodeErr"
  },
  {
+  "agent_version": null,
   "asked": [
    "media log",
    "about:support"
@@ -187,6 +194,7 @@
   "title": "First 1-3 seconds of audio replayed when switching tracks on music.youtube.com"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2069633,
@@ -210,6 +218,7 @@
   "title": "MSE: Delayed media-segment appends after a seek can trigger terminal MEDIA_ERR_DECODE (avcodec_send_packet: End of file)"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080218,
@@ -233,6 +242,7 @@
   "title": "Video freezes, then skips several seconds ahead, when an MP4 with audio is downloaded in bursts"
  },
  {
+  "agent_version": null,
   "asked": [
    "media log",
    "about:support",
@@ -266,6 +276,7 @@
   "title": "macOS: RDD process reaches 34.6 GB physical footprint after ~80 h while about:memory accounts for only 8.5 MiB heap"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1416090
@@ -291,6 +302,7 @@
   "title": "Video freezes, then skips several seconds ahead, when an MP4 with audio is downloaded in bursts"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -325,6 +337,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080317,
@@ -348,6 +361,7 @@
   "title": "Crash in [@ cubeb_coreaudio::backend::get_channel_count]"
  },
  {
+  "agent_version": null,
   "asked": [
    "timestamped audio log",
    "regression range"
@@ -382,6 +396,7 @@
   "title": "Audio/video desynchronisation after pause/play"
  },
  {
+  "agent_version": null,
   "asked": [
    "about:memory report"
   ],
@@ -413,6 +428,7 @@
   "title": "macOS: RDD process reaches 34.6 GB physical footprint after ~80 h while about:memory accounts for only 8.5 MiB heap"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 1971032,
@@ -436,6 +452,7 @@
   "title": "After switching tab video playback stops on Arte OpenH264 GMPErr:7 GMPDecodeErr"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -470,6 +487,7 @@
   "title": "First 1-3 seconds of audio replayed when switching tracks on music.youtube.com"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2069633,
@@ -493,6 +511,7 @@
   "title": "MSE: Delayed media-segment appends after a seek can trigger terminal MEDIA_ERR_DECODE (avcodec_send_packet: End of file)"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
@@ -516,6 +535,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1746557
@@ -541,6 +561,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
@@ -566,6 +587,7 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
@@ -589,6 +611,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -622,6 +645,7 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -656,6 +680,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -690,6 +715,7 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2078058,
@@ -713,6 +739,7 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -746,6 +773,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1665980
@@ -773,6 +801,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support"
@@ -807,6 +836,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1746557
@@ -832,6 +862,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
@@ -855,6 +886,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
@@ -878,6 +910,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
@@ -905,6 +938,7 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support",
@@ -940,6 +974,7 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -973,6 +1008,7 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -1007,6 +1043,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1665980
@@ -1036,6 +1073,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2078058,
@@ -1059,6 +1097,7 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -1092,6 +1131,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support"
@@ -1126,6 +1166,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -1165,6 +1206,7 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile"
   ],
@@ -1198,6 +1240,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    2011679
@@ -1223,6 +1266,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
@@ -1246,6 +1290,7 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support"
@@ -1280,6 +1325,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1746557
@@ -1311,6 +1357,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1665980
@@ -1340,6 +1387,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
@@ -1363,6 +1411,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
@@ -1392,6 +1441,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support",
@@ -1427,6 +1477,7 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support"
@@ -1466,6 +1517,7 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -1499,6 +1551,7 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support"
@@ -1531,6 +1584,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    2011679
@@ -1556,6 +1610,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
@@ -1583,6 +1638,7 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -1616,6 +1672,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -1649,6 +1706,7 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support",
@@ -1687,6 +1745,7 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -1723,6 +1782,7 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
@@ -1746,6 +1806,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1746557
@@ -1771,6 +1832,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
@@ -1798,6 +1860,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -1832,6 +1895,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2081080,
@@ -1855,6 +1919,7 @@
   "title": "Audio out of sync with video after fastSeek() on a WebM with Opus audio"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1746557
@@ -1880,6 +1945,7 @@
   "title": "VideoFrame created from an unpremultiplied ImageBitmap is drawn with wrong colors"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1665980
@@ -1915,6 +1981,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
@@ -1942,6 +2009,7 @@
   "title": "Crash in [@ mozilla::MozPromise<T>::ThenValue<T>::DoResolveOrRejectInternal]"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    1665980
@@ -1977,6 +2045,7 @@
   "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -2013,6 +2082,7 @@
   "title": "F1TV video (VOD & Live stream) freezes after a while as audio continues."
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support",
@@ -2046,6 +2116,7 @@
   "title": "HEVC MP4 fails in Firefox 156 on Windows with MF Media Engine CDM error; plays in Edge"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
@@ -2069,6 +2140,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    2011679
@@ -2094,6 +2166,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [
    "profile",
    "about:support"
@@ -2131,6 +2204,7 @@
   "title": "RDD (Data Decoder) process spins at ~590% of one CPU core indefinitely on cn.aliyun.com while Edge stays at ~0%"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support",
@@ -2164,6 +2238,7 @@
   "title": "ms.now live video aborted"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    2011679
@@ -2189,6 +2264,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -2223,6 +2299,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile",
    "about:support"
@@ -2257,6 +2334,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2077786,
@@ -2284,6 +2362,7 @@
   "title": "HLS fMP4 with HEVC video stalls at the end of the first segment when the audio track's decode time starts negative (tfdt stored as 2^64\u2212N)"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
@@ -2307,6 +2386,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile"
   ],
@@ -2340,6 +2420,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [
    "media profile"
   ],
@@ -2373,6 +2454,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    2011679
@@ -2398,6 +2480,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [
    2011679
@@ -2423,6 +2506,7 @@
   "title": "Playing tab stays silent after Bluetooth connects"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
@@ -2446,6 +2530,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
@@ -2469,6 +2554,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,
@@ -2499,6 +2585,7 @@
   "title": "Bluetooth headphone audio fades in after resuming playback in Firefox"
  },
  {
+  "agent_version": null,
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080668,

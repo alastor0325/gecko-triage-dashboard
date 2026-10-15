@@ -24,17 +24,18 @@ profile or a log) and **Close / Reassign** (`duplicate`, `invalid`, `wrong_compo
 `incomplete`, `stalled`). S/P can be set in Analyzed and in Needs info.
 
 - **Overview**: the count of bugs handled and of each category (a click on a tile opens
-  the Bugs view on that category); bugs handled per day,
-  stacked by category; where the Close / Reassign bugs went (resolution or new
-  component); and the severity the bot set.
+  the Bugs view on that category); bugs handled per day, stacked by category; where the
+  Close / Reassign bugs went (resolution or new component); and the severity the bot set.
 - **Bugs**: category filters with counts, and a search by id, title or tag (`/` puts the
   cursor in it). A list (short view) shows one row per bug, with its newest run in the
   period, riskiest first: Close / Reassign, then Analyzed, then Needs info. Up/Down or j/k
-  step through it. Each row shows only the bug number, its category (in the All tab
-  only) and the `regression` and `new` tags. A card (full view) shows all tags and the
-  bot's timeline on the bug: the newest run with every change and the whole comment the
-  bot posted, then the earlier posted runs, folded. Dry-run rounds rerun the same bugs as
-  tests, so the page data keeps only each bug's newest dry run. Every bug number links to Bugzilla.
+  step through it. Each row shows only the bug number, its category (in the All tab only)
+  and the `regression` and `new` tags. A card (full view) shows all tags and the bot's
+  timeline on the bug: the newest run with every change and the whole comment the bot
+  posted, then the earlier posted runs, folded. Dry-run rounds rerun the same bugs as
+  tests, so the page data keeps only each bug's newest dry run. Every bug number links to
+  Bugzilla, and each run names the agent version that made it (`findings.agent_version`;
+  older runs show no version).
 
 Each bug counts once in a period, by its newest run. Tags: `new` (filed in the last 7
 days), `regression` (the bot added the keyword or `regressed_by`), `dev needinfo` (the bot

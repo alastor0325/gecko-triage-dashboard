@@ -207,3 +207,8 @@ def test_strip_footer_new_form_without_agent_footer():
         "To give feedback on this comment, add a thumbs-up or thumbs-down reaction."
     )
     assert strip_footer(text) == "Thanks.\n\n---\n\nKeep this."
+
+
+def test_parse_keeps_the_agent_version(meta):
+    assert parse(make_summary(agent_version="abc123"), meta)["agent_version"] == "abc123"
+    assert parse(make_summary(), meta)["agent_version"] is None

@@ -272,7 +272,7 @@ function railItem(b) {
 // whole comment, then the earlier posted runs, folded.
 function card(b, index, total) {
   const r = b.run;
-  const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}</div>${changes(e)}
+  const entry = e => `<li><div class="when">${day(e.started_at)} · ${esc(e.decision)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `<div class="card-top">
       <span class="card-id">${bug(b.bug_id)} ${catTag(r.category)} ${tags(b.tags)}</span>

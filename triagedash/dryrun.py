@@ -163,6 +163,7 @@ def parse_summary(
         "severity": own.get("severity"),
         "priority": own.get("priority"),
         "asked": list(findings.get("asked") or []),
+        "agent_version": findings.get("agent_version"),
         "needinfo": [needinfo_entry(f.get("requestee"), meta, users) for f in needinfo_flags(own)],
         "blocks_add": _added(own, "blocks"),
         "keywords_add": _added(own, "keywords"),
