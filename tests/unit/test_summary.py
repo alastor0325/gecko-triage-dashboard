@@ -211,3 +211,10 @@ def test_parse_records_the_source(meta):
 def test_team_comes_from_the_run_input_not_the_component(meta):
     moved = {**meta, "component": "Widget: Gtk"}
     assert parse(make_summary(), moved, team="media")["team"] == "media"
+
+
+def test_parse_keeps_the_issue_type_and_scrubs_its_note(meta):
+    r = parse(make_summary(issue_type="other", issue_type_note="seen by :alice"), meta)
+    assert r["issue_type"] == "other"
+    assert ":alice" not in r["issue_type_note"]
+    assert parse(make_summary(), meta)["issue_type"] is None

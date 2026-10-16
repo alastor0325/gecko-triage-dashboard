@@ -10,6 +10,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-03T18:55:36Z",
+  "issue_type": "stall-freeze",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -40,6 +42,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-07T10:59:19Z",
+  "issue_type": "codec-support",
+  "issue_type_note": null,
   "keywords_add": [
    "regression"
   ],
@@ -76,6 +80,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-10T07:33:42Z",
+  "issue_type": "audio-output",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -106,6 +112,8 @@
   "dupe_of": 1914151,
   "error": false,
   "filed": "2026-10-12T00:43:18Z",
+  "issue_type": "audio-output",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -143,6 +151,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-12T08:23:42Z",
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
   "keywords_add": [
    "regression"
   ],
@@ -181,6 +191,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-04T08:13:33Z",
+  "issue_type": "stall-freeze",
+  "issue_type_note": null,
   "keywords_add": [
    "regression"
   ],
@@ -221,6 +233,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-08T19:55:04Z",
+  "issue_type": "video-rendering",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -257,6 +271,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-05T01:24:14Z",
+  "issue_type": "audio-output",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -299,6 +315,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-05T02:28:42Z",
+  "issue_type": "performance",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -342,6 +360,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-09T10:28:57Z",
+  "issue_type": "other",
+  "issue_type_note": "screensaver wake lock",
   "keywords_add": [
    "regression"
   ],
@@ -386,6 +406,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-05T14:52:10Z",
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -424,6 +446,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-12T13:50:48Z",
+  "issue_type": "audio-output",
+  "issue_type_note": null,
   "keywords_add": [
    "regression"
   ],
@@ -461,6 +485,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-06T16:47:17Z",
+  "issue_type": "codec-support",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -497,6 +523,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-13T05:44:31Z",
+  "issue_type": "av-sync",
+  "issue_type_note": null,
   "keywords_add": [
    "regression"
   ],
@@ -531,6 +559,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-09T14:15:56Z",
+  "issue_type": "stall-freeze",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -561,6 +591,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-07T08:30:48Z",
+  "issue_type": "web-api",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -591,6 +623,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-09T15:51:38Z",
+  "issue_type": "other",
+  "issue_type_note": "code audit race report",
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -621,6 +655,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-13T21:06:19Z",
+  "issue_type": "video-rendering",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -651,6 +687,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-09T19:05:39Z",
+  "issue_type": "audio-output",
+  "issue_type_note": null,
   "keywords_add": [
    "regression"
   ],
@@ -688,6 +726,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-10T05:39:11Z",
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -726,6 +766,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-14T10:43:21Z",
+  "issue_type": "performance",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -758,6 +800,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-14T13:46:11Z",
+  "issue_type": "audio-output",
+  "issue_type_note": null,
   "keywords_add": [
    "regression"
   ],
@@ -792,6 +836,8 @@
   "dupe_of": 1318196,
   "error": false,
   "filed": "2026-10-15T14:50:56Z",
+  "issue_type": "web-api",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -824,6 +870,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-15T21:26:41Z",
+  "issue_type": null,
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -859,6 +907,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-05T02:28:42Z",
+  "issue_type": null,
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -895,6 +945,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-15T21:27:40Z",
+  "issue_type": null,
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -936,6 +988,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-05T02:28:42Z",
+  "issue_type": "performance",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [
@@ -972,6 +1026,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-15T21:27:40Z",
+  "issue_type": "web-api",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
@@ -1005,6 +1061,8 @@
   "dupe_of": null,
   "error": false,
   "filed": "2026-10-15T21:26:41Z",
+  "issue_type": "performance",
+  "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
   "needinfo": [

@@ -143,3 +143,22 @@ def test_only_the_media_team_is_shown():
 def test_shown_drops_runs_of_no_team_or_another_team():
     records = [make_record(1, team="media"), make_record(2, team=None), make_record(3, team="gfx")]
     assert [r["bug_id"] for r in store.shown(records)] == [1]
+
+
+def test_apply_issue_types_fills_only_runs_without_a_type():
+    old = make_record(1, run_id="a")
+    own = make_record(2, run_id="b", issue_type="drm")
+    lines = [
+        {
+            "run_id": "a",
+            "issue_type": "other",
+            "note": "wake lock, ask x@y.z",
+            "source": "backfill",
+        },
+        {"run_id": "b", "issue_type": "capture", "source": "backfill"},
+    ]
+    a, b = store.apply_issue_types([old, own], lines)
+    assert (a["issue_type"], b["issue_type"]) == ("other", "drm")
+    assert "x@y.z" not in a["issue_type_note"]
+    (c,) = store.apply_issue_types([make_record(3, run_id="c")], lines)
+    assert c["issue_type"] is None

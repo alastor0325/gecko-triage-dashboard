@@ -18,6 +18,7 @@
   .chart-box { position: relative; height: 280px; }
   /* A bar chart grows with its rows (--rows, set by the script), so bars stay thin. */
   .chart-box.rows { height: max(120px, calc(var(--rows) * 34px + 40px)); }
+  .chart-note { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-soft); }
   button.stat { font: inherit; text-align: left; border: 0; width: 100%; color: inherit; }
   /* minmax(0, ...) lets a Chart.js canvas shrink with its column. */
   .split { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -133,6 +134,11 @@
       <div class="chart-box"><canvas id="chart-daily" role="img"></canvas></div>
     </section>
     <section>
+      <h2>Issue types</h2>
+      <div class="chart-box rows"><canvas id="chart-issue" role="img" aria-label="Bugs by issue type"></canvas></div>
+      <p class="chart-note" id="issue-notes"></p>
+    </section>
+    <section>
       <div class="split">
         <div><h2>Close / Reassign: where the bugs went</h2><div class="chart-box rows"><canvas id="chart-close"></canvas></div></div>
         <div><h2>Severity the bot set</h2><div class="chart-box rows"><canvas id="chart-severity"></canvas></div></div>
@@ -142,7 +148,7 @@
 
   <div id="bugs-view" hidden>
     <div class="filters">
-      <div class="lw-filters" role="tablist" aria-label="Decision" id="cats"></div>
+      <div class="lw-filters"><span class="lw-filters" role="tablist" aria-label="Decision" id="cats"></span><span id="issue-chip"></span></div>
       <input id="search" type="search" placeholder="Search id, title, tag" aria-label="Search">
     </div>
     <div class="layout">
@@ -171,7 +177,7 @@ const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "part
   "partly posted": {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
-const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null};
+const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: ""};
 // Run sources are named only once Hackbot runs exist; until then every run is local.
 const HAS_HACKBOT = DATA.bugs.some(b => b.runs.some(r => r.source === "hackbot"));
 
@@ -210,17 +216,21 @@ const catTag = key => `<span class="tag cat${harm(key)}" style="--c: ${CAT[key].
 const period = () => DATA.periods.find(p => p.key === state.period);
 
 // ---- Overview ----
+const openBugs = (cat, issue = "") => Object.assign(state, {view: "bugs", cat, issue});
 const charts = {};
 function chart(id, config) {
   charts[id]?.destroy();
   charts[id] = new Chart(document.getElementById(id), {...config, options: {maintainAspectRatio: false, ...config.options}});
 }
 // Thin bars whatever the row count: the box grows with the rows instead.
-function horizontalBar(id, counts, color) {
+// `onPick(label)`, when given, runs on a click on a bar.
+function horizontalBar(id, counts, color, onPick) {
   const labels = Object.keys(counts);
   document.getElementById(id).parentElement.style.setProperty("--rows", labels.length);
   chart(id, {type: "bar", data: {labels, datasets: [{data: labels.map(k => counts[k]), backgroundColor: color, maxBarThickness: 18}]},
     options: {indexAxis: "y", plugins: {legend: {display: false}},
+      onClick: onPick && ((_, items) => items.length && onPick(labels[items[0].index])),
+      onHover: onPick && ((e, items) => { e.native.target.style.cursor = items.length ? "pointer" : "default"; }),
       scales: {x: {beginAtZero: true, ticks: {precision: 0}}, y: {grid: {display: false}}}}});
 }
 const RAN_DAYS = new Set(DATA.ran_at.map(dayKey));
@@ -300,6 +310,10 @@ function drawOverview() {
         y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}}});
   horizontalBar("chart-close", o.close_kinds, CAT.close.color);
   horizontalBar("chart-severity", o.severity, CAT.analyzed.color);
+  // A click on an issue type opens the Bugs view on it.
+  horizontalBar("chart-issue", o.issue_types, CAT.analyzed.color, t => { openBugs("all", t); draw(); });
+  const notes = o.other_notes.map(n => `${esc(n.note || "no note")} (${bug(n.bug_id)})`);
+  document.getElementById("issue-notes").innerHTML = notes.length ? `Other: ${notes.join(", ")}` : "";
 }
 
 // ---- Bugs ----
@@ -307,7 +321,8 @@ function drawOverview() {
 function shown() {
   const start = period().start;
   const q = state.q.trim().toLowerCase();
-  const matches = b => !q || `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.outcome ?? ""} ${CAT_TEXT[b.run.category]} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase().includes(q);
+  const text = b => `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.outcome ?? ""} ${CAT_TEXT[b.run.category]} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase();
+  const matches = b => (!state.issue || b.run.issue_type === state.issue) && (!q || text(b).includes(q));
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
     if (!runs.length) return null;
@@ -374,7 +389,7 @@ function card(b, index, total) {
     "rejected but posted": () => "This run was rejected, but some of its actions were applied in Hackbot. Check the bug for a second comment.",
   };
   const notice = e => e.warning ? `<p class="notice">${esc(NOTICES[e.warning](e))}</p>` : "";
-  const entry = e => `<li><div class="when">${esc(dayLabel(e.started_at))} ${time(e.started_at)} · ${esc(e.decision)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
+  const entry = e => `<li><div class="when">${esc(dayLabel(e.started_at))} ${time(e.started_at)} · ${esc(e.decision)} · ${esc(e.issue_type)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `<div class="card-top">
       <span class="card-id">${bug(b.bug_id)} ${catTag(r.category)} ${tags(b.tags)}</span>
@@ -393,6 +408,8 @@ function drawBugs() {
   const inCat = c => c === "all" ? all : all.filter(b => b.run.category === c);
   document.getElementById("cats").innerHTML = CATS.map(c =>
     `<button type="button" class="lw-filter" role="tab" data-cat="${c}" aria-pressed="${state.cat === c}" aria-selected="${state.cat === c}">${CAT_TEXT[c]} <span class="lw-filter-n">${inCat(c).length}</span></button>`).join("");
+  document.getElementById("issue-chip").innerHTML = state.issue
+    ? `<button type="button" class="lw-filter" data-clear-issue aria-label="Show every issue type">Issue: ${esc(state.issue)} ×</button>` : "";
   const list = inCat(state.cat);
   if (!list.some(b => b.bug_id === state.bug)) state.bug = list.length ? list[0].bug_id : null;
   document.getElementById("rail").innerHTML = list.length ? railDays(list)
@@ -410,7 +427,7 @@ function draw() {
   document.getElementById("overview-view").hidden = state.view !== "overview";
   document.getElementById("bugs-view").hidden = state.view !== "bugs";
   if (state.view === "overview") drawOverview(); else drawBugs();
-  const parts = [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? ""] : [])];
+  const parts = [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? "", state.issue] : [])];
   history.replaceState(null, "", "#" + parts.join("/"));
 }
 
@@ -424,11 +441,12 @@ function step(n) {
 }
 
 function readHash() {
-  const [view, period, cat, bugId] = location.hash.slice(1).split("/");
+  const [view, period, cat, bugId, issue] = location.hash.slice(1).split("/");
   if (VIEWS.some(([k]) => k === view)) state.view = view;
   if (PERIODS.some(([k]) => k === period)) state.period = period;
   if (CATS.includes(cat)) state.cat = cat;
   if (bugId) state.bug = Number(bugId);
+  state.issue = issue || "";
 }
 
 const cycle = (list, key, dir) => {
@@ -442,10 +460,11 @@ search.addEventListener("input", () => {
   typing = setTimeout(() => { state.q = search.value; draw(); }, 120);
 });
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat]");
+  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue]");
   if (!el) return;
+  if ("clearIssue" in el.dataset) state.issue = "";
   if (el.dataset.step) return step(Number(el.dataset.step));
-  if (el.dataset.openCat) { state.view = "bugs"; state.cat = el.dataset.openCat; }
+  if (el.dataset.openCat) openBugs(el.dataset.openCat);
   if (el.dataset.view) state.view = el.dataset.view;
   if (el.dataset.period) state.period = el.dataset.period;
   if (el.dataset.cat) state.cat = el.dataset.cat;

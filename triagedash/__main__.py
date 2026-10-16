@@ -111,7 +111,8 @@ def ingest(args) -> None:
         new += remote_records
         print(f"hackbot: {len(remote_records)} runs")
     merged = store.shown(store.merge_records(store.load(RUNS, []), new))
-    records = store.apply_log(merged, log)
+    backfill = store.load_jsonl(Path(args.root) / "pilot" / "issue-types.jsonl")
+    records = store.apply_issue_types(store.apply_log(merged, log), backfill)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)
     pilot_passes = store.load_jsonl(Path(args.root) / "pilot" / "passes.jsonl")

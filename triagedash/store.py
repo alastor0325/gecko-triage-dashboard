@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .summary import scrub
 from .teams import LOCAL_TEAM, is_shown
 
 
@@ -98,5 +99,21 @@ def apply_log(records: list[dict], log: list[dict]) -> list[dict]:
                     "posted_at": line.get("posted_at"),
                     "comment_count": line.get("comment_count"),
                 }
+            )
+    return out
+
+
+def apply_issue_types(records: list[dict], lines: list[dict]) -> list[dict]:
+    """Fills the issue type of the runs made before the agent saved one, from the backfill
+    lines. A type the run saved itself wins."""
+    by_run = {line["run_id"]: line for line in lines}
+    out = []
+    for r in records:
+        line = by_run.get(r["run_id"])
+        if r["issue_type"] or line is None:
+            out.append(r)
+        else:
+            out.append(
+                {**r, "issue_type": line["issue_type"], "issue_type_note": scrub(line.get("note"))}
             )
     return out

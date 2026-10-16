@@ -25,7 +25,11 @@ profile or a log) and **Close / Reassign** (`duplicate`, `invalid`, `wrong_compo
 
 - **Overview**: the count of bugs handled and of each category (a click on a tile opens
   the Bugs view on that category); bugs handled per day, stacked by category; where the
-  Close / Reassign bugs went (resolution or new component); and the severity the bot set.
+  Close / Reassign bugs went (resolution or new component); the severity the bot set; and
+  the issue types (a click on a bar opens the Bugs view on that type), with the note of
+  each `other`. The type is `findings.issue_type`, one value from the team's list; runs
+  made before the agent saved it take it from `~/hackbot/pilot/issue-types.jsonl`, else
+  `unknown`.
 - **Bugs**: category filters with counts, and a search by id, title or tag (`/` puts the
   cursor in it). A list (short view) shows one row per bug, with its newest run in the
   period, newest first, under a header for each day ("Today", "Yesterday", then the date)
