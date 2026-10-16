@@ -202,9 +202,8 @@ def issue_type(record: dict) -> str:
 
 
 def overview(records: list[dict], as_of: datetime) -> dict:
-    """Per period: the counts, where closed bugs went, the severity the bot set, the issue
-    types, and the note of each `other` type. Each bug counts once, by its newest run in
-    the period."""
+    """Per period: the counts, where closed bugs went, the severity the bot set and the issue
+    types. Each bug counts once, by its newest run in the period."""
     out = {}
     for key in PERIODS:
         runs = in_period(records, as_of, key)
@@ -216,11 +215,6 @@ def overview(records: list[dict], as_of: datetime) -> dict:
             ),
             "severity": by_severity(latest),
             "issue_types": dict(Counter(map(issue_type, latest)).most_common()),
-            "other_notes": [
-                {"bug_id": r["bug_id"], "note": r["issue_type_note"]}
-                for r in latest
-                if issue_type(r) == "other"
-            ],
         }
     return out
 

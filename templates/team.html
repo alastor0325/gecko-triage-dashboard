@@ -18,12 +18,19 @@
   .chart-box { position: relative; height: 280px; }
   /* A bar chart grows with its rows (--rows, set by the script), so bars stay thin. */
   .chart-box.rows { height: max(120px, calc(var(--rows) * 34px + 40px)); }
-  .chart-note { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-soft); }
   button.stat { font: inherit; text-align: left; border: 0; width: 100%; color: inherit; }
   /* minmax(0, ...) lets a Chart.js canvas shrink with its column. */
   .split { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
   .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
   .filters .lw-filters { margin: 0; }
+  #issue-chip:not(:empty) { display: flex; align-items: center; gap: 6px; padding-left: 10px; border-left: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; }
+  .issue-label { color: var(--muted); }
+  .issue-filter { display: inline-flex; align-items: stretch; color: var(--ink); background: var(--paper-warm); border-radius: 2px; box-shadow: inset 0 0 0 1px var(--rule); }
+  .issue-filter b { font-weight: 600; padding: 3px 6px 3px 8px; }
+  .issue-filter button { font: inherit; color: var(--muted); background: none; border: 0; border-left: 1px solid var(--rule);
+    padding: 3px 7px; cursor: pointer; }
+  .issue-filter button:hover, .issue-filter button:focus-visible { color: var(--red-deep); }
   .filters input { margin-left: auto; width: 240px; font-family: var(--mono); font-size: 11px; color: var(--ink);
     border: 1px solid var(--rule); background: var(--surface); padding: 4px 8px; border-radius: 2px; }
   .layout { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 10px; align-items: start; }
@@ -136,7 +143,6 @@
     <section>
       <h2>Issue types</h2>
       <div class="chart-box rows"><canvas id="chart-issue" role="img" aria-label="Bugs by issue type"></canvas></div>
-      <p class="chart-note" id="issue-notes"></p>
     </section>
     <section>
       <div class="split">
@@ -148,7 +154,8 @@
 
   <div id="bugs-view" hidden>
     <div class="filters">
-      <div class="lw-filters"><span class="lw-filters" role="tablist" aria-label="Decision" id="cats"></span><span id="issue-chip"></span></div>
+      <div class="lw-filters" role="tablist" aria-label="Decision" id="cats"></div>
+      <span id="issue-chip" role="group" aria-live="polite"></span>
       <input id="search" type="search" placeholder="Search id, title, tag" aria-label="Search">
     </div>
     <div class="layout">
@@ -312,8 +319,6 @@ function drawOverview() {
   horizontalBar("chart-severity", o.severity, CAT.analyzed.color);
   // A click on an issue type opens the Bugs view on it.
   horizontalBar("chart-issue", o.issue_types, CAT.analyzed.color, t => { openBugs("all", t); draw(); });
-  const notes = o.other_notes.map(n => `${esc(n.note || "no note")} (${bug(n.bug_id)})`);
-  document.getElementById("issue-notes").innerHTML = notes.length ? `Other: ${notes.join(", ")}` : "";
 }
 
 // ---- Bugs ----
@@ -408,8 +413,13 @@ function drawBugs() {
   const inCat = c => c === "all" ? all : all.filter(b => b.run.category === c);
   document.getElementById("cats").innerHTML = CATS.map(c =>
     `<button type="button" class="lw-filter" role="tab" data-cat="${c}" aria-pressed="${state.cat === c}" aria-selected="${state.cat === c}">${CAT_TEXT[c]} <span class="lw-filter-n">${inCat(c).length}</span></button>`).join("");
-  document.getElementById("issue-chip").innerHTML = state.issue
-    ? `<button type="button" class="lw-filter" data-clear-issue aria-label="Show every issue type">Issue: ${esc(state.issue)} ×</button>` : "";
+  // Written only when the filter changes, so the live region speaks once.
+  const chip = document.getElementById("issue-chip");
+  if (chip.dataset.issue !== state.issue) {
+    chip.dataset.issue = state.issue;
+    chip.innerHTML = state.issue
+      ? `<span class="issue-label">Filtered by issue</span><span class="issue-filter"><b>${esc(state.issue)}</b><button type="button" data-clear-issue aria-label="Remove issue filter: ${esc(state.issue)}">×</button></span>` : "";
+  }
   const list = inCat(state.cat);
   if (!list.some(b => b.bug_id === state.bug)) state.bug = list.length ? list[0].bug_id : null;
   document.getElementById("rail").innerHTML = list.length ? railDays(list)
@@ -462,7 +472,7 @@ search.addEventListener("input", () => {
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue]");
   if (!el) return;
-  if ("clearIssue" in el.dataset) state.issue = "";
+  if ("clearIssue" in el.dataset) { state.issue = ""; search.focus(); }
   if (el.dataset.step) return step(Number(el.dataset.step));
   if (el.dataset.openCat) openBugs(el.dataset.openCat);
   if (el.dataset.view) state.view = el.dataset.view;

@@ -235,14 +235,14 @@ def test_team_page_day_marks_data():
     assert test_page["first_run"] == "2026-10-14T10:00:00+00:00"
 
 
-def test_overview_counts_issue_types_and_lists_other_notes():
+def test_overview_counts_issue_types():
     runs = [
         make_record(1, issue_type="performance"),
         make_record(2, issue_type="performance"),
-        make_record(3, issue_type="other", issue_type_note="screensaver wake lock"),
+        make_record(3, issue_type="other"),
         make_record(4),
     ]
     o = stats.overview(runs, AS_OF)["1w"]
     assert o["issue_types"] == {"performance": 2, "other": 1, "unknown": 1}
-    assert o["other_notes"] == [{"bug_id": 3, "note": "screensaver wake lock"}]
+    assert "other_notes" not in o
     assert stats.run_view(runs[3])["issue_type"] == "unknown"
