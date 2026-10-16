@@ -77,7 +77,7 @@ def unreviewed(record: dict) -> dict:
 def apply_log(records: list[dict], log: list[dict]) -> list[dict]:
     """Marks the runs that the pilot log lists with what happened when they were reviewed.
     A posted run whose writes all succeeded is `posted`, else `partly posted`. Other
-    reviews (rejected, skipped, shadow) are kept as the outcome, and a `pending` line is
+    reviews (rejected, skipped, no_action, shadow) are kept as the outcome, and a `pending` line is
     `awaiting review`. The log's bot account is never copied."""
     by_run = {line["run_id"]: line for line in log}
     out = []

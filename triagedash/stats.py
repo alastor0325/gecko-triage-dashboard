@@ -105,13 +105,27 @@ def is_new(filed: str | None, as_of: datetime) -> bool:
     return bool(filed) and as_of - datetime.fromisoformat(filed) <= timedelta(days=NEW_DAYS)
 
 
+# What a run can do on Bugzilla: its comment and every field change.
+EFFECTS = (
+    "comment", "severity", "priority", "needinfo", "blocks_add", "keywords_add",
+    "regressed_by_add", "move_to", "resolution", "dupe_of", "other_bugs",
+)  # fmt: skip
+
+
+def changed_nothing(record: dict) -> bool:
+    """A run with no comment and no field change, such as a `watching` run."""
+    return not any(record[k] for k in EFFECTS)
+
+
 def acted(record: dict) -> bool:
-    """A run whose decision has a category. Failed runs, preflight skips, runs that ended
-    before they decided, and runs the pilot log marks skipped changed nothing."""
+    """A run whose decision has a category and that does something on Bugzilla. Failed
+    runs, preflight skips, runs that ended before they decided, runs the pilot log marks
+    skipped, and runs that change nothing are left out."""
     return (
         not record["error"]
         and record["decision"] in CATEGORY
         and record["outcome"] != "skipped"
+        and not changed_nothing(record)
         and bool(record["started_at"])
     )
 

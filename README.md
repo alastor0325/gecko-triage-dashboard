@@ -47,8 +47,9 @@ asked someone other than the reporter, and it never closes those) and `again` (t
 came back to the bug; posted runs only, because dry-run rounds rerun the same bugs as
 tests).
 
-The page holds only the last 3 months. Failed runs, runs that the preflight skipped and
-runs that ended before they decided changed nothing, so the page leaves them out. Cost,
+The page holds only the last 3 months. Failed runs, runs that the preflight or the pilot
+log skipped, runs that ended before they decided, and runs that posted no comment and
+changed no field (such as `watching` runs) changed nothing, so the page leaves them out. Cost,
 run health and accuracy are not part of this MVP.
 
 The layout of the Bugs view follows the local triage dashboard (firefox-triage-dashboard),

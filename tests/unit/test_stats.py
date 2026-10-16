@@ -26,6 +26,8 @@ def test_old_and_new_name_of_analyzed():
     assert stats.acted(make_record(decision="analyzed"))
     assert not stats.acted(make_record(decision="brand_new"))
     assert not stats.acted(make_record(decision="needs_info", outcome="skipped"))
+    assert not stats.acted(make_record(decision="watching", comment=None))
+    assert stats.acted(make_record(decision="watching", comment=None, severity="S3"))
 
 
 def test_category():
