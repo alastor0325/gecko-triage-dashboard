@@ -151,6 +151,7 @@ def run_view(record: dict) -> dict:
         "keywords_add", "regressed_by_add", "other_bugs", "agent_version",
     )  # fmt: skip
     cat = category(record)
+    action = close_action(record) if cat == "close" else None
     reclassified = cat != CATEGORY.get(record["decision"])
     return {
         **{k: record[k] for k in keep},
@@ -163,7 +164,8 @@ def run_view(record: dict) -> dict:
         "tags": tags(record),
         "warning": warning(record),
         "issue_type": issue_type(record),
-        "close_action": close_action(record) if cat == "close" else None,
+        "close_action": action,
+        "label_kind": action.lower() if action else cat,
     }
 
 
@@ -273,8 +275,7 @@ def team_page(records: list[dict], as_of: datetime, passes: list[dict] = ()) -> 
         "first_run": min([*ran, *(r["started_at"] for r in records)], default=None),
         "posted": sum(r["posted"] for r in records),
         "categories": [
-            {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c], "harm": c == "close"}
-            for c in CATEGORIES
+            {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c]} for c in CATEGORIES
         ],
         "periods": [
             {"key": k, "label": label, "days": days, "start": period_start(as_of, k)}

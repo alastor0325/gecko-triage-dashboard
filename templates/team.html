@@ -62,22 +62,29 @@
   .rail-title { font-size: 12.5px; line-height: 1.35; margin-top: 3px; overflow-wrap: anywhere;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   /* Tags, in the triage dashboard's style: small soft pills, one color per meaning. A
-     category pill gets its color from the data (--c); the harmful one is solid. */
+     run label has its own color (k-*); a closed bug, the most harmful, is solid. */
   .tag, .rail-cat, .when, .card-meta, .changes dt, .rail-day, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em; }
   .tag { padding: 1px 6px; border-radius: 3px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
   .tag.new { background: rgba(63, 94, 63, 0.14); color: #3F5E3F; }
-  .tag.regression { background: rgba(200, 155, 60, 0.2); color: #7A5A12; }
+  :root { --gold-deep: #7A5A12; }
+  .tag.regression { background: rgba(200, 155, 60, 0.2); color: var(--gold-deep); }
   .tag.outline { background: transparent; box-shadow: inset 0 0 0 1px var(--rule); }
   .tag.partly { background: transparent; color: var(--red-deep); box-shadow: inset 0 0 0 1px var(--red); }
   .notice { margin: 0 0 14px; padding: 8px 12px; border-left: 3px solid var(--red); background: rgba(255, 0, 57, 0.06);
     color: var(--red-deep); font-size: 12.5px; line-height: 1.5; }
-  .tag.cat { background: color-mix(in srgb, var(--c) 13%, transparent); color: color-mix(in srgb, var(--c) 80%, black); }
-  .tag.cat.harm { background: var(--c); color: var(--surface); }
-  .rail-cat, .changes dt, .ni-role { color: var(--muted); font-weight: 500; }
-  .rail-cat { white-space: nowrap; }
+  /* --cat-* are the category colors of the charts, set by the script from the data. */
+  .k-analyzed { --c: var(--cat-analyzed); --t: var(--cat-analyzed); }
+  .k-needs-info { --c: var(--cat-needs-info); --t: var(--gold-deep); }
+  .k-close { --c: var(--cat-close); --t: var(--red-deep); }
+  .k-closed { --c: var(--red-deep); --t: var(--red-deep); }
+  .k-reassigned { --c: #6B3FA0; --t: #6B3FA0; }
+  .tag.cat { background: color-mix(in srgb, var(--c) 13%, transparent); color: var(--t); }
+  .tag.cat.k-closed { background: var(--c); color: var(--surface); }
+  .rail-cat { color: var(--t); white-space: nowrap; }
+  .changes dt, .ni-role { color: var(--muted); font-weight: 500; }
   /* Anything that takes a bug off the team. */
-  .rail-cat.harm, .changes dt.harm { color: var(--red-deep); font-weight: 600; }
+  .changes dt.harm { color: var(--red-deep); font-weight: 600; }
   .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
   .card-id { font-family: var(--mono); font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .pos button { font: inherit; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; padding: 0 6px; }
@@ -218,9 +225,8 @@ const waited = (filed, firstRun) => {
 const tag = t => `<span class="tag ${TAGS[t].cls}">${esc(t)}</span>`;
 const TAG_ORDER = Object.keys(TAGS);
 const tags = (list, keep = () => true) => TAG_ORDER.filter(t => keep(t) && list.includes(t)).map(tag).join("");
-const harm = key => CAT[key].harm ? " harm" : "";
 const runLabel = r => r.close_action || CAT[r.category].label;
-const catTag = r => `<span class="tag cat${harm(r.category)}" style="--c: ${CAT[r.category].color}">${esc(runLabel(r))}</span>`;
+const catTag = r => `<span class="tag cat k-${r.label_kind}">${esc(runLabel(r))}</span>`;
 const period = () => DATA.periods.find(p => p.key === state.period);
 
 // ---- Overview ----
@@ -349,8 +355,8 @@ const niChip = ni => {
 // One row per change, most harmful first. Rows that take the bug off the team are red.
 function changes(r) {
   const rows = [
-    r.resolution && ["Closed", `${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`, CAT.close.harm],
-    r.move_to && ["Reassigned", `to ${esc(r.move_to)}`, CAT.close.harm],
+    r.resolution && ["Closed", `${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`, true],
+    r.move_to && ["Reassigned", `to ${esc(r.move_to)}`, true],
     (r.severity || r.priority) && ["S/P", esc([r.severity, r.priority].filter(Boolean).join(" / "))],
     r.needinfo.length && ["Needinfo", r.needinfo.map(niChip).join("")],
     r.asked.length && ["Asked for", esc(r.asked.join(", "))],
@@ -366,7 +372,7 @@ function changes(r) {
 function railItem(b) {
   const c = b.run.category;
   return `<li><button type="button" class="rail-item${b.bug_id === state.bug ? " is-active" : ""}" data-bug="${b.bug_id}">
-    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span>${state.cat === "all" || c === "close" ? `<span class="rail-cat${harm(c)}">${esc(runLabel(b.run))}</span>` : ""}
+    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span>${state.cat === "all" || c === "close" ? `<span class="rail-cat k-${b.run.label_kind}">${esc(runLabel(b.run))}</span>` : ""}
       <span class="rail-tags">${tags(b.tags, t => TAGS[t].rail)}</span></span>
     <span class="rail-title">${esc(b.title)}</span></button>${bug(b.bug_id, "bug-link rail-link")}</li>`;
 }
@@ -501,6 +507,7 @@ document.addEventListener("keydown", e => {
 window.addEventListener("hashchange", () => { readHash(); draw(); });
 
 Chart.defaults.font.family = getComputedStyle(document.body).getPropertyValue("--mono");
+for (const c of DATA.categories) document.documentElement.style.setProperty(`--cat-${c.key}`, c.color);
 Chart.defaults.font.size = 11;
 Chart.defaults.color = getComputedStyle(document.body).getPropertyValue("--muted");
 Chart.defaults.scale.grid.color = getComputedStyle(document.body).getPropertyValue("--rule-soft");

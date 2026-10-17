@@ -191,7 +191,6 @@ def test_team_page():
         "key": "close",
         "label": "Close / Reassign",
         "color": "#FF0039",
-        "harm": True,
     }
     assert "risk" not in page
     assert page["periods"][0] == {
@@ -259,3 +258,7 @@ def test_close_action_follows_close_kind_order():
     assert (stats.close_action(dup), stats.close_action(moved)) == ("Closed", "Reassigned")
     assert stats.run_view(dup)["close_action"] == "Closed"
     assert stats.run_view(make_record(decision="triaged"))["close_action"] is None
+    assert stats.run_view(dup)["label_kind"] == "closed"
+    assert stats.run_view(moved)["label_kind"] == "reassigned"
+    assert stats.run_view(make_record(decision="stalled"))["label_kind"] == "close"
+    assert stats.run_view(make_record(decision="needs_info"))["label_kind"] == "needs-info"
