@@ -219,7 +219,8 @@ const tag = t => `<span class="tag ${TAGS[t].cls}">${esc(t)}</span>`;
 const TAG_ORDER = Object.keys(TAGS);
 const tags = (list, keep = () => true) => TAG_ORDER.filter(t => keep(t) && list.includes(t)).map(tag).join("");
 const harm = key => CAT[key].harm ? " harm" : "";
-const catTag = key => `<span class="tag cat${harm(key)}" style="--c: ${CAT[key].color}">${esc(CAT[key].label)}</span>`;
+const runLabel = r => r.close_action || CAT[r.category].label;
+const catTag = r => `<span class="tag cat${harm(r.category)}" style="--c: ${CAT[r.category].color}">${esc(runLabel(r))}</span>`;
 const period = () => DATA.periods.find(p => p.key === state.period);
 
 // ---- Overview ----
@@ -326,7 +327,7 @@ function drawOverview() {
 function shown() {
   const start = period().start;
   const q = state.q.trim().toLowerCase();
-  const text = b => `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.outcome ?? ""} ${CAT_TEXT[b.run.category]} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase();
+  const text = b => `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.outcome ?? ""} ${runLabel(b.run)} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase();
   const matches = b => (!state.issue || b.run.issue_type === state.issue) && (!q || text(b).includes(q));
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
@@ -349,7 +350,7 @@ const niChip = ni => {
 function changes(r) {
   const rows = [
     r.resolution && ["Closed", `${esc(r.resolution)}${r.dupe_of ? " of " + bug(r.dupe_of) : ""}`, CAT.close.harm],
-    r.move_to && ["Moved", `to ${esc(r.move_to)}`, CAT.close.harm],
+    r.move_to && ["Reassigned", `to ${esc(r.move_to)}`, CAT.close.harm],
     (r.severity || r.priority) && ["S/P", esc([r.severity, r.priority].filter(Boolean).join(" / "))],
     r.needinfo.length && ["Needinfo", r.needinfo.map(niChip).join("")],
     r.asked.length && ["Asked for", esc(r.asked.join(", "))],
@@ -365,7 +366,7 @@ function changes(r) {
 function railItem(b) {
   const c = b.run.category;
   return `<li><button type="button" class="rail-item${b.bug_id === state.bug ? " is-active" : ""}" data-bug="${b.bug_id}">
-    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span>${state.cat === "all" ? `<span class="rail-cat${harm(c)}">${esc(CAT[c].label)}</span>` : ""}
+    <span class="rail-row1"><span class="rail-id">${b.bug_id}</span>${state.cat === "all" || c === "close" ? `<span class="rail-cat${harm(c)}">${esc(runLabel(b.run))}</span>` : ""}
       <span class="rail-tags">${tags(b.tags, t => TAGS[t].rail)}</span></span>
     <span class="rail-title">${esc(b.title)}</span></button>${bug(b.bug_id, "bug-link rail-link")}</li>`;
 }
@@ -397,7 +398,7 @@ function card(b, index, total) {
   const entry = e => `<li><div class="when">${esc(dayLabel(e.started_at))} ${time(e.started_at)} · ${esc(e.decision)} · ${esc(e.issue_type)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `<div class="card-top">
-      <span class="card-id">${bug(b.bug_id)} ${catTag(r.category)} ${tags(b.tags)}</span>
+      <span class="card-id">${bug(b.bug_id)} ${catTag(r)} ${tags(b.tags)}</span>
       <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
     </div>
     <h2 class="card-title">${esc(b.title)}</h2>

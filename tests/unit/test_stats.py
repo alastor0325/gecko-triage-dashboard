@@ -49,8 +49,11 @@ def test_labels():
 
 def test_close_kind():
     assert stats.close_kind(make_record(resolution="DUPLICATE")) == "Duplicate"
-    assert stats.close_kind(make_record(move_to="Core :: Web Audio")) == "Moved to Web Audio"
-    assert stats.close_kind(make_record(move_to="Toolkit :: Media")) == "Moved to Toolkit :: Media"
+    assert stats.close_kind(make_record(move_to="Core :: Web Audio")) == "Reassigned to Web Audio"
+    assert (
+        stats.close_kind(make_record(move_to="Toolkit :: Media"))
+        == "Reassigned to Toolkit :: Media"
+    )
     assert stats.close_kind(make_record()) is None
 
 
@@ -175,7 +178,7 @@ def test_overview():
     o = stats.overview(runs, AS_OF)
     assert o["1w"]["counts"] == {"all": 3, "analyzed": 1, "needs-info": 0, "close": 2}
     assert o["1m"]["counts"]["needs-info"] == 1
-    assert o["1w"]["close_kinds"] == {"Duplicate": 1, "Moved to Widget: Gtk": 1}
+    assert o["1w"]["close_kinds"] == {"Duplicate": 1, "Reassigned to Widget: Gtk": 1}
     assert o["1w"]["severity"] == {"S1": 0, "S2": 0, "S3": 1, "S4": 0}
 
 
@@ -248,3 +251,11 @@ def test_overview_counts_issue_types():
     assert o["issue_types"] == {"performance": 2, "other": 1, "unknown": 1}
     assert "other_notes" not in o
     assert stats.run_view(runs[3])["issue_type"] == "unknown"
+
+
+def test_close_action_follows_close_kind_order():
+    dup = make_record(decision="duplicate", resolution="DUPLICATE", move_to="Core :: Widget: Gtk")
+    moved = make_record(decision="wrong_component", move_to="Core :: Widget: Gtk")
+    assert (stats.close_action(dup), stats.close_action(moved)) == ("Closed", "Reassigned")
+    assert stats.run_view(dup)["close_action"] == "Closed"
+    assert stats.run_view(make_record(decision="triaged"))["close_action"] is None

@@ -34,12 +34,16 @@ profile or a log) and **Close / Reassign** (`duplicate`, `invalid`, `wrong_compo
   cursor in it). A list (short view) shows one row per bug, with its newest run in the
   period, newest first, under a header for each day ("Today", "Yesterday", then the date)
   with its bug count. Up/Down or j/k step through it. Each row shows only the bug number,
-  its category (in the All tab only) and the `regression` and `new` tags. A card (full view) shows all tags and the bot's
+  its category (in the All and Close / Reassign tabs) and the `regression` and `new` tags.
+  A card (full view) shows all tags and the bot's
   timeline on the bug: every run (posted or daily), newest first and none folded, each with
   its day and time, every change and the whole comment. Test rounds rerun the same bugs
   as tests, so the page data keeps only each bug's newest test run. Every bug number links
   to Bugzilla, and each run names the agent version that made it
   (`findings.agent_version`; older runs show no version).
+
+A Close / Reassign bug's category reads `Closed` when the run set a resolution, else
+`Reassigned` when it moved the bug.
 
 Each bug counts once in a period, by its newest run. Tags: `new` (filed in the last 7
 days), `regression` (the bot added the keyword or `regressed_by`), `dev needinfo` (the bot

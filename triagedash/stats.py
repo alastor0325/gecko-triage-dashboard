@@ -56,12 +56,22 @@ def move_label(move_to: str | None) -> str | None:
     return move_to.removeprefix("Core :: ") if move_to else None
 
 
+def close_action(record: dict) -> str | None:
+    """What a Close / Reassign run did, in the same order as `close_kind`: `Closed` when it
+    set a resolution, else `Reassigned` when it moved the bug."""
+    if record["resolution"]:
+        return "Closed"
+    if record["move_to"]:
+        return "Reassigned"
+    return None
+
+
 def close_kind(record: dict) -> str | None:
     """Where a Close / Reassign run sent the bug, as a chart label."""
     if record["resolution"]:
         return resolution_label(record["resolution"])
     if record["move_to"]:
-        return f"Moved to {move_label(record['move_to'])}"
+        return f"Reassigned to {move_label(record['move_to'])}"
     return None
 
 
@@ -153,6 +163,7 @@ def run_view(record: dict) -> dict:
         "tags": tags(record),
         "warning": warning(record),
         "issue_type": issue_type(record),
+        "close_action": close_action(record) if cat == "close" else None,
     }
 
 
