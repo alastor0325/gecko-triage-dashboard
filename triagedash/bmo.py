@@ -20,13 +20,33 @@ def fetch_meta(bug_ids: set[int], cache_dir: Path) -> dict[int, dict]:
     A restricted or missing bug is absent from the result; the cache keeps it as `{}`."""
     missing = sorted(b for b in bug_ids if not (cache_dir / f"{b}.json").exists())
     if missing:
-        url = f"{BASE}?id={','.join(map(str, missing))}&include_fields={FIELDS}"
-        with urllib.request.urlopen(url, timeout=60) as resp:
-            found = {b["id"]: b for b in json.load(resp).get("bugs") or []}
+        found = {b["id"]: b for b in get_bugs(set(missing), FIELDS)}
         for b in missing:
             store.save(cache_dir / f"{b}.json", found.get(b, {}))
     metas = {b: store.load(cache_dir / f"{b}.json", {}) for b in bug_ids}
     return {b: m for b, m in metas.items() if m}
+
+
+BUG_CHUNK = 100  # bug ids per request, to keep the URL short
+
+
+def get_bugs(bug_ids: set[int], fields: str) -> list[dict]:
+    """The bugs an anonymous reader can see, with `fields`. A restricted or missing bug is
+    left out: Bugzilla answers the same for both."""
+    ids = sorted(bug_ids)
+    out = []
+    for i in range(0, len(ids), BUG_CHUNK):
+        chunk = ",".join(map(str, ids[i : i + BUG_CHUNK]))
+        url = f"{BASE}?id={chunk}&include_fields={fields}&permissive=1"
+        with urllib.request.urlopen(url, timeout=60) as resp:
+            out += json.load(resp).get("bugs") or []
+    return out
+
+
+def fetch_visible(bug_ids: set[int]) -> set[int]:
+    """The bugs an anonymous reader can see. Not cached: a bug can become restricted at
+    any time, and the answer decides what the public page shows."""
+    return {b["id"] for b in get_bugs(bug_ids, "id")}
 
 
 USER_CHUNK = 100  # names per request, to keep the URL short

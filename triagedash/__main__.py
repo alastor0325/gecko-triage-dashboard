@@ -10,7 +10,7 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-from . import bmo, hackbot, render, stats, store
+from . import bmo, hackbot, render, restricted, stats, store
 from .summary import is_public, orphan_bugs, parse_summary, requestees, summary_bug_id
 from .teams import TEAMS
 
@@ -113,6 +113,10 @@ def ingest(args) -> None:
     merged = store.shown(store.merge_records(store.load(RUNS, []), new))
     backfill = store.load_jsonl(Path(args.root) / "pilot" / "issue-types.jsonl")
     records = store.apply_issue_types(store.apply_log(merged, log), backfill)
+    named = restricted.all_named(records)
+    own = {r["bug_id"] for r in records}
+    hidden = restricted.hidden_bugs(named, bmo.fetch_visible(named), own)
+    records = restricted.redact_all(records, hidden)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)
     pilot_passes = store.load_jsonl(Path(args.root) / "pilot" / "passes.jsonl")
