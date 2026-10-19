@@ -21,7 +21,9 @@ CATEGORY = {
     "needs_info": "needs-info",
     # A returning run that waits on a stale needinfo to a developer; not ready for work.
     "watching": "needs-info",
-    **dict.fromkeys(("duplicate", "invalid", "wrong_component", "incomplete", "stalled"), "close"),
+    # A comment for volunteers and the `stalled` keyword: the bug stays open, waiting.
+    "stalled": "needs-info",
+    **dict.fromkeys(("duplicate", "invalid", "wrong_component", "incomplete"), "close"),
 }
 # Tab order, as in the triage dashboard, with each tab's label and chart color. The colors
 # are COLOR_NAVY, COLOR_MUSTARD and COLOR_RED of the review-stats editorial palette.

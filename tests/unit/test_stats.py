@@ -33,9 +33,10 @@ def test_old_and_new_name_of_analyzed():
 def test_category():
     assert stats.category(make_record(decision="triaged")) == "analyzed"
     assert stats.category(make_record(decision="needs_info")) == "needs-info"
-    for d in ("duplicate", "invalid", "wrong_component", "incomplete", "stalled"):
+    for d in ("duplicate", "invalid", "wrong_component", "incomplete"):
         assert stats.category(make_record(decision=d)) == "close"
     assert stats.category(make_record(decision="watching")) == "needs-info"
+    assert stats.category(make_record(decision="stalled")) == "needs-info"
 
 
 def test_labels():
@@ -260,5 +261,5 @@ def test_close_action_follows_close_kind_order():
     assert stats.run_view(make_record(decision="triaged"))["close_action"] is None
     assert stats.run_view(dup)["label_kind"] == "closed"
     assert stats.run_view(moved)["label_kind"] == "reassigned"
-    assert stats.run_view(make_record(decision="stalled"))["label_kind"] == "close"
+    assert stats.run_view(make_record(decision="incomplete"))["label_kind"] == "close"
     assert stats.run_view(make_record(decision="needs_info"))["label_kind"] == "needs-info"

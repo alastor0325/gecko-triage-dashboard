@@ -19,9 +19,10 @@ change the view, Shift+Left/Right the period, and the URL hash keeps both
 The categories are those of the local triage dashboard, from the bot's decision. Each bug
 is in exactly one: **Analyzed** (`analyzed`, or `triaged` in earlier runs: the team can
 start on a fix), **Needs info** (`needs_info`; `watching`, a return that waits on a stale
-needinfo to a developer; and any `triaged` run that still asks for artifacts such as a
-profile or a log) and **Close / Reassign** (`duplicate`, `invalid`, `wrong_component`,
-`incomplete`, `stalled`). S/P can be set in Analyzed and in Needs info.
+needinfo to a developer; `stalled`, which keeps the bug open for volunteers; and any
+`triaged` run that still asks for artifacts such as a profile or a log) and **Close /
+Reassign** (`duplicate`, `invalid`, `wrong_component`, `incomplete`). S/P can be set in
+Analyzed and in Needs info.
 
 - **Overview**: the count of bugs handled and of each category (a click on a tile opens
   the Bugs view on that category); bugs handled per day, stacked by category; where the
