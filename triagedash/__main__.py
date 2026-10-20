@@ -182,10 +182,11 @@ def page_clock(records: list[dict], now: datetime) -> datetime:
 
 
 def proposal(fix: dict, state: dict, bug: dict) -> dict | None:
-    """The bug's proposed fix tags that are not on its whiteboard yet."""
+    """The bug's proposed fix tags, until a gecko-triage fix tag is on its whiteboard: then
+    the whiteboard holds the answer, even when it is a weaker tag than the proposal."""
     f = fix.get(bug["bug_id"])
-    on_bug = state.get(bug["bug_id"], {}).get("fix_tags") or []
-    return f and {**f, "tags": [t for t in f["tags"] if t not in on_bug]}
+    on_bug = state.get(bug["bug_id"], {}).get("fix_tags")
+    return f and {**f, "tags": [] if on_bug else f["tags"]}
 
 
 def build(args) -> None:

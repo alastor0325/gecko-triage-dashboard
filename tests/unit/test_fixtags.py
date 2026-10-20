@@ -15,6 +15,9 @@ def test_posted_tags_leave_the_proposal():
     assert proposal(fix, on_bug, {"bug_id": 1})["tags"] == []
     assert proposal(fix, {}, {"bug_id": 1})["tags"] == ["[gecko-triage:easy-fix]"]
     assert proposal(fix, {}, {"bug_id": 2}) is None
+    both = {1: {"bug_id": 1, "tags": list(fixtags.LABELS)}}
+    gfb_posted = {1: {"fix_tags": ["[gecko-triage:gfb-candidate]"]}}
+    assert proposal(both, gfb_posted, {"bug_id": 1})["tags"] == []
 
 
 def test_latest_picks_the_newest_file(tmp_path):
