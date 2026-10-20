@@ -7,16 +7,20 @@ import json
 import os
 import re
 import shutil
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from . import bmo, hackbot, render, restricted, stats, store
+from . import bmo, hackbot, render, restricted, rotation, stats, store
 from .summary import is_public, orphan_bugs, parse_summary, requestees, summary_bug_id
-from .teams import TEAMS
+from .teams import LOCAL_TEAM, TEAMS
 
 ROOT = Path(__file__).resolve().parent.parent
 RUNS = ROOT / "data" / "runs.json"
 PASSES = ROOT / "data" / "passes.json"
+ROTATION = ROOT / "data" / "rotation.json"
+OPEN = ROOT / "data" / "open.json"
+# The rotation weeks kept: enough before today for one round, and the weeks ahead.
+ROTATION_BACK, ROTATION_AHEAD = timedelta(days=200), timedelta(days=60)
 CACHE = ROOT / ".cache" / "bmo"
 _RUN_LOG = re.compile(r"run-(\d+)\.log$")
 
@@ -125,6 +129,22 @@ def ingest(args) -> None:
     store.save(PASSES, passes)
 
 
+def refresh(args) -> None:
+    """Fetches what changes outside the runs: the triage rotation, and whether each bug
+    is still open. Runs before every build, also the daily one."""
+    today = datetime.now(UTC).date()
+    ics = rotation.fetch_ics()
+    slots = rotation.slots(ics, today - ROTATION_BACK, today + ROTATION_AHEAD)
+    if not slots:
+        raise SystemExit("rotation: the calendar has no media week; kept the old data")
+    store.save(
+        ROTATION, {"fetched_at": datetime.now(UTC).isoformat(timespec="seconds"), "slots": slots}
+    )
+    ids = {r["bug_id"] for r in store.load(RUNS, [])}
+    store.save(OPEN, {str(b): v for b, v in sorted(bmo.fetch_open(ids).items())})
+    print(f"rotation: {len(slots)} weeks; open: {len(ids)} bugs")
+
+
 def fetch_hackbot(args) -> None:
     """Downloads the gecko-triage runs from hackbot-api. Off until a key exists."""
     try:
@@ -157,6 +177,8 @@ def page_clock(records: list[dict], now: datetime) -> datetime:
 def build(args) -> None:
     records = store.load(RUNS, [])
     passes = store.load(PASSES, [])
+    saved = store.load(ROTATION, {"fetched_at": None, "slots": []})
+    is_open = {int(b): v for b, v in store.load(OPEN, {}).items()}
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name in ("review-stats.css", "favicon.svg"):
@@ -169,7 +191,13 @@ def build(args) -> None:
             continue
         clock = page_clock(mine, datetime.now(UTC))
         team_passes = [p for p in passes if p["team"] == team.slug]
-        pages[team.slug] = page = stats.team_page(mine, clock, team_passes)
+        page = stats.team_page(mine, clock, team_passes)
+        if team.slug == LOCAL_TEAM:
+            round_ = rotation.one_round(saved["slots"], clock.date())
+            page["rotation"] = {**round_, "fetched_at": saved["fetched_at"]}
+        # A bug with no known state is left out of the Calendar rather than shown as open.
+        page["bugs"] = [{**b, "open": is_open.get(b["bug_id"], False)} for b in page["bugs"]]
+        pages[team.slug] = page
         (out / team.slug).mkdir(exist_ok=True)
         (out / team.slug / "index.html").write_text(render.team_html(team_template, team, page))
     landing = (render.TEMPLATES / "index.html").read_text()
@@ -184,6 +212,8 @@ def main(argv=None) -> None:
     p.add_argument("--root", required=True, help="the hackbot folder: pilot/<day>/ and rounds")
     p.add_argument("--manifest", help="test rounds: round<TAB>directory under --root")
     p.set_defaults(func=ingest)
+    p = sub.add_parser("refresh", help="fetch the triage rotation and which bugs are open")
+    p.set_defaults(func=refresh)
     p = sub.add_parser("fetch-hackbot", help="download gecko-triage runs from hackbot-api")
     p.add_argument("--out", default=str(hackbot.default_out()))
     p.set_defaults(func=fetch_hackbot)

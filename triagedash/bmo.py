@@ -49,6 +49,13 @@ def fetch_visible(bug_ids: set[int]) -> set[int]:
     return {b["id"] for b in get_bugs(bug_ids, "id")}
 
 
+def fetch_open(bug_ids: set[int]) -> dict[int, bool]:
+    """Whether each bug is open now. A bug an anonymous reader cannot see counts as
+    closed, so the page never lists it."""
+    found = {b["id"]: b["is_open"] for b in get_bugs(bug_ids, "id,is_open")}
+    return {b: found.get(b, False) for b in bug_ids}
+
+
 USER_CHUNK = 100  # names per request, to keep the URL short
 
 

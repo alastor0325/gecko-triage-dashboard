@@ -3,7 +3,10 @@ name = "gecko-triage-dashboard"
 version = "0.1.0"
 description = "Multi-team dashboard over gecko-triage bot output"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "icalendar>=7.3.0",
+    "recurring-ical-events>=3.8.2",
+]
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6"]

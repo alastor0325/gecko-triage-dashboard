@@ -48,3 +48,8 @@ def test_fetch_users_splits_into_chunks(tmp_path, monkeypatch):
     monkeypatch.setattr(bmo.urllib.request, "urlopen", fake_urlopen)
     bmo.fetch_users({f"{n}@example.com" for n in "abcde"}, tmp_path)
     assert len(calls) == 3
+
+
+def test_fetch_open_counts_an_unseen_bug_as_closed(monkeypatch):
+    monkeypatch.setattr(bmo, "get_bugs", lambda ids, fields: [{"id": 1, "is_open": True}])
+    assert bmo.fetch_open({1, 2}) == {1: True, 2: False}

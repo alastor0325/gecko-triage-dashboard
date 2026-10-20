@@ -18,6 +18,23 @@
   .chart-box { position: relative; height: 280px; }
   /* A bar chart grows with its rows (--rows, set by the script), so bars stay thin. */
   .chart-box.rows { height: max(120px, calc(var(--rows) * 34px + 40px)); }
+  .cal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 800px) { .cal-grid { grid-template-columns: minmax(0, 1fr); } }
+  .cal-grid .stat.is-active { box-shadow: inset 3px 0 0 var(--red); }
+  .cal-grid .stat .hint { font-family: var(--mono); font-size: 8.5px; color: var(--red); margin-top: 5px;
+    text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
+  .cal-next { margin: -4px 0 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .cal-panel { grid-column: 1 / -1; background: var(--surface); padding: 6px 14px 12px; }
+  .cal-panel h3 { padding: 10px 0 5px; border-bottom: 0; background: none; position: static; }
+  .cal-panel .why { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
+  .cal-panel ul { list-style: none; margin: 0; padding: 0; }
+  .cal-panel li { display: flex; gap: 10px; align-items: baseline; padding: 5px 0 5px 10px;
+    border-left: 3px solid var(--c); margin: 4px 0; font-size: 13px; }
+  .cal-panel li .bug-link { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
+  .cal-panel li .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .cal-panel li .view { font: 10px var(--mono); white-space: nowrap; color: var(--ink-soft); background: none;
+    border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+  .stat .sub .k-analyzed, .stat .sub .k-needs-info { color: var(--t); font-weight: 600; }
   button.stat { font: inherit; text-align: left; border: 0; width: 100%; color: inherit; }
   /* minmax(0, ...) lets a Chart.js canvas shrink with its column. */
   .split { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -159,6 +176,14 @@
     </section>
   </div>
 
+  <div id="calendar-view" hidden>
+    <section>
+      <h2 id="cal-title">Triage rotation</h2>
+      <p class="cal-next" id="cal-next"></p>
+      <div class="summary-grid cal-grid" id="cal-grid"></div>
+    </section>
+  </div>
+
   <div id="bugs-view" hidden>
     <div class="filters">
       <div class="lw-filters" role="tablist" aria-label="Decision" id="cats"></div>
@@ -179,7 +204,7 @@
 <script>
 "use strict";
 const DATA = JSON.parse(document.getElementById("data").textContent);
-const VIEWS = [["overview", "Overview"], ["bugs", "Bugs"]];
+const VIEWS = [["overview", "Overview"], ["bugs", "Bugs"], ...(DATA.rotation ? [["calendar", "Calendar"]] : [])];
 const PERIODS = DATA.periods.map(p => [p.key, p.label]);
 const CAT = Object.fromEntries(DATA.categories.map(c => [c.key, c]));
 const CAT_TEXT = {all: "All", ...Object.fromEntries(DATA.categories.map(c => [c.key, c.label]))};
@@ -191,7 +216,7 @@ const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "part
   "partly posted": {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
-const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: ""};
+const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null};
 // Run sources are named only once Hackbot runs exist; until then every run is local.
 const HAS_HACKBOT = DATA.bugs.some(b => b.runs.some(r => r.source === "hackbot"));
 
@@ -436,6 +461,56 @@ function drawBugs() {
   current = list;
 }
 
+// ---- Calendar ----
+// Each open Analyzed or Needs info bug goes in the rotation week of its newest run, by
+// the viewer's local day; that week's engineer owns it. Worked out once: the data does
+// not change while the page is open.
+const CAL_GROUPS = [["analyzed", "You can start work on these"], ["needs-info", "Check if you want to be involved"]];
+const wday = d => day(d + "T12:00:00");
+const WEEKS = (DATA.rotation?.weeks ?? []).map(w => ({...w, bugs: []}));
+for (const b of DATA.bugs) {
+  if (!b.open || !CAL_GROUPS.some(([k]) => k === b.runs[0].category)) continue;
+  const k = dayKey(b.runs[0].started_at);
+  WEEKS.find(w => k >= w.start && k < w.end)?.bugs.push(b);
+}
+const CURRENT_WEEK = WEEKS.find(w => w.current && w.bugs.length)?.start ?? null;
+const FIRST_DAY = DATA.first_run && dayKey(DATA.first_run);
+// The shortest period that still holds the run, for the link to its card.
+const cardPeriod = b => DATA.periods.find(p => b.runs[0].started_at >= p.start)?.key ?? "3m";
+function calTile(w) {
+  const n = k => w.bugs.filter(b => b.runs[0].category === k).length;
+  const counts = `<span class="k-analyzed">${n("analyzed")} analyzed</span> · <span class="k-needs-info">${n("needs-info")} needs info</span>`;
+  const empty = FIRST_DAY && w.end <= FIRST_DAY ? "Before the bot ran" : "No open bug";
+  const inner = `<div class="label">${esc(w.name ?? "No one on calendar")}</div><div class="value">${w.bugs.length}</div>
+    <div class="sub">${wday(w.start)} – ${wday(w.end)}<br>${w.bugs.length ? counts : empty}</div>${w.current ? `<div class="hint">This week</div>` : ""}`;
+  const cls = `stat${w.current ? " is-active" : ""}`;
+  if (!w.bugs.length) return `<div class="${cls}">${inner}</div>`;
+  const open = state.week === w.start;
+  return `<button type="button" class="${cls} expandable${open ? " is-open" : ""}" id="week-${w.start}" data-week="${w.start}" aria-expanded="${open}" aria-controls="panel-${w.start}">${inner}</button>`;
+}
+function calPanel(w) {
+  const group = ([k, why]) => {
+    const list = w.bugs.filter(b => b.runs[0].category === k);
+    const row = b => `<li class="k-${k}">${bug(b.bug_id)}<span class="t">${esc(b.title)}</span>
+      <button type="button" class="view" data-view="bugs" data-period="${cardPeriod(b)}" data-cat="all" data-bug="${b.bug_id}">View card</button></li>`;
+    return list.length ? `<h3 class="rail-day">${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span></h3><ul>${list.map(row).join("")}</ul>` : "";
+  };
+  return `<div class="cal-panel" role="region" id="panel-${w.start}" aria-labelledby="week-${w.start}">${CAL_GROUPS.map(group).join("")}</div>`;
+}
+function drawCalendar() {
+  const next = DATA.rotation.next;
+  const asOf = DATA.rotation.fetched_at ? `Calendar as of ${date(DATA.rotation.fetched_at)}` : "";
+  document.getElementById("cal-next").textContent = [next && `Next: ${next.name}, from ${wday(next.start)}`, asOf].filter(Boolean).join(" · ");
+  const cells = WEEKS.map(calTile);
+  // The open week's panel goes after the last tile of its row, across the grid.
+  const open = WEEKS.findIndex(w => w.start === state.week);
+  if (open >= 0) {
+    const cols = matchMedia("(max-width: 800px)").matches ? 1 : 3;
+    cells.splice(Math.min(WEEKS.length, (Math.floor(open / cols) + 1) * cols), 0, calPanel(WEEKS[open]));
+  }
+  document.getElementById("cal-grid").innerHTML = cells.join("");
+}
+
 // ---- Shell ----
 const toggles = (list, key) => list.map(([k, l]) => `<button type="button" data-${key}="${k}" class="${state[key] === k ? "active" : ""}">${l}</button>`).join("");
 function draw() {
@@ -443,8 +518,12 @@ function draw() {
   document.getElementById("periods").innerHTML = toggles(PERIODS, "period");
   document.getElementById("overview-view").hidden = state.view !== "overview";
   document.getElementById("bugs-view").hidden = state.view !== "bugs";
-  if (state.view === "overview") drawOverview(); else drawBugs();
-  const parts = [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? "", state.issue] : [])];
+  document.getElementById("calendar-view").hidden = state.view !== "calendar";
+  // The rotation sets the weeks of the Calendar, so the period toggle does not apply.
+  document.getElementById("periods").hidden = state.view === "calendar";
+  if (state.view === "overview") drawOverview(); else if (state.view === "bugs") drawBugs(); else drawCalendar();
+  const parts = state.view === "calendar" ? ["calendar", state.week ?? ""]
+    : [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? "", state.issue] : [])];
   history.replaceState(null, "", "#" + parts.join("/"));
 }
 
@@ -460,6 +539,7 @@ function step(n) {
 function readHash() {
   const [view, period, cat, bugId, issue] = location.hash.slice(1).split("/");
   if (VIEWS.some(([k]) => k === view)) state.view = view;
+  if (view === "calendar") return void (state.week = WEEKS.some(w => w.start === period) ? period : CURRENT_WEEK);
   if (PERIODS.some(([k]) => k === period)) state.period = period;
   if (CATS.includes(cat)) state.cat = cat;
   if (bugId) state.bug = Number(bugId);
@@ -477,12 +557,19 @@ search.addEventListener("input", () => {
   typing = setTimeout(() => { state.q = search.value; draw(); }, 120);
 });
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue]");
+  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue], [data-week]");
   if (!el) return;
   if ("clearIssue" in el.dataset) { state.issue = ""; search.focus(); }
+  if (el.dataset.week) {
+    state.week = state.week === el.dataset.week ? null : el.dataset.week;
+    draw();
+    return document.getElementById(`week-${el.dataset.week}`)?.focus();
+  }
   if (el.dataset.step) return step(Number(el.dataset.step));
   if (el.dataset.openCat) openBugs(el.dataset.openCat);
   if (el.dataset.view) state.view = el.dataset.view;
+  if (el.dataset.view === "calendar" && !state.week) state.week = CURRENT_WEEK;
+  if (el.dataset.view === "bugs" && el.dataset.bug) Object.assign(state, {issue: "", q: ""});
   if (el.dataset.period) state.period = el.dataset.period;
   if (el.dataset.cat) state.cat = el.dataset.cat;
   if (el.dataset.bug) state.bug = Number(el.dataset.bug);
@@ -497,7 +584,14 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
     e.preventDefault();
     const dir = e.key === "ArrowRight" ? 1 : -1;
+    if (e.shiftKey && state.view === "calendar") return;
     return e.shiftKey ? cycle(PERIODS, "period", dir) : cycle(VIEWS, "view", dir);
+  }
+  if (state.view === "calendar" && e.key === "Escape" && state.week) {
+    const w = state.week;
+    state.week = null;
+    draw();
+    return document.getElementById(`week-${w}`)?.focus();
   }
   if (state.view !== "bugs") return;
   if (e.key === "/") { e.preventDefault(); search.focus(); }

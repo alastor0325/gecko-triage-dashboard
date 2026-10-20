@@ -3,6 +3,10 @@ name: Build and publish
 on:
   push:
     branches: [main]
+  # Daily, after media-triage syncs its calendar (06:00 UTC): a new rotation week, and
+  # bugs closed since the last build.
+  schedule:
+    - cron: "30 7 * * *"
   workflow_dispatch:
 
 permissions:
@@ -23,6 +27,9 @@ jobs:
       - run: uv sync
       - run: uv run ruff check
       - run: uv run pytest tests/unit/ -q
+      # Without network the build keeps the committed rotation and open status.
+      - run: uv run python -m triagedash refresh
+        continue-on-error: true
       - run: uv run python -m triagedash build --out site
       - uses: actions/upload-pages-artifact@v3
         with:
