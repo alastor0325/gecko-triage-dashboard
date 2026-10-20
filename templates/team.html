@@ -20,8 +20,10 @@
   .chart-box.rows { height: max(120px, calc(var(--rows) * 34px + 40px)); }
   .cal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   @media (max-width: 800px) { .cal-grid { grid-template-columns: minmax(0, 1fr); } }
-  .cal-grid .stat .value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cal-grid .stat .value.is-empty { color: var(--muted); font-size: 16px; line-height: 26px; }
+  /* Room under the line, so overflow: hidden does not cut the tail of a J or a y. */
+  .cal-grid .stat .value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;
+    margin-top: 3px; }
+  .cal-grid .stat .value.is-empty { color: var(--muted); font-size: 16px; line-height: 32.5px; }
   .cal-grid .stat.is-active { box-shadow: inset 3px 0 0 var(--red); }
   .cal-grid .stat .hint { font-family: var(--mono); font-size: 8.5px; color: var(--red); margin-top: 5px;
     text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
