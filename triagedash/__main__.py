@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 RUNS = ROOT / "data" / "runs.json"
 PASSES = ROOT / "data" / "passes.json"
 ROTATION = ROOT / "data" / "rotation.json"
-OPEN = ROOT / "data" / "open.json"
+BUG_STATE = ROOT / "data" / "bug-state.json"
 # The rotation weeks kept: enough before today for one round, and the weeks ahead.
 ROTATION_BACK, ROTATION_AHEAD = timedelta(days=200), timedelta(days=60)
 CACHE = ROOT / ".cache" / "bmo"
@@ -131,7 +131,8 @@ def ingest(args) -> None:
 
 def refresh(args) -> None:
     """Fetches what changes outside the runs: the triage rotation, and whether each bug
-    is still open. Runs before every build, also the daily one."""
+    is still open, unassigned, and of which severity. Runs before every build, also the
+    daily one."""
     today = datetime.now(UTC).date()
     ics = rotation.fetch_ics()
     slots = rotation.slots(ics, today - ROTATION_BACK, today + ROTATION_AHEAD)
@@ -141,8 +142,8 @@ def refresh(args) -> None:
         ROTATION, {"fetched_at": datetime.now(UTC).isoformat(timespec="seconds"), "slots": slots}
     )
     ids = {r["bug_id"] for r in store.load(RUNS, [])}
-    store.save(OPEN, {str(b): v for b, v in sorted(bmo.fetch_open(ids).items())})
-    print(f"rotation: {len(slots)} weeks; open: {len(ids)} bugs")
+    store.save(BUG_STATE, {str(b): v for b, v in sorted(bmo.fetch_state(ids).items())})
+    print(f"rotation: {len(slots)} weeks; state: {len(ids)} bugs")
 
 
 def fetch_hackbot(args) -> None:
@@ -178,7 +179,7 @@ def build(args) -> None:
     records = store.load(RUNS, [])
     passes = store.load(PASSES, [])
     saved = store.load(ROTATION, {"fetched_at": None, "slots": []})
-    is_open = {int(b): v for b, v in store.load(OPEN, {}).items()}
+    state = {int(b): v for b, v in store.load(BUG_STATE, {}).items()}
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name in ("review-stats.css", "favicon.svg"):
@@ -195,8 +196,7 @@ def build(args) -> None:
         if team.slug == LOCAL_TEAM:
             round_ = rotation.one_round(saved["slots"], clock.date())
             page["rotation"] = {**round_, "fetched_at": saved["fetched_at"]}
-        # A bug with no known state is left out of the Calendar rather than shown as open.
-        page["bugs"] = [{**b, "open": is_open.get(b["bug_id"], False)} for b in page["bugs"]]
+        page["bugs"] = [{**b, **state.get(b["bug_id"], bmo.UNKNOWN_STATE)} for b in page["bugs"]]
         pages[team.slug] = page
         (out / team.slug).mkdir(exist_ok=True)
         (out / team.slug / "index.html").write_text(render.team_html(team_template, team, page))

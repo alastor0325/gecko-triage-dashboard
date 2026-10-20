@@ -43,10 +43,11 @@ Analyzed and in Needs info.
   to Bugzilla, and each run names the agent version that made it
   (`findings.agent_version`; older runs show no version).
 - **Calendar** (media only): one round of the weekly triage rotation, the current week
-  and the weeks before it, one per engineer. Each open Analyzed or Needs info bug sits in
-  the week of its newest run, in two groups: bugs the engineer can start work on, and bugs
-  to check if they want to be involved. A bug closed on Bugzilla now is left out. A click
-  on a week opens its bugs.
+  and the weeks before it, one per engineer. Each open Analyzed or Needs info bug that
+  nobody is assigned to sits in the week of its newest run, in two groups: bugs the
+  engineer can start work on (under a header per severity on Bugzilla now, most severe first), and bugs to
+  check if they want to be involved. A bug closed on Bugzilla now is left out. A click on
+  a week opens its bugs, and a click on a bug opens its card in place.
 
 A Close / Reassign bug's category reads `Closed` when the run set a resolution, else
 `Reassigned` when it moved the bug.
@@ -83,7 +84,8 @@ day. There are two kinds of run:
 `data/rotation.json` holds the rotation weeks (first name, start and end) from the public
 `js/media.ics` of mozilla/media-triage, which syncs its Google Calendar every day. Swaps
 and cancelled weeks are applied, and emails are never read out of the file.
-`data/open.json` says whether each bug is open now, from an anonymous Bugzilla read.
+`data/bug-state.json` says whether each bug is open now, whether someone is assigned, and
+its severity now, from an anonymous Bugzilla read; the assignee is never kept.
 `triagedash refresh` writes both; the deploy runs it every day and on each push.
 
 `data/passes.json` has one line per daily selection pass (team, UTC time, bugs selected),

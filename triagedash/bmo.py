@@ -49,11 +49,24 @@ def fetch_visible(bug_ids: set[int]) -> set[int]:
     return {b["id"] for b in get_bugs(bug_ids, "id")}
 
 
-def fetch_open(bug_ids: set[int]) -> dict[int, bool]:
-    """Whether each bug is open now. A bug an anonymous reader cannot see counts as
-    closed, so the page never lists it."""
-    found = {b["id"]: b["is_open"] for b in get_bugs(bug_ids, "id,is_open")}
-    return {b: found.get(b, False) for b in bug_ids}
+NOBODY = "nobody@mozilla.org"
+# A bug with no known state: the Calendar leaves it out.
+UNKNOWN_STATE = {"open": False, "assigned": False, "severity": None}
+
+
+def fetch_state(bug_ids: set[int]) -> dict[int, dict]:
+    """Whether each bug is open now, whether someone is assigned to it, and its severity
+    now. Only a boolean is kept for the assignee, never the account. A bug an anonymous
+    reader cannot see counts as closed, so the page never lists it."""
+    found = {
+        b["id"]: {
+            "open": b["is_open"],
+            "assigned": b["assigned_to"] != NOBODY,
+            "severity": b["severity"],
+        }
+        for b in get_bugs(bug_ids, "id,is_open,assigned_to,severity")
+    }
+    return {b: found.get(b, UNKNOWN_STATE) for b in bug_ids}
 
 
 USER_CHUNK = 100  # names per request, to keep the URL short

@@ -274,6 +274,7 @@ def team_page(records: list[dict], as_of: datetime, passes: list[dict] = ()) -> 
         "as_of": as_of.isoformat(),
         "ran_at": ran,
         "known_until": until,
+        "severities": list(SEVERITIES),
         "first_run": min([*ran, *(r["started_at"] for r in records)], default=None),
         "posted": sum(r["posted"] for r in records),
         "categories": [

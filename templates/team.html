@@ -27,13 +27,19 @@
   .cal-panel { grid-column: 1 / -1; background: var(--surface); padding: 6px 14px 12px; }
   .cal-panel h3 { padding: 10px 0 5px; border-bottom: 0; background: none; position: static; }
   .cal-panel .why { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
-  .cal-panel ul { list-style: none; margin: 0; padding: 0; }
-  .cal-panel li { display: flex; gap: 10px; align-items: baseline; padding: 5px 0 5px 10px;
-    border-left: 3px solid var(--c); margin: 4px 0; font-size: 13px; }
-  .cal-panel li .bug-link { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
-  .cal-panel li .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-  .cal-panel li .view { font: 10px var(--mono); white-space: nowrap; color: var(--ink-soft); background: none;
-    border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+  .cal-list { list-style: none; margin: 0; padding: 0; }
+  .cal-sev { margin: 8px 0 2px; color: var(--ink-soft); }
+  .cal-list > li { border-left: 3px solid var(--c); margin: 4px 0; }
+  .cal-bug { display: flex; gap: 10px; align-items: baseline; width: 100%; padding: 5px 10px; font: inherit;
+    font-size: 13px; text-align: left; color: var(--ink); background: none; border: 0; cursor: pointer; }
+  .cal-bug:hover, .cal-bug.is-open { background: var(--paper); }
+  .cal-bug:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+  .cal-bug .id { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
+  .cal-bug .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .cal-bug::after { content: "→"; color: var(--red); font-size: 10px; transition: transform 0.2s; }
+  .cal-bug.is-open::after { transform: rotate(90deg); }
+  .cal-card { padding: 8px 12px 6px; background: var(--surface); }
+  .cal-card .card-id { margin-bottom: 8px; }
   .stat .sub .k-analyzed, .stat .sub .k-needs-info { color: var(--t); font-weight: 600; }
   button.stat { font: inherit; text-align: left; border: 0; width: 100%; color: inherit; }
   /* minmax(0, ...) lets a Chart.js canvas shrink with its column. */
@@ -80,7 +86,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   /* Tags, in the triage dashboard's style: small soft pills, one color per meaning. A
      run label has its own color (k-*); a closed bug, the most harmful, is solid. */
-  .tag, .rail-cat, .when, .card-meta, .changes dt, .rail-day, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+  .tag, .rail-cat, .when, .card-meta, .changes dt, .rail-day, .cal-sev, .ni-role { font-family: var(--mono); font-size: 9.5px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em; }
   .tag { padding: 1px 6px; border-radius: 3px; background: var(--paper-warm); color: var(--ink-soft); white-space: nowrap; }
   .tag.new { background: rgba(63, 94, 63, 0.14); color: #3F5E3F; }
@@ -126,8 +132,8 @@
   .comment code { font-family: var(--mono); font-size: 11.5px; }
   footer.keys { max-width: 1200px; margin: 0 auto; padding: 0 40px 32px; font-family: var(--mono); font-size: 10px;
     letter-spacing: 0.04em; color: var(--muted); }
-  .card a, .bug-link { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
-  .card a:hover, .bug-link:hover { color: var(--red); border-bottom-color: var(--red); }
+  .card a, .cal-card a, .bug-link { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .card a:hover, .cal-card a:hover, .bug-link:hover { color: var(--red); border-bottom-color: var(--red); }
   .empty { color: var(--muted); font-size: 12.5px; margin: 0; padding: 14px; }
   .dry-run { color: var(--red-deep); }
   [hidden] { display: none !important; }
@@ -216,7 +222,7 @@ const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "part
   "partly posted": {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
-const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null};
+const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null, calBug: null};
 // Run sources are named only once Hackbot runs exist; until then every run is local.
 const HAS_HACKBOT = DATA.bugs.some(b => b.runs.some(r => r.source === "hackbot"));
 
@@ -354,6 +360,9 @@ function drawOverview() {
 }
 
 // ---- Bugs ----
+// A bug with the runs the page shows, its newest run, and the tags that depend on them.
+// Python sends only the runs the page shows, so a second run means the bot came back.
+const withRuns = (b, runs) => ({...b, runs, run: runs[0], tags: [...b.tags, ...runs[0].tags, ...(runs.length > 1 ? ["again"] : [])]});
 // Per bug, the newest run inside the period, with the tags that depend on it.
 function shown() {
   const start = period().start;
@@ -362,10 +371,7 @@ function shown() {
   const matches = b => (!state.issue || b.run.issue_type === state.issue) && (!q || text(b).includes(q));
   return DATA.bugs.map(b => {
     const runs = b.runs.filter(r => r.started_at >= start);
-    if (!runs.length) return null;
-    // Python sends only the runs the page shows, so a second run means the bot came back.
-    const run = runs[0];
-    return {...b, runs, run, tags: [...b.tags, ...run.tags, ...(runs.length > 1 ? ["again"] : [])]};
+    return runs.length ? withRuns(b, runs) : null;
   }).filter(b => b && matches(b))
     .sort((a, b) => b.run.started_at.localeCompare(a.run.started_at));
 }
@@ -409,10 +415,19 @@ function railDays(list) {
     <ol>${bs.map(railItem).join("")}</ol></li>`).join("");
 }
 
-// The bot's timeline on the bug: every run in the period, newest first, each with every
-// change and its whole comment.
+// The bug's id line: its link, its category and its tags.
+const cardId = b => `<span class="card-id">${bug(b.bug_id)} ${catTag(b.run)} ${tags(b.tags)}</span>`;
 function card(b, index, total) {
-  const r = b.run;
+  return `<div class="card-top">
+      ${cardId(b)}
+      <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
+    </div>
+    <h2 class="card-title">${esc(b.title)}</h2>
+    ${cardBody(b)}`;
+}
+// What the card shows under its title: the filing, any notice, and the bot's timeline:
+// every run in the period, newest first, each with every change and its whole comment.
+function cardBody(b) {
   // What happened to the run on Bugzilla: a link to the posted comment, or the review result.
   // Hackbot keeps no comment id, so its applied runs link to the bug, not the comment.
   const anchor = e => e.comment_count ? `#c${e.comment_count}` : "";
@@ -428,12 +443,7 @@ function card(b, index, total) {
   const notice = e => e.warning ? `<p class="notice">${esc(NOTICES[e.warning](e))}</p>` : "";
   const entry = e => `<li><div class="when">${esc(dayLabel(e.started_at))} ${time(e.started_at)} · ${esc(e.decision)} · ${esc(e.issue_type)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
-  return `<div class="card-top">
-      <span class="card-id">${bug(b.bug_id)} ${catTag(r)} ${tags(b.tags)}</span>
-      <span class="pos"><button type="button" data-step="-1" aria-label="Previous bug">↑</button>bug ${index + 1} of ${total}<button type="button" data-step="1" aria-label="Next bug">↓</button></span>
-    </div>
-    <h2 class="card-title">${esc(b.title)}</h2>
-    ${b.filed ? `<p class="card-meta">Filed ${date(b.filed)} · ${waited(b.filed, b.first_run)}</p>` : ""}
+  return `${b.filed ? `<p class="card-meta">Filed ${date(b.filed)} · ${waited(b.filed, b.first_run)}</p>` : ""}
     ${b.runs.map(notice).filter(Boolean).join("")}
     <ol class="timeline">${b.runs.map(entry).join("")}</ol>`;
 }
@@ -462,21 +472,19 @@ function drawBugs() {
 }
 
 // ---- Calendar ----
-// Each open Analyzed or Needs info bug goes in the rotation week of its newest run, by
-// the viewer's local day; that week's engineer owns it. Worked out once: the data does
+// Each open Analyzed or Needs info bug that nobody has taken goes in the rotation week of
+// its newest run, by the viewer's local day; that week's engineer owns it. Worked out once: the data does
 // not change while the page is open.
 const CAL_GROUPS = [["analyzed", "You can start work on these"], ["needs-info", "Check if you want to be involved"]];
 const wday = d => day(d + "T12:00:00");
 const WEEKS = (DATA.rotation?.weeks ?? []).map(w => ({...w, bugs: []}));
 for (const b of DATA.bugs) {
-  if (!b.open || !CAL_GROUPS.some(([k]) => k === b.runs[0].category)) continue;
+  if (!b.open || b.assigned || !CAL_GROUPS.some(([k]) => k === b.runs[0].category)) continue;
   const k = dayKey(b.runs[0].started_at);
-  WEEKS.find(w => k >= w.start && k < w.end)?.bugs.push(b);
+  WEEKS.find(w => k >= w.start && k < w.end)?.bugs.push(withRuns(b, b.runs));
 }
 const CURRENT_WEEK = WEEKS.find(w => w.current && w.bugs.length)?.start ?? null;
 const FIRST_DAY = DATA.first_run && dayKey(DATA.first_run);
-// The shortest period that still holds the run, for the link to its card.
-const cardPeriod = b => DATA.periods.find(p => b.runs[0].started_at >= p.start)?.key ?? "3m";
 function calTile(w) {
   const n = k => w.bugs.filter(b => b.runs[0].category === k).length;
   const counts = `<span class="k-analyzed">${n("analyzed")} analyzed</span> · <span class="k-needs-info">${n("needs-info")} needs info</span>`;
@@ -488,12 +496,28 @@ function calTile(w) {
   const open = state.week === w.start;
   return `<button type="button" class="${cls} expandable${open ? " is-open" : ""}" id="week-${w.start}" data-week="${w.start}" aria-expanded="${open}" aria-controls="panel-${w.start}">${inner}</button>`;
 }
+// A bug's severity on Bugzilla now, else the one the bot set. A person can change it after
+// the run, so it can differ from the S/P in the card, which is what the run set.
+const SEV_ORDER = [...DATA.severities, "No severity"];
+const sevOf = b => [b.severity, b.runs[0].severity].find(s => DATA.severities.includes(s)) ?? "No severity";
+const sevRank = b => SEV_ORDER.indexOf(sevOf(b));
 function calPanel(w) {
   const group = ([k, why]) => {
     const list = w.bugs.filter(b => b.runs[0].category === k);
-    const row = b => `<li class="k-${k}">${bug(b.bug_id)}<span class="t">${esc(b.title)}</span>
-      <button type="button" class="view" data-view="bugs" data-period="${cardPeriod(b)}" data-cat="all" data-bug="${b.bug_id}">View card</button></li>`;
-    return list.length ? `<h3 class="rail-day">${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span></h3><ul>${list.map(row).join("")}</ul>` : "";
+    // A row opens in place to the bug's card, one at a time.
+    const row = b => {
+      const open = state.calBug === b.bug_id;
+      return `<li class="k-${k}"><button type="button" class="cal-bug${open ? " is-open" : ""}" data-cal-bug="${b.bug_id}" aria-expanded="${open}" aria-controls="calcard-${b.bug_id}">
+        <span class="id">${b.bug_id}</span><span class="t">${esc(b.title)}</span></button>
+        ${open ? `<div class="cal-card" id="calcard-${b.bug_id}">${cardId(b)}${cardBody(b)}</div>` : ""}</li>`;
+    };
+    if (!list.length) return "";
+    const head = `<h3 class="rail-day">${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span></h3>`;
+    if (k !== "analyzed") return `${head}<ul class="cal-list">${list.map(row).join("")}</ul>`;
+    // Analyzed bugs under a header per severity on Bugzilla, most severe first, as the Bugs
+    // list is under a header per day. Needs info bugs stay newest first.
+    const bySev = Map.groupBy([...list].sort((a, b) => sevRank(a) - sevRank(b)), sevOf);
+    return head + [...bySev].map(([sev, bs]) => `<h4 class="cal-sev">${esc(sev)} on Bugzilla · ${bs.length}</h4><ul class="cal-list">${bs.map(row).join("")}</ul>`).join("");
   };
   return `<div class="cal-panel" role="region" id="panel-${w.start}" aria-labelledby="week-${w.start}">${CAL_GROUPS.map(group).join("")}</div>`;
 }
@@ -513,6 +537,8 @@ function drawCalendar() {
 
 // ---- Shell ----
 const toggles = (list, key) => list.map(([k, l]) => `<button type="button" data-${key}="${k}" class="${state[key] === k ? "active" : ""}">${l}</button>`).join("");
+// Draws the page, then puts the focus back on the control that changed it.
+const redrawFocus = sel => { draw(); document.querySelector(sel)?.focus(); };
 function draw() {
   document.getElementById("views").innerHTML = toggles(VIEWS, "view");
   document.getElementById("periods").innerHTML = toggles(PERIODS, "period");
@@ -522,7 +548,7 @@ function draw() {
   // The rotation sets the weeks of the Calendar, so the period toggle does not apply.
   document.getElementById("periods").hidden = state.view === "calendar";
   if (state.view === "overview") drawOverview(); else if (state.view === "bugs") drawBugs(); else drawCalendar();
-  const parts = state.view === "calendar" ? ["calendar", state.week ?? ""]
+  const parts = state.view === "calendar" ? ["calendar", state.week ?? "", state.calBug ?? ""]
     : [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? "", state.issue] : [])];
   history.replaceState(null, "", "#" + parts.join("/"));
 }
@@ -539,7 +565,12 @@ function step(n) {
 function readHash() {
   const [view, period, cat, bugId, issue] = location.hash.slice(1).split("/");
   if (VIEWS.some(([k]) => k === view)) state.view = view;
-  if (view === "calendar") return void (state.week = WEEKS.some(w => w.start === period) ? period : CURRENT_WEEK);
+  if (view === "calendar") {
+    state.week = WEEKS.some(w => w.start === period) ? period : CURRENT_WEEK;
+    const id = Number(cat);
+    state.calBug = WEEKS.find(w => w.start === state.week)?.bugs.some(b => b.bug_id === id) ? id : null;
+    return;
+  }
   if (PERIODS.some(([k]) => k === period)) state.period = period;
   if (CATS.includes(cat)) state.cat = cat;
   if (bugId) state.bug = Number(bugId);
@@ -557,19 +588,22 @@ search.addEventListener("input", () => {
   typing = setTimeout(() => { state.q = search.value; draw(); }, 120);
 });
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue], [data-week]");
+  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue], [data-week], [data-cal-bug]");
   if (!el) return;
   if ("clearIssue" in el.dataset) { state.issue = ""; search.focus(); }
+  if (el.dataset.calBug) {
+    const id = Number(el.dataset.calBug);
+    state.calBug = state.calBug === id ? null : id;
+    return redrawFocus(`[data-cal-bug="${id}"]`);
+  }
   if (el.dataset.week) {
-    state.week = state.week === el.dataset.week ? null : el.dataset.week;
-    draw();
-    return document.getElementById(`week-${el.dataset.week}`)?.focus();
+    Object.assign(state, {week: state.week === el.dataset.week ? null : el.dataset.week, calBug: null});
+    return redrawFocus(`#week-${el.dataset.week}`);
   }
   if (el.dataset.step) return step(Number(el.dataset.step));
   if (el.dataset.openCat) openBugs(el.dataset.openCat);
   if (el.dataset.view) state.view = el.dataset.view;
   if (el.dataset.view === "calendar" && !state.week) state.week = CURRENT_WEEK;
-  if (el.dataset.view === "bugs" && el.dataset.bug) Object.assign(state, {issue: "", q: ""});
   if (el.dataset.period) state.period = el.dataset.period;
   if (el.dataset.cat) state.cat = el.dataset.cat;
   if (el.dataset.bug) state.bug = Number(el.dataset.bug);
@@ -587,11 +621,15 @@ document.addEventListener("keydown", e => {
     if (e.shiftKey && state.view === "calendar") return;
     return e.shiftKey ? cycle(PERIODS, "period", dir) : cycle(VIEWS, "view", dir);
   }
+  if (state.view === "calendar" && e.key === "Escape" && state.calBug) {
+    const id = state.calBug;
+    state.calBug = null;
+    return redrawFocus(`[data-cal-bug="${id}"]`);
+  }
   if (state.view === "calendar" && e.key === "Escape" && state.week) {
     const w = state.week;
     state.week = null;
-    draw();
-    return document.getElementById(`week-${w}`)?.focus();
+    return redrawFocus(`#week-${w}`);
   }
   if (state.view !== "bugs") return;
   if (e.key === "/") { e.preventDefault(); search.focus(); }
