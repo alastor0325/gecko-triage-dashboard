@@ -96,9 +96,6 @@
   /* A proposed fix tag: dashed, because it is not on Bugzilla. */
   .tag.proposed { background: transparent; color: var(--ink-soft); box-shadow: none; outline: 1px dashed var(--muted);
     outline-offset: -1px; }
-  .fixtag { margin: 0 0 14px; padding: 8px 12px; border-left: 3px dashed var(--rule); }
-  .fixtag .when { margin-bottom: 4px; }
-  .fixtag dd.path { font-family: var(--mono); font-size: 11px; overflow-wrap: anywhere; }
   .cal-bug .tag.proposed { margin-left: auto; flex: none; }
   .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .tag.partly { background: transparent; color: var(--red-deep); box-shadow: inset 0 0 0 1px var(--red); }
@@ -429,24 +426,6 @@ const cardId = b => `<span class="card-id">${bug(b.bug_id)} ${catTag(b.run)} ${t
 const FIX_TAGS = {"[gecko-triage:easy-fix]": "easy fix?", "[gecko-triage:gfb-candidate]": "gfb?"};
 const proposed = b => (b.fix?.tags ?? []).map(t =>
   `<span class="tag proposed"><span class="vh">proposed, not posted: </span>${esc(FIX_TAGS[t])}</span>`).join("");
-// Links D-numbers to Phabricator and attachments to Bugzilla in a patch note.
-const patchHtml = p => esc(p)
-  .replace(/\bD(\d{5,7})\b/g, (m, n) => link(`https://phabricator.services.mozilla.com/D${n}`, m))
-  .replace(/\battachment (\d{6,8})\b/g, (m, n) => link(`https://bugzilla.mozilla.org/attachment.cgi?id=${n}`, m))
-  .replace(/(https:\/\/github\.com\/[\w./-]+)/g, m => link(m, m));
-function fixBlock(b) {
-  const f = b.fix;
-  if (!f) return "";
-  const rows = [
-    ["Tag", f.tags.length ? proposed(b) : "none"],
-    f.reason && ["Why", esc(f.reason)],
-    f.failed_conditions?.length && ["Fails", esc(f.failed_conditions.join(", "))],
-    f.cause_file && ["Cause", esc(f.cause_file), "path"],
-    f.patch && ["Patch", patchHtml(f.patch)],
-  ].filter(Boolean);
-  return `<div class="fixtag"><div class="when">Fix tag · proposal, not posted</div>
-    <dl class="changes">${rows.map(([k, v, cls]) => `<dt>${k}</dt><dd${cls ? ` class="${cls}"` : ""}>${v}</dd>`).join("")}</dl></div>`;
-}
 function card(b, index, total) {
   return `<div class="card-top">
       ${cardId(b)}
@@ -474,7 +453,6 @@ function cardBody(b) {
   const entry = e => `<li><div class="when">${esc(dayLabel(e.started_at))} ${time(e.started_at)} · ${esc(e.decision)} · ${esc(e.issue_type)}${source(e)}${e.agent_version ? ` · agent ${esc(e.agent_version)}` : ""}${outcome(e)}</div>${changes(e)}
     ${e.comment_html ? `<div class="comment">${e.comment_html}</div>` : ""}</li>`;
   return `${b.filed ? `<p class="card-meta">Filed ${date(b.filed)} · ${waited(b.filed, b.first_run)}</p>` : ""}
-    ${fixBlock(b)}
     ${b.runs.map(notice).filter(Boolean).join("")}
     <ol class="timeline">${b.runs.map(entry).join("")}</ol>`;
 }
