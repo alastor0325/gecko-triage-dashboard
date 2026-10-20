@@ -4,9 +4,9 @@
    "bug_id": 1119299,
    "cause_file": "dom/media/MediaFormatReader.cpp",
    "failed_conditions": [
-    "no design decision",
-    "one function or file",
-    "no upstream change"
+    "No design, product or spec decision",
+    "Cause in one function or file",
+    "No upstream change first"
    ],
    "patch": null,
    "reason": "The full fix is large feature work under bug 1273443. The small step needs a change in the vendored mp4parse C API first.",
@@ -16,9 +16,9 @@
    "bug_id": 2007762,
    "cause_file": "dom/media/AudioStream.cpp",
    "failed_conditions": [
-    "cause confirmed",
-    "concrete fix direction",
-    "no design decision"
+    "Cause in one function or file",
+    "Concrete fix direction",
+    "No design, product or spec decision"
    ],
    "patch": null,
    "reason": "The cause comes from a code model only and nobody confirmed it. The fix direction has two options and can touch the bundled SoundTouch library.",
@@ -28,8 +28,8 @@
    "bug_id": 2075849,
    "cause_file": null,
    "failed_conditions": [
-    "cause confirmed",
-    "concrete fix direction"
+    "Cause in one function or file",
+    "Concrete fix direction"
    ],
    "patch": null,
    "reason": "The cause is a hypothesis that needs checks in the pernosco trace. No fix direction is given.",
@@ -39,7 +39,7 @@
    "bug_id": 2079913,
    "cause_file": "dom/media/webcodecs/VideoFrame.cpp",
    "failed_conditions": [
-    "no patch"
+    "No patch on the bug"
    ],
    "patch": "D330607",
    "reason": "The cause is in one file, but the open revision D330607 on bug 1939711 can fix this bug too. The bug can close as a duplicate, so it is not a free fix.",
@@ -49,10 +49,10 @@
    "bug_id": 2080860,
    "cause_file": "dom/media/GraphRunner.cpp",
    "failed_conditions": [
-    "no design decision",
-    "one team",
-    "no IPC question",
-    "no upstream change"
+    "No design, product or spec decision",
+    "Fix in one team's code",
+    "Not security sensitive",
+    "No upstream change first"
    ],
    "patch": null,
    "reason": "The fix needs a safe demotion design, a parent-process promotion path and a new audioipc2 export or IPC message.",
@@ -62,9 +62,9 @@
    "bug_id": 2082667,
    "cause_file": "media/ffvpx/libavutil/hwcontext_vulkan.c",
    "failed_conditions": [
-    "no patch",
-    "cause confirmed",
-    "no upstream change"
+    "No patch on the bug",
+    "Cause in one function or file",
+    "No upstream change first"
    ],
    "patch": "attachment 9661772, attachment 9662039",
    "reason": "Two Phabricator patches are attached. The cause is probable only, and the fix is in vendored ffvpx code.",
@@ -74,7 +74,7 @@
    "bug_id": 2082946,
    "cause_file": "dom/media/ipc/RemoteDecoderModule.cpp",
    "failed_conditions": [
-    "gfb: no OS-specific setup",
+    "gfb: no special hardware or OS setup",
     "gfb: no DRM key system"
    ],
    "patch": null,
@@ -87,7 +87,7 @@
    "bug_id": 2083310,
    "cause_file": "dom/media/webm/WebMDemuxer.cpp",
    "failed_conditions": [
-    "not security sensitive"
+    "Not security sensitive"
    ],
    "patch": null,
    "reason": "The bug is an external underflow report and reads like a security report. The remaining problem is a debug-only assertion.",
@@ -97,7 +97,7 @@
    "bug_id": 2083754,
    "cause_file": "dom/media/mp4/DecoderData.cpp",
    "failed_conditions": [
-    "regressor not restricted"
+    "Not security sensitive"
    ],
    "patch": null,
    "reason": "The cause is in MP4VideoInfo::Update and the fix is small. But the change that added the display size check is not public, so the security condition fails.",
@@ -107,9 +107,9 @@
    "bug_id": 1628198,
    "cause_file": "dom/media/UnderrunHandlerLinux.cpp",
    "failed_conditions": [
-    "design decision",
-    "sandbox question",
-    "upstream change"
+    "No design, product or spec decision",
+    "Not security sensitive",
+    "No upstream change first"
    ],
    "patch": null,
    "reason": "The fix needs a design choice: a watchdog thread, a pipe and a sandbox check. Part of the change is in vendored third-party code (audio_thread_priority).",
@@ -119,7 +119,7 @@
    "bug_id": 2026835,
    "cause_file": "dom/media/webcodecs/DecoderTemplate.cpp",
    "failed_conditions": [
-    "has patch"
+    "No patch on the bug"
    ],
    "patch": "D335529",
    "reason": "A patch is on the bug (D335529, attachment 9665080). The bug already has the good-first-bug keyword.",
@@ -129,8 +129,8 @@
    "bug_id": 2077676,
    "cause_file": null,
    "failed_conditions": [
-    "has patch",
-    "cause not in one file"
+    "No patch on the bug",
+    "Cause in one function or file"
    ],
    "patch": "attachment 9651904 (patch stack)",
    "reason": "A patch stack of 11 Phabricator revisions is on the bug. The five defects are in more than one file.",
@@ -140,9 +140,8 @@
    "bug_id": 2079954,
    "cause_file": "dom/ipc/ContentParent.cpp",
    "failed_conditions": [
-    "IPC trust question",
-    "reads like security report",
-    "design decision"
+    "Not security sensitive",
+    "No design, product or spec decision"
    ],
    "patch": null,
    "reason": "The bug is about IPC trust from a compromised content process and reads like a security report. The owner check can also drop late messages after a process switch, so it needs a decision.",
@@ -152,9 +151,8 @@
    "bug_id": 2081080,
    "cause_file": null,
    "failed_conditions": [
-    "cause not in one file",
-    "cause not confirmed",
-    "design decision"
+    "Cause in one function or file",
+    "No design, product or spec decision"
    ],
    "patch": null,
    "reason": "The cause spans WebMDemuxer, MediaDecoderStateMachine and AudioSinkWrapper. The regressors come from code reading only, and the comment gives two fix options, so a decision is necessary.",
@@ -164,8 +162,8 @@
    "bug_id": 2082668,
    "cause_file": "dom/html/HTMLMediaElement.cpp",
    "failed_conditions": [
-    "has patch",
-    "spec decision"
+    "No patch on the bug",
+    "No design, product or spec decision"
    ],
    "patch": "attachment 9664138",
    "reason": "A patch is on the bug (attachment 9664138). The fix needs a spec decision on the loadstart timing (whatwg/html issue 12973).",
@@ -175,8 +173,8 @@
    "bug_id": 2083178,
    "cause_file": "dom/media/mp4/MP4Demuxer.cpp",
    "failed_conditions": [
-    "design decision",
-    "cause not confirmed"
+    "No design, product or spec decision",
+    "Cause in one function or file"
    ],
    "patch": null,
    "reason": "An open needinfo asks for the CRA keyframe policy, which is a design decision. Comment 3 shows the same stall with VP9, so the HEVC check does not explain the full cause.",
@@ -186,8 +184,8 @@
    "bug_id": 2083351,
    "cause_file": "dom/media/MediaDecoderStateMachine.cpp",
    "failed_conditions": [
-    "design decision",
-    "cause not in one file"
+    "No design, product or spec decision",
+    "Cause in one function or file"
    ],
    "patch": null,
    "reason": "The cause spans a pref and the MediaDecoderStateMachine logic. The comment gives three fix options, so the fix needs a design decision.",
@@ -197,7 +195,7 @@
    "bug_id": 2083947,
    "cause_file": "dom/media/platforms/wmf/WMFVideoMFTManager.cpp",
    "failed_conditions": [
-    "gfb: needs one OS (Windows)"
+    "gfb: no special hardware or OS setup"
    ],
    "patch": null,
    "reason": "The cause is in WMFVideoMFTManager::Output in one file, the fix is concrete and the attached testcase can be a crashtest. The crash is a bounds-checked MOZ_CRASH, not memory unsafety. It is not a gfb candidate, because the build and the test need Windows (WMF).",
@@ -209,9 +207,9 @@
    "bug_id": 1763978,
    "cause_file": "widget/windows/WinUtils.cpp",
    "failed_conditions": [
-    "has patch",
-    "design decision",
-    "one team"
+    "No patch on the bug",
+    "No design, product or spec decision",
+    "Fix in one team's code"
    ],
    "patch": "attachment 9327355",
    "reason": "The bug has a patch attachment that landed and was backed out. The safe re-land needs a design decision across widget and xpcom code, and the test needs a third-party Windows mount.",
@@ -221,7 +219,7 @@
    "bug_id": 2055042,
    "cause_file": "dom/media/mediasink/AudioSink.cpp",
    "failed_conditions": [
-    "gfb: change not simple for a new contributor"
+    "gfb: local and simple change"
    ],
    "patch": null,
    "reason": "The cause is in one function: AudioSink::ReenqueueUnplayedAudioDataIfNeeded does not check mStoppedForSeek, and the code confirms this. The fix direction is concrete, a gtest can show it, and it stays in the media team. It needs seek-reuse and threading knowledge, so it is not a gfb candidate.",
@@ -233,9 +231,9 @@
    "bug_id": 2077786,
    "cause_file": null,
    "failed_conditions": [
-    "cause in one file",
-    "design decision",
-    "macOS only"
+    "Cause in one function or file",
+    "No design, product or spec decision",
+    "No special hardware or OS setup"
    ],
    "patch": null,
    "reason": "Two problems in two files combine, and nobody ran a build. The fix has two options, so it needs a design decision.",
@@ -245,9 +243,9 @@
    "bug_id": 2080218,
    "cause_file": null,
    "failed_conditions": [
-    "cause in one file",
-    "concrete fix direction",
-    "has patch"
+    "Cause in one function or file",
+    "Concrete fix direction",
+    "No patch on the bug"
    ],
    "patch": "local patch by reporter (not uploaded)",
    "reason": "The reporter tested the suggested fix and it did not work. The reporter has a local patch in 9 files, so the cause is not in one file and a patch exists.",
@@ -257,8 +255,8 @@
    "bug_id": 2081479,
    "cause_file": null,
    "failed_conditions": [
-    "cause located",
-    "concrete fix direction"
+    "Cause in one function or file",
+    "Concrete fix direction"
    ],
    "patch": null,
    "reason": "The step that loses the full range is not located. The test needs macOS.",
@@ -268,9 +266,8 @@
    "bug_id": 2082823,
    "cause_file": null,
    "failed_conditions": [
-    "cause confirmed",
-    "cause in one file",
-    "design decision"
+    "Cause in one function or file",
+    "No design, product or spec decision"
    ],
    "patch": null,
    "reason": "The cause is a suspected race between MediaFormatReader and the state machine. The trigger is not known, and the fix has several options.",
@@ -280,8 +277,8 @@
    "bug_id": 2083226,
    "cause_file": "dom/media/platforms/ffmpeg/FFmpegVideoDecoder.cpp",
    "failed_conditions": [
-    "has patch",
-    "bug closed"
+    "No patch on the bug",
+    "Bug is open"
    ],
    "patch": "attachment 9663790",
    "reason": "The bug has patches that landed, and the bug is closed.",
@@ -291,9 +288,9 @@
    "bug_id": 2083415,
    "cause_file": "media/ffvpx/libavutil/hwcontext_vulkan.c",
    "failed_conditions": [
-    "has patch",
-    "bug closed",
-    "upstream vendored code"
+    "No patch on the bug",
+    "Bug is open",
+    "No upstream change first"
    ],
    "patch": "D334921",
    "reason": "The bug has a patch that landed, and the bug is closed. The cause is in vendored FFmpeg code.",
@@ -303,7 +300,7 @@
    "bug_id": 2084005,
    "cause_file": "dom/media/VideoFrameConverter.h",
    "failed_conditions": [
-    "gfb: pool exhaustion cause unknown, leak check decision"
+    "gfb: local and simple change"
    ],
    "patch": null,
    "reason": "The crash is the explicit MOZ_DIAGNOSTIC_CRASH in the black frame branch of ProcessVideoFrame. The fix is to handle nullptr like the scaling branch, and TestVideoFrameConverter.cpp can show it. Why the pool runs out is not known, and the fix relaxes a leak check, so it is not a gfb candidate.",
@@ -315,8 +312,8 @@
    "bug_id": 1883247,
    "cause_file": "dom/media/GraphDriver.cpp",
    "failed_conditions": [
-    "has patch",
-    "cause not in one function or file"
+    "No patch on the bug",
+    "Cause in one function or file"
    ],
    "patch": "attachment 9661799 (obsolete Phabricator request)",
    "reason": "A Phabricator patch is on the bug (attachment 9661799, now obsolete). The cause is in the graph driver and graph shutdown code, and the trigger on Windows is not known.",
@@ -326,8 +323,8 @@
    "bug_id": 2071303,
    "cause_file": "dom/media/platforms/ffmpeg/FFmpegVulkanVideoDecoder.cpp",
    "failed_conditions": [
-    "bug closed",
-    "has patch"
+    "Bug is open",
+    "No patch on the bug"
    ],
    "patch": "attachment 9664137 (Phabricator request)",
    "reason": "The bug is closed as fixed and has a Phabricator patch. The fix needs a Linux system with two GPUs.",
@@ -337,8 +334,8 @@
    "bug_id": 2078820,
    "cause_file": "widget/gtk/DMABufSurface.cpp",
    "failed_conditions": [
-    "has patch",
-    "special hardware"
+    "No patch on the bug",
+    "No special hardware or OS setup"
    ],
    "patch": "attachment 9664109",
    "reason": "The reporter attached a patch (attachment 9664109, v3). The fix needs Arm Mali hardware, and the single NV12 import option is a design question.",
@@ -348,10 +345,10 @@
    "bug_id": 2080317,
    "cause_file": "third_party/rust/cubeb-coreaudio/src/backend/device_property.rs",
    "failed_conditions": [
-    "cause suspected not confirmed",
-    "no reliable test for the race",
-    "has patch (upstream PR)",
-    "upstream vendored code"
+    "Cause in one function or file",
+    "Test can show the fix",
+    "No patch on the bug",
+    "No upstream change first"
    ],
    "patch": "https://github.com/mozilla/cubeb-coreaudio-rs/pull/294",
    "reason": "The cause is a race that the analysis infers, so it is not confirmed. The fix is in vendored upstream cubeb-coreaudio-rs, and an upstream pull request is linked in see_also.",
@@ -361,7 +358,7 @@
    "bug_id": 2081651,
    "cause_file": "dom/media/platforms/ffmpeg/ffmpeg58/include/libavcodec/version.h",
    "failed_conditions": [
-    "has patch"
+    "No patch on the bug"
    ],
    "patch": "attachment 9659319 (Phabricator request)",
    "reason": "A Phabricator patch and a GitHub pull request are on the bug. The assignee drives the fix.",
@@ -371,7 +368,7 @@
    "bug_id": 2082867,
    "cause_file": "dom/media/platforms/agnostic/bytestreams/H264.cpp",
    "failed_conditions": [
-    "has patch"
+    "No patch on the bug"
    ],
    "patch": "D334650",
    "reason": "A Phabricator patch (D334650) is on the bug. The assignee drives the fix.",
@@ -381,8 +378,8 @@
    "bug_id": 2083276,
    "cause_file": "testing/web-platform/meta/encrypted-media/drm-mp4-playback-temporary-clear-encrypted.https.html.ini",
    "failed_conditions": [
-    "gfb: test needs macOS signed-VMP CI job",
-    "gfb: needs DRM key system"
+    "gfb: no special hardware or OS setup",
+    "gfb: no DRM key system"
    ],
    "patch": null,
    "reason": "The cause is one stale 'if os == \"mac\": FAIL' line in one WPT metadata file, and the line is still on mozilla-central. The fix is to remove it and the WPT shows the fix. The test runs only on the macOS signed-VMP job with a DRM key system, so it is not a good-first-bug candidate.",
@@ -394,9 +391,9 @@
    "bug_id": 2083466,
    "cause_file": "dom/media/MediaTrackGraph.cpp",
    "failed_conditions": [
-    "has patch",
-    "cause not in one file",
-    "design decision"
+    "No patch on the bug",
+    "Cause in one function or file",
+    "No design, product or spec decision"
    ],
    "patch": "D334987, D334988",
    "reason": "Two Phabricator patches (D334987, D334988) are in review. The fix is in two files, and the system-clock fallback is a design question for the graph owner.",
@@ -406,9 +403,9 @@
    "bug_id": 1885268,
    "cause_file": "dom/media/mediaelement/HTMLMediaElement.cpp",
    "failed_conditions": [
-    "design decision needed",
-    "cause spans more than one file",
-    "security question raised by reporter"
+    "No design, product or spec decision",
+    "Cause in one function or file",
+    "Not security sensitive"
    ],
    "patch": null,
    "reason": "The fix needs a decision first: the pref can stop the wake lock everywhere or only the system inhibitor, and this changes process priority. A developer took the bug, and the reporter asked for a security review of the behavior.",
@@ -418,9 +415,9 @@
    "bug_id": 2073923,
    "cause_file": "dom/media/platforms/ffmpeg/FFmpegDecodeStats.cpp",
    "failed_conditions": [
-    "design decision needed",
-    "cause spans more than one file",
-    "no simple test without special hardware"
+    "No design, product or spec decision",
+    "Cause in one function or file",
+    "No special hardware or OS setup"
    ],
    "patch": null,
    "reason": "The fix needs a new slow-decode heuristic and changes in more than one file. The test needs AMD VA-API hardware on Linux.",
@@ -430,7 +427,7 @@
    "bug_id": 2079157,
    "cause_file": "dom/media/mediaelement/HTMLMediaElement.cpp",
    "failed_conditions": [
-    "gfb: change is not simple for a new contributor"
+    "gfb: local and simple change"
    ],
    "patch": null,
    "reason": "The cause is confirmed in one file, the spec change is merged, the fix direction is concrete and WPTs show the fix. It is not a gfb candidate, because the resource selection algorithm needs care: a null candidate stops resource selection.",
@@ -442,8 +439,8 @@
    "bug_id": 2080421,
    "cause_file": "dom/media/mediasink/AudioSinkWrapper.cpp",
    "failed_conditions": [
-    "design decision needed",
-    "no clear automated test"
+    "No design, product or spec decision",
+    "Test can show the fix"
    ],
    "patch": null,
    "reason": "The fix direction is only a suggestion, and it needs a decision on the retry trigger and on audio-only media. A test needs a missing and then a new audio output device.",
@@ -453,9 +450,9 @@
    "bug_id": 2081675,
    "cause_file": "gfx/2d/Factory.cpp",
    "failed_conditions": [
-    "bug has a patch",
-    "cause spans more than one file",
-    "design decision needed"
+    "No patch on the bug",
+    "Cause in one function or file",
+    "No design, product or spec decision"
    ],
    "patch": "D334484",
    "reason": "The bug has WIP Phabricator patches D334484, D334485 and D334486. The fix spans gfx and dom/canvas code of the Graphics team and is a performance design change.",
@@ -465,8 +462,8 @@
    "bug_id": 2082877,
    "cause_file": "third_party/rust/mp4parse_capi/src/lib.rs",
    "failed_conditions": [
-    "bug has a patch (upstream PR)",
-    "needs upstream change first"
+    "No patch on the bug",
+    "No upstream change first"
    ],
    "patch": "https://github.com/mozilla/mp4parse-rust/pull/459",
    "reason": "The fix is in vendored mp4parse-rust code and comes from upstream PR 459. A developer is assigned and has the patch.",
@@ -476,7 +473,7 @@
    "bug_id": 2083307,
    "cause_file": "dom/media/mediaelement/HTMLMediaElement.cpp",
    "failed_conditions": [
-    "reads like a security report"
+    "Not security sensitive"
    ],
    "patch": null,
    "reason": "The cause is in one file and the fix is small, but the report reads like a security report: it has a crash harness, register analysis and a note about the security group and bounty. A person must decide the security question first.",
@@ -486,10 +483,10 @@
    "bug_id": 2083467,
    "cause_file": "dom/media/mediasink/AudioSinkWrapper.cpp",
    "failed_conditions": [
-    "design decision needed",
-    "cause spans more than one file",
-    "patch exists for the same cause",
-    "special hardware and OS"
+    "No design, product or spec decision",
+    "Cause in one function or file",
+    "No patch on the bug",
+    "No special hardware or OS setup"
    ],
    "patch": "D335026",
    "reason": "There are two possible fixes in two files, so a design decision is necessary. Related bug 2083549 has patch D335026 for the same cause, and the test needs macOS with Bluetooth output.",
@@ -499,9 +496,9 @@
    "bug_id": 1945316,
    "cause_file": null,
    "failed_conditions": [
-    "has patch",
-    "cause in one function or file",
-    "no design decision"
+    "No patch on the bug",
+    "Cause in one function or file",
+    "No design, product or spec decision"
    ],
    "patch": "D330334",
    "reason": "The bug has a patch series in review. The fix changes many files in Web Audio and MediaTrackGraph, so it is not small.",
@@ -511,10 +508,10 @@
    "bug_id": 2075095,
    "cause_file": null,
    "failed_conditions": [
-    "has patch",
-    "cause in one function or file",
-    "no design decision",
-    "no IPC trust question"
+    "No patch on the bug",
+    "Cause in one function or file",
+    "No design, product or spec decision",
+    "Not security sensitive"
    ],
    "patch": "D331496",
    "reason": "A WIP patch exists. The fix moves the CDM to the GPU process, which is a design decision across IPC process boundaries.",
@@ -524,10 +521,10 @@
    "bug_id": 2079221,
    "cause_file": null,
    "failed_conditions": [
-    "cause in one function or file",
-    "test can show fix",
-    "no design decision",
-    "one team"
+    "Cause in one function or file",
+    "Test can show the fix",
+    "No design, product or spec decision",
+    "Fix in one team's code"
    ],
    "patch": null,
    "reason": "The crash is in the AMD driver, not in Firefox code. The fix is a blocklist decision in gfx code, and no test in CI can show it without AMD hardware.",
@@ -537,9 +534,8 @@
    "bug_id": 2080729,
    "cause_file": "dom/media/MediaDecoderStateMachine.cpp",
    "failed_conditions": [
-    "cause confirmed",
-    "cause in one function or file",
-    "test can show fix"
+    "Cause in one function or file",
+    "Test can show the fix"
    ],
    "patch": null,
    "reason": "The failed dispatch is inferred, and the reason the task queue stops is not known. The fix touches three files, and a test for a failed dispatch during shutdown is not clear.",
@@ -549,8 +545,7 @@
    "bug_id": 2081761,
    "cause_file": null,
    "failed_conditions": [
-    "cause confirmed",
-    "cause in one function or file"
+    "Cause in one function or file"
    ],
    "patch": null,
    "reason": "The analysis gives only a likely cause. It depends on cubeb-pulse timing on Linux, and the fix touches AudioStream, AudioSink and AudioSinkWrapper.",
@@ -560,9 +555,9 @@
    "bug_id": 2082890,
    "cause_file": "dom/media/platforms/wmf/WMFMediaDataEncoder.cpp",
    "failed_conditions": [
-    "cause confirmed",
-    "no design decision",
-    "no special hardware or OS"
+    "Cause in one function or file",
+    "No design, product or spec decision",
+    "No special hardware or OS setup"
    ],
    "patch": null,
    "reason": "The wrong time comes from the Windows MFT, and the analysis does not confirm why. The fix needs a design for timestamp mapping and B-frames, and a developer already works on it.",
@@ -572,7 +567,7 @@
    "bug_id": 2083308,
    "cause_file": "dom/media/wave/WaveDemuxer.cpp",
    "failed_conditions": [
-    "not security sensitive (reads like a security report)"
+    "Not security sensitive"
    ],
    "patch": null,
    "reason": "The cause is in one file and the fix is clear. But comment 0 reads like a security report, with claims of a remote out-of-bounds read, so the bug gets no tag.",
@@ -582,7 +577,7 @@
    "bug_id": 2083549,
    "cause_file": "dom/media/mediasink/AudioSinkWrapper.cpp",
    "failed_conditions": [
-    "has patch"
+    "No patch on the bug"
    ],
    "patch": "D335026",
    "reason": "The bug has a patch in review and an assignee.",
