@@ -1,5 +1,4 @@
 from triagedash import fixtags
-from triagedash.__main__ import proposal
 
 
 def test_clean_keeps_only_known_tags_and_the_bug():
@@ -7,17 +6,18 @@ def test_clean_keeps_only_known_tags_and_the_bug():
     assert fixtags.clean(line) == {"bug_id": 1, "tags": ["[gecko-triage:easy-fix]"]}
 
 
-def test_posted_tags_leave_the_proposal():
+def test_whiteboard_tags_replace_the_proposal():
     assert fixtags.posted("[gecko-triage:easy-fix] [foo]") == ["[gecko-triage:easy-fix]"]
     assert fixtags.posted(None) == []
-    fix = {1: {"bug_id": 1, "tags": ["[gecko-triage:easy-fix]"]}}
-    on_bug = {1: {"fix_tags": ["[gecko-triage:easy-fix]"]}}
-    assert proposal(fix, on_bug, {"bug_id": 1})["tags"] == []
-    assert proposal(fix, {}, {"bug_id": 1})["tags"] == ["[gecko-triage:easy-fix]"]
-    assert proposal(fix, {}, {"bug_id": 2}) is None
-    both = {1: {"bug_id": 1, "tags": list(fixtags.LABELS)}}
-    gfb_posted = {1: {"fix_tags": ["[gecko-triage:gfb-candidate]"]}}
-    assert proposal(both, gfb_posted, {"bug_id": 1})["tags"] == []
+    easy = {"bug_id": 1, "tags": ["[gecko-triage:easy-fix]"]}
+    both = {"bug_id": 1, "tags": list(fixtags.LABELS)}
+    on_bug = {"fix_tags": ["[gecko-triage:easy-fix]"]}
+    assert fixtags.shown(easy, on_bug) == {"tags": ["[gecko-triage:easy-fix]"], "on_bugzilla": True}
+    assert fixtags.shown(easy, {}) == {"tags": ["[gecko-triage:easy-fix]"], "on_bugzilla": False}
+    assert fixtags.shown(None, on_bug)["on_bugzilla"] is True
+    assert fixtags.shown(None, {}) is None
+    gfb_on_bug = {"fix_tags": ["[gecko-triage:gfb-candidate]"]}
+    assert fixtags.shown(both, gfb_on_bug)["tags"] == ["[gecko-triage:gfb-candidate]"]
 
 
 def test_latest_picks_the_newest_file(tmp_path):

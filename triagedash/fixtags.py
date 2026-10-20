@@ -1,8 +1,8 @@
-"""Proposed whiteboard fix tags, from a tag-only check of the analyzed bugs.
+"""Whiteboard fix tags: posted on a bug's whiteboard, or proposed by a tag-only check.
 
-gecko-triage writes `~/hackbot/pilot/fix-tags-<YYYY-MM-DD>.jsonl`, one line per bug. It is
-a proposal: nothing is on Bugzilla. Only the bug and its known tags are kept: the page
-shows the tags alone.
+gecko-triage writes its proposals to `~/hackbot/pilot/fix-tags-<YYYY-MM-DD>.jsonl`, one
+line per bug; only the bug and its known tags are kept. The daily refresh reads which
+tags are on each bug's whiteboard, and those win over the proposal.
 """
 
 from __future__ import annotations
@@ -32,3 +32,12 @@ def posted(whiteboard: str | None) -> list[str]:
 def clean(line: dict) -> dict:
     """A proposal line with only the bug and its known tags."""
     return {"bug_id": line["bug_id"], "tags": [t for t in line.get("tags") or [] if t in LABELS]}
+
+
+def shown(proposal: dict | None, state: dict) -> dict | None:
+    """The fix tags a bug shows: the ones on its whiteboard once any gecko-triage fix tag
+    is there, even a weaker one than proposed, else the proposed ones. If the whiteboard
+    tag is removed later, the proposal shows again while the newest file still holds it."""
+    if state.get("fix_tags"):
+        return {"tags": state["fix_tags"], "on_bugzilla": True}
+    return proposal and {"tags": proposal["tags"], "on_bugzilla": False}

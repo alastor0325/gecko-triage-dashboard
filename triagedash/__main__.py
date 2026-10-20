@@ -181,14 +181,6 @@ def page_clock(records: list[dict], now: datetime) -> datetime:
     return max(datetime.fromisoformat(r["started_at"]) for r in records if r["started_at"])
 
 
-def proposal(fix: dict, state: dict, bug: dict) -> dict | None:
-    """The bug's proposed fix tags, until a gecko-triage fix tag is on its whiteboard: then
-    the whiteboard holds the answer, even when it is a weaker tag than the proposal."""
-    f = fix.get(bug["bug_id"])
-    on_bug = state.get(bug["bug_id"], {}).get("fix_tags")
-    return f and {**f, "tags": [] if on_bug else f["tags"]}
-
-
 def build(args) -> None:
     records = store.load(RUNS, [])
     passes = store.load(PASSES, [])
@@ -213,7 +205,11 @@ def build(args) -> None:
             round_ = rotation.one_round(saved["slots"], clock.date())
             page["rotation"] = {**round_, "fetched_at": saved["fetched_at"]}
         page["bugs"] = [
-            {**b, **state.get(b["bug_id"], bmo.UNKNOWN_STATE), "fix": proposal(fix, state, b)}
+            {
+                **b,
+                **state.get(b["bug_id"], bmo.UNKNOWN_STATE),
+                "fix": fixtags.shown(fix.get(b["bug_id"]), state.get(b["bug_id"], {})),
+            }
             for b in page["bugs"]
         ]
         pages[team.slug] = page

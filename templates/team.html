@@ -429,14 +429,15 @@ function railDays(list) {
 
 // The bug's id line: its link, its category and its tags.
 const cardId = b => `<span class="card-id">${bug(b.bug_id)} ${catTag(b.run)} ${tags(b.tags)}${fixTag(b, "full")}</span>`;
-// The strongest proposed whiteboard fix tag of a bug, short in list rows and full on the
-// card. It is a proposal from a tag-only check, which screen readers hear.
+// The strongest whiteboard fix tag of a bug, short in list rows and full on the card:
+// posted on Bugzilla, or proposed by a tag-only check, which screen readers hear.
 const FIX_ORDER = Object.keys(DATA.fix_labels);
 function fixTag(b, size) {
   const t = FIX_ORDER.findLast(k => b.fix?.tags.includes(k));
   if (!t) return "";
   const label = DATA.fix_labels[t];
-  return `<span class="tag fix" title="Proposed: ${esc(label.full)}"><span class="vh">proposed: </span>${esc(label[size])}</span>`;
+  const state = b.fix.on_bugzilla ? "On Bugzilla" : "Proposed";
+  return `<span class="tag fix" title="${state}: ${esc(label.full)}"><span class="vh">${state.toLowerCase()}: </span>${esc(label[size])}</span>`;
 }
 function card(b, index, total) {
   return `<div class="card-top">
