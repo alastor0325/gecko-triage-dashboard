@@ -20,6 +20,8 @@
   .chart-box.rows { height: max(120px, calc(var(--rows) * 34px + 40px)); }
   .cal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   @media (max-width: 800px) { .cal-grid { grid-template-columns: minmax(0, 1fr); } }
+  .cal-grid .stat .value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-grid .stat .value.is-empty { color: var(--muted); font-size: 16px; line-height: 26px; }
   .cal-grid .stat.is-active { box-shadow: inset 3px 0 0 var(--red); }
   .cal-grid .stat .hint { font-family: var(--mono); font-size: 8.5px; color: var(--red); margin-top: 5px;
     text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
@@ -502,8 +504,11 @@ function calTile(w) {
   const n = k => w.bugs.filter(b => b.runs[0].category === k).length;
   const counts = `<span class="k-analyzed">${n("analyzed")} analyzed</span> · <span class="k-needs-info">${n("needs-info")} needs info</span>`;
   const empty = FIRST_DAY && w.end <= FIRST_DAY ? "Before the bot ran" : "No open bug";
-  const inner = `<div class="label">${esc(w.name ?? "No one on calendar")}</div><div class="value">${w.bugs.length}</div>
-    <div class="sub">${wday(w.start)} – ${wday(w.end)}<br>${w.bugs.length ? counts : empty}</div>${w.current ? `<div class="hint">This week</div>` : ""}`;
+  // The answer to "whose week" is the person, so the name is the tile's headline.
+  const total = `${w.bugs.length} ${w.bugs.length === 1 ? "bug" : "bugs"}`;
+  const inner = `<div class="label">${wday(w.start)} – ${wday(w.end)}</div>
+    <div class="value${w.name ? "" : " is-empty"}">${esc(w.name ?? "No one on calendar")}</div>
+    <div class="sub">${w.bugs.length ? `${total}<br>${counts}` : empty}</div>${w.current ? `<div class="hint">This week</div>` : ""}`;
   const cls = `stat${w.current ? " is-active" : ""}`;
   if (!w.bugs.length) return `<div class="${cls}">${inner}</div>`;
   const open = state.week === w.start;
