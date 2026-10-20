@@ -133,7 +133,9 @@
  },
  "2055042": {
   "assigned": false,
-  "fix_tags": [],
+  "fix_tags": [
+   "[gecko-triage:easy-fix]"
+  ],
   "open": true,
   "severity": "S3"
  },
@@ -223,7 +225,9 @@
  },
  "2079157": {
   "assigned": false,
-  "fix_tags": [],
+  "fix_tags": [
+   "[gecko-triage:easy-fix]"
+  ],
   "open": true,
   "severity": "S4"
  },
@@ -421,7 +425,9 @@
  },
  "2082946": {
   "assigned": false,
-  "fix_tags": [],
+  "fix_tags": [
+   "[gecko-triage:easy-fix]"
+  ],
   "open": true,
   "severity": "S3"
  },
@@ -475,7 +481,9 @@
  },
  "2083276": {
   "assigned": false,
-  "fix_tags": [],
+  "fix_tags": [
+   "[gecko-triage:easy-fix]"
+  ],
   "open": true,
   "severity": "S4"
  },
