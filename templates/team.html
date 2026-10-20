@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Newsreader:opsz,wght@6..72,500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Newsreader:opsz,wght@72,500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../review-stats.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -21,13 +21,12 @@
   .cal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   @media (max-width: 800px) { .cal-grid { grid-template-columns: minmax(0, 1fr); } }
   /* Room under the line, so overflow: hidden does not cut the tail of a J or a y. */
-  .cal-grid .stat .value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;
-    margin-top: 3px; }
-  /* Names in Newsreader: Fraunces draws a capital J that drops below the line. */
-  .cal-grid .stat .value:not(.is-empty) { font-family: "Newsreader", var(--serif); font-variation-settings: "opsz" 72;
-    font-weight: 500; }
-  .cal-grid .stat .value.is-empty { color: var(--muted); font-size: 16px; line-height: 32.5px; }
-  /* A button centers its content; keep each week's lines at the top like the other tiles. */
+  .cal-grid .stat .value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; margin-top: 3px; }
+  /* Names in Newsreader: Fraunces draws a capital J that drops below the line, so it is
+     not in the fallback either. */
+  .cal-grid .stat .value:not(.is-empty) { font-family: "Newsreader", "Iowan Old Style", Georgia, serif;
+    font-variation-settings: normal; }
+  .cal-grid .stat .value.is-empty { color: var(--muted); font-size: 16px; line-height: calc(26px * 1.25); }
   .cal-grid button.stat { display: flex; flex-direction: column; justify-content: flex-start; }
   .cal-grid .stat.is-active { box-shadow: inset 3px 0 0 var(--red); }
   .cal-grid .stat .hint { font-family: var(--mono); font-size: 8.5px; color: var(--red); margin-top: 5px;
@@ -511,15 +510,16 @@ function calTile(w) {
   const n = k => w.bugs.filter(b => b.runs[0].category === k).length;
   const counts = `<span class="k-analyzed">${n("analyzed")} analyzed</span> · <span class="k-needs-info">${n("needs-info")} needs info</span>`;
   const empty = FIRST_DAY && w.end <= FIRST_DAY ? "Before the bot ran" : "No open bug";
-  // The answer to "whose week" is the person, so the name is the tile's headline.
   const total = `${w.bugs.length} ${w.bugs.length === 1 ? "bug" : "bugs"}`;
   const inner = `<div class="label">${wday(w.start)} – ${wday(w.end)}</div>
-    <div class="value${w.name ? "" : " is-empty"}">${esc(w.name ?? "No one on calendar")}</div>
+    <div class="value${w.name ? "" : " is-empty"}" title="${esc(w.name ?? "")}">${esc(w.name ?? "No one on calendar")}</div>
     <div class="sub">${w.bugs.length ? `${total}<br>${counts}` : empty}</div>${w.current ? `<div class="hint">This week</div>` : ""}`;
   const cls = `stat${w.current ? " is-active" : ""}`;
   if (!w.bugs.length) return `<div class="${cls}">${inner}</div>`;
   const open = state.week === w.start;
-  return `<button type="button" class="${cls} expandable${open ? " is-open" : ""}" id="week-${w.start}" data-week="${w.start}" aria-expanded="${open}" aria-controls="panel-${w.start}">${inner}</button>`;
+  // The name first for screen readers; the dates come first on screen.
+  const name = `${w.name ?? "No one on calendar"}, ${wday(w.start)} – ${wday(w.end)}, ${total}${w.current ? ", this week" : ""}`;
+  return `<button type="button" class="${cls} expandable${open ? " is-open" : ""}" id="week-${w.start}" data-week="${w.start}" aria-label="${esc(name)}" aria-expanded="${open}" aria-controls="panel-${w.start}">${inner}</button>`;
 }
 // A bug's severity on Bugzilla now, else the one the bot set. A person can change it after
 // the run, so it can differ from the S/P in the card, which is what the run set.
