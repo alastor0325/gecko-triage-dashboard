@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-TAGS = ("[gecko-triage:easy-fix]", "[gecko-triage:gfb-candidate]")
+# Each known whiteboard tag and its short label on the page.
+LABELS = {"[gecko-triage:easy-fix]": "easy fix?", "[gecko-triage:gfb-candidate]": "gfb?"}
 
 
 def latest(pilot: Path) -> Path | None:
@@ -18,6 +19,11 @@ def latest(pilot: Path) -> Path | None:
     return files[-1] if files else None
 
 
+def posted(whiteboard: str | None) -> list[str]:
+    """The known tags already on a bug's whiteboard."""
+    return [t for t in LABELS if t in (whiteboard or "")]
+
+
 def clean(line: dict) -> dict:
     """A proposal line with only the bug and its known tags."""
-    return {"bug_id": line["bug_id"], "tags": [t for t in line.get("tags") or [] if t in TAGS]}
+    return {"bug_id": line["bug_id"], "tags": [t for t in line.get("tags") or [] if t in LABELS]}

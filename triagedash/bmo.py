@@ -7,7 +7,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from . import store
+from . import fixtags, store
 
 FIELDS = "id,creator,assigned_to,product,component,summary,groups,creation_time"
 BASE = "https://bugzilla.mozilla.org/rest/bug"
@@ -51,20 +51,22 @@ def fetch_visible(bug_ids: set[int]) -> set[int]:
 
 NOBODY = "nobody@mozilla.org"
 # A bug with no known state: the Calendar leaves it out.
-UNKNOWN_STATE = {"open": False, "assigned": False, "severity": None}
+UNKNOWN_STATE = {"open": False, "assigned": False, "severity": None, "fix_tags": []}
 
 
 def fetch_state(bug_ids: set[int]) -> dict[int, dict]:
-    """Whether each bug is open now, whether someone is assigned to it, and its severity
-    now. Only a boolean is kept for the assignee, never the account. A bug an anonymous
-    reader cannot see counts as closed, so the page never lists it."""
+    """Whether each bug is open now, whether someone is assigned to it, its severity now,
+    and which gecko-triage fix tags its whiteboard has. Only a boolean is kept for the
+    assignee, never the account. A bug an anonymous reader cannot see counts as closed, so
+    the page never lists it."""
     found = {
         b["id"]: {
             "open": b["is_open"],
             "assigned": b["assigned_to"] != NOBODY,
             "severity": b["severity"],
+            "fix_tags": fixtags.posted(b.get("whiteboard")),
         }
-        for b in get_bugs(bug_ids, "id,is_open,assigned_to,severity")
+        for b in get_bugs(bug_ids, "id,is_open,assigned_to,severity,whiteboard")
     }
     return {b: found.get(b, UNKNOWN_STATE) for b in bug_ids}
 

@@ -88,6 +88,11 @@ and cancelled weeks are applied, and emails are never read out of the file.
 its severity now, from an anonymous Bugzilla read; the assignee is never kept.
 `triagedash refresh` writes both; the deploy runs it every day and on each push.
 
+`data/fix-tags.json` holds the proposed whiteboard fix tags (`[gecko-triage:easy-fix]`,
+`[gecko-triage:gfb-candidate]`) from the newest `~/hackbot/pilot/fix-tags-*.jsonl`: only the
+bug and its tags. The page shows each as a dashed "easy fix?" or "gfb?" tag until the
+refresh finds it on the bug's whiteboard.
+
 `data/passes.json` has one line per daily selection pass (team, UTC time, bugs selected),
 from `~/hackbot/pilot/passes.jsonl`. With it, "Bugs handled per day" marks a day with no
 bar as `0` (the bot ran and found no bug) or `×` (no run recorded). Today, and every day

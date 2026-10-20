@@ -1,221 +1,218 @@
-{
- "bugs": [
-  {
-   "bug_id": 1119299,
-   "tags": []
-  },
-  {
-   "bug_id": 2007762,
-   "tags": []
-  },
-  {
-   "bug_id": 2075849,
-   "tags": []
-  },
-  {
-   "bug_id": 2079913,
-   "tags": []
-  },
-  {
-   "bug_id": 2080860,
-   "tags": []
-  },
-  {
-   "bug_id": 2082667,
-   "tags": []
-  },
-  {
-   "bug_id": 2082946,
-   "tags": [
-    "[gecko-triage:easy-fix]"
-   ]
-  },
-  {
-   "bug_id": 2083310,
-   "tags": []
-  },
-  {
-   "bug_id": 2083754,
-   "tags": []
-  },
-  {
-   "bug_id": 1628198,
-   "tags": []
-  },
-  {
-   "bug_id": 2026835,
-   "tags": []
-  },
-  {
-   "bug_id": 2077676,
-   "tags": []
-  },
-  {
-   "bug_id": 2079954,
-   "tags": []
-  },
-  {
-   "bug_id": 2081080,
-   "tags": []
-  },
-  {
-   "bug_id": 2082668,
-   "tags": []
-  },
-  {
-   "bug_id": 2083178,
-   "tags": []
-  },
-  {
-   "bug_id": 2083351,
-   "tags": []
-  },
-  {
-   "bug_id": 2083947,
-   "tags": [
-    "[gecko-triage:easy-fix]"
-   ]
-  },
-  {
-   "bug_id": 1763978,
-   "tags": []
-  },
-  {
-   "bug_id": 2055042,
-   "tags": [
-    "[gecko-triage:easy-fix]"
-   ]
-  },
-  {
-   "bug_id": 2077786,
-   "tags": []
-  },
-  {
-   "bug_id": 2080218,
-   "tags": []
-  },
-  {
-   "bug_id": 2081479,
-   "tags": []
-  },
-  {
-   "bug_id": 2082823,
-   "tags": []
-  },
-  {
-   "bug_id": 2083226,
-   "tags": []
-  },
-  {
-   "bug_id": 2083415,
-   "tags": []
-  },
-  {
-   "bug_id": 2084005,
-   "tags": [
-    "[gecko-triage:easy-fix]"
-   ]
-  },
-  {
-   "bug_id": 1883247,
-   "tags": []
-  },
-  {
-   "bug_id": 2071303,
-   "tags": []
-  },
-  {
-   "bug_id": 2078820,
-   "tags": []
-  },
-  {
-   "bug_id": 2080317,
-   "tags": []
-  },
-  {
-   "bug_id": 2081651,
-   "tags": []
-  },
-  {
-   "bug_id": 2082867,
-   "tags": []
-  },
-  {
-   "bug_id": 2083276,
-   "tags": [
-    "[gecko-triage:easy-fix]"
-   ]
-  },
-  {
-   "bug_id": 2083466,
-   "tags": []
-  },
-  {
-   "bug_id": 1885268,
-   "tags": []
-  },
-  {
-   "bug_id": 2073923,
-   "tags": []
-  },
-  {
-   "bug_id": 2079157,
-   "tags": [
-    "[gecko-triage:easy-fix]"
-   ]
-  },
-  {
-   "bug_id": 2080421,
-   "tags": []
-  },
-  {
-   "bug_id": 2081675,
-   "tags": []
-  },
-  {
-   "bug_id": 2082877,
-   "tags": []
-  },
-  {
-   "bug_id": 2083307,
-   "tags": []
-  },
-  {
-   "bug_id": 2083467,
-   "tags": []
-  },
-  {
-   "bug_id": 1945316,
-   "tags": []
-  },
-  {
-   "bug_id": 2075095,
-   "tags": []
-  },
-  {
-   "bug_id": 2079221,
-   "tags": []
-  },
-  {
-   "bug_id": 2080729,
-   "tags": []
-  },
-  {
-   "bug_id": 2081761,
-   "tags": []
-  },
-  {
-   "bug_id": 2082890,
-   "tags": []
-  },
-  {
-   "bug_id": 2083308,
-   "tags": []
-  },
-  {
-   "bug_id": 2083549,
-   "tags": []
-  }
- ],
- "file": "fix-tags-2026-10-20.jsonl"
-}
+[
+ {
+  "bug_id": 1119299,
+  "tags": []
+ },
+ {
+  "bug_id": 2007762,
+  "tags": []
+ },
+ {
+  "bug_id": 2075849,
+  "tags": []
+ },
+ {
+  "bug_id": 2079913,
+  "tags": []
+ },
+ {
+  "bug_id": 2080860,
+  "tags": []
+ },
+ {
+  "bug_id": 2082667,
+  "tags": []
+ },
+ {
+  "bug_id": 2082946,
+  "tags": [
+   "[gecko-triage:easy-fix]"
+  ]
+ },
+ {
+  "bug_id": 2083310,
+  "tags": []
+ },
+ {
+  "bug_id": 2083754,
+  "tags": []
+ },
+ {
+  "bug_id": 1628198,
+  "tags": []
+ },
+ {
+  "bug_id": 2026835,
+  "tags": []
+ },
+ {
+  "bug_id": 2077676,
+  "tags": []
+ },
+ {
+  "bug_id": 2079954,
+  "tags": []
+ },
+ {
+  "bug_id": 2081080,
+  "tags": []
+ },
+ {
+  "bug_id": 2082668,
+  "tags": []
+ },
+ {
+  "bug_id": 2083178,
+  "tags": []
+ },
+ {
+  "bug_id": 2083351,
+  "tags": []
+ },
+ {
+  "bug_id": 2083947,
+  "tags": [
+   "[gecko-triage:easy-fix]"
+  ]
+ },
+ {
+  "bug_id": 1763978,
+  "tags": []
+ },
+ {
+  "bug_id": 2055042,
+  "tags": [
+   "[gecko-triage:easy-fix]"
+  ]
+ },
+ {
+  "bug_id": 2077786,
+  "tags": []
+ },
+ {
+  "bug_id": 2080218,
+  "tags": []
+ },
+ {
+  "bug_id": 2081479,
+  "tags": []
+ },
+ {
+  "bug_id": 2082823,
+  "tags": []
+ },
+ {
+  "bug_id": 2083226,
+  "tags": []
+ },
+ {
+  "bug_id": 2083415,
+  "tags": []
+ },
+ {
+  "bug_id": 2084005,
+  "tags": [
+   "[gecko-triage:easy-fix]"
+  ]
+ },
+ {
+  "bug_id": 1883247,
+  "tags": []
+ },
+ {
+  "bug_id": 2071303,
+  "tags": []
+ },
+ {
+  "bug_id": 2078820,
+  "tags": []
+ },
+ {
+  "bug_id": 2080317,
+  "tags": []
+ },
+ {
+  "bug_id": 2081651,
+  "tags": []
+ },
+ {
+  "bug_id": 2082867,
+  "tags": []
+ },
+ {
+  "bug_id": 2083276,
+  "tags": [
+   "[gecko-triage:easy-fix]"
+  ]
+ },
+ {
+  "bug_id": 2083466,
+  "tags": []
+ },
+ {
+  "bug_id": 1885268,
+  "tags": []
+ },
+ {
+  "bug_id": 2073923,
+  "tags": []
+ },
+ {
+  "bug_id": 2079157,
+  "tags": [
+   "[gecko-triage:easy-fix]"
+  ]
+ },
+ {
+  "bug_id": 2080421,
+  "tags": []
+ },
+ {
+  "bug_id": 2081675,
+  "tags": []
+ },
+ {
+  "bug_id": 2082877,
+  "tags": []
+ },
+ {
+  "bug_id": 2083307,
+  "tags": []
+ },
+ {
+  "bug_id": 2083467,
+  "tags": []
+ },
+ {
+  "bug_id": 1945316,
+  "tags": []
+ },
+ {
+  "bug_id": 2075095,
+  "tags": []
+ },
+ {
+  "bug_id": 2079221,
+  "tags": []
+ },
+ {
+  "bug_id": 2080729,
+  "tags": []
+ },
+ {
+  "bug_id": 2081761,
+  "tags": []
+ },
+ {
+  "bug_id": 2082890,
+  "tags": []
+ },
+ {
+  "bug_id": 2083308,
+  "tags": []
+ },
+ {
+  "bug_id": 2083549,
+  "tags": []
+ }
+]

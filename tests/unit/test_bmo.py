@@ -52,14 +52,25 @@ def test_fetch_users_splits_into_chunks(tmp_path, monkeypatch):
 
 def test_fetch_state_keeps_two_booleans_and_hides_an_unseen_bug(monkeypatch):
     found = [
-        {"id": 1, "is_open": True, "assigned_to": "nobody@mozilla.org", "severity": "S2"},
+        {
+            "id": 1,
+            "is_open": True,
+            "assigned_to": "nobody@mozilla.org",
+            "severity": "S2",
+            "whiteboard": "[gecko-triage:easy-fix] [other]",
+        },
         {"id": 2, "is_open": True, "assigned_to": "dev@example.com", "severity": "--"},
     ]
     monkeypatch.setattr(bmo, "get_bugs", lambda ids, fields: found)
     out = bmo.fetch_state({1, 2, 3})
     assert out == {
-        1: {"open": True, "assigned": False, "severity": "S2"},
-        2: {"open": True, "assigned": True, "severity": "--"},
-        3: {"open": False, "assigned": False, "severity": None},
+        1: {
+            "open": True,
+            "assigned": False,
+            "severity": "S2",
+            "fix_tags": ["[gecko-triage:easy-fix]"],
+        },
+        2: {"open": True, "assigned": True, "severity": "--", "fix_tags": []},
+        3: {"open": False, "assigned": False, "severity": None, "fix_tags": []},
     }
     assert "example.com" not in str(out)

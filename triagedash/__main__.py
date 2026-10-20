@@ -118,14 +118,15 @@ def ingest(args) -> None:
     merged = store.shown(store.merge_records(store.load(RUNS, []), new))
     backfill = store.load_jsonl(Path(args.root) / "pilot" / "issue-types.jsonl")
     records = store.apply_issue_types(store.apply_log(merged, log), backfill)
-    proposal = fixtags.latest(Path(args.root) / "pilot")
-    fix = [fixtags.clean(line) for line in store.load_jsonl(proposal)] if proposal else []
-    named = restricted.all_named(records) | set().union(*map(restricted.numbers, fix))
-    own = {r["bug_id"] for r in records} | {f["bug_id"] for f in fix}
+    newest = fixtags.latest(Path(args.root) / "pilot")
+    fix = [fixtags.clean(line) for line in store.load_jsonl(newest)] if newest else []
+    # A proposal holds only a bug and fixed tags, so only its bug needs the check.
+    named = restricted.all_named(records) | {f["bug_id"] for f in fix}
+    own = {r["bug_id"] for r in records}
     hidden = restricted.hidden_bugs(named, bmo.fetch_visible(named), own)
     records = restricted.redact_all(records, hidden)
-    fix = [restricted.redact_value(f, hidden) for f in fix if f["bug_id"] not in hidden]
-    store.save(FIX_TAGS, {"file": proposal.name if proposal else None, "bugs": fix})
+    fix = [f for f in fix if f["bug_id"] not in hidden]
+    store.save(FIX_TAGS, fix)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)
     pilot_passes = store.load_jsonl(Path(args.root) / "pilot" / "passes.jsonl")
@@ -180,12 +181,19 @@ def page_clock(records: list[dict], now: datetime) -> datetime:
     return max(datetime.fromisoformat(r["started_at"]) for r in records if r["started_at"])
 
 
+def proposal(fix: dict, state: dict, bug: dict) -> dict | None:
+    """The bug's proposed fix tags that are not on its whiteboard yet."""
+    f = fix.get(bug["bug_id"])
+    on_bug = state.get(bug["bug_id"], {}).get("fix_tags") or []
+    return f and {**f, "tags": [t for t in f["tags"] if t not in on_bug]}
+
+
 def build(args) -> None:
     records = store.load(RUNS, [])
     passes = store.load(PASSES, [])
     saved = store.load(ROTATION, {"fetched_at": None, "slots": []})
     state = {int(b): v for b, v in store.load(BUG_STATE, {}).items()}
-    fix = {f["bug_id"]: f for f in store.load(FIX_TAGS, {"bugs": []})["bugs"]}
+    fix = {f["bug_id"]: f for f in store.load(FIX_TAGS, [])}
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name in ("review-stats.css", "favicon.svg"):
@@ -199,11 +207,12 @@ def build(args) -> None:
         clock = page_clock(mine, datetime.now(UTC))
         team_passes = [p for p in passes if p["team"] == team.slug]
         page = stats.team_page(mine, clock, team_passes)
+        page["fix_labels"] = fixtags.LABELS
         if team.slug == LOCAL_TEAM:
             round_ = rotation.one_round(saved["slots"], clock.date())
             page["rotation"] = {**round_, "fetched_at": saved["fetched_at"]}
         page["bugs"] = [
-            {**b, **state.get(b["bug_id"], bmo.UNKNOWN_STATE), "fix": fix.get(b["bug_id"])}
+            {**b, **state.get(b["bug_id"], bmo.UNKNOWN_STATE), "fix": proposal(fix, state, b)}
             for b in page["bugs"]
         ]
         pages[team.slug] = page
