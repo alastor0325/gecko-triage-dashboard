@@ -9,8 +9,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-# Each known whiteboard tag and its short label on the page.
-LABELS = {"[gecko-triage:easy-fix]": "easy fix?", "[gecko-triage:gfb-candidate]": "gfb?"}
+# Each known whiteboard tag, strongest last, with its short label (list rows) and its
+# full label (card). A gfb candidate is always an easy fix too, so the page shows only the
+# strongest tag.
+LABELS = {
+    "[gecko-triage:easy-fix]": {"short": "easy fix", "full": "easy fix"},
+    "[gecko-triage:gfb-candidate]": {"short": "gfb", "full": "good first bug"},
+}
 
 
 def latest(pilot: Path) -> Path | None:

@@ -90,8 +90,8 @@ its severity now, from an anonymous Bugzilla read; the assignee is never kept.
 
 `data/fix-tags.json` holds the proposed whiteboard fix tags (`[gecko-triage:easy-fix]`,
 `[gecko-triage:gfb-candidate]`) from the newest `~/hackbot/pilot/fix-tags-*.jsonl`: only the
-bug and its tags. The page shows each as a dashed "easy fix?" or "gfb?" tag until the
-refresh finds it on the bug's whiteboard.
+bug and its tags. The page shows the strongest one as a solid tag, "easy fix" or "gfb"
+("good first bug" on the card), until the refresh finds it on the bug's whiteboard.
 
 `data/passes.json` has one line per daily selection pass (team, UTC time, bugs selected),
 from `~/hackbot/pilot/passes.jsonl`. With it, "Bugs handled per day" marks a day with no
