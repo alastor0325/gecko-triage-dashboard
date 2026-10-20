@@ -43,7 +43,12 @@ def named_bugs(record: dict) -> set[int]:
         ids.add(record["dupe_of"])
     for o in record["other_bugs"]:
         ids |= {o["bug_id"], *o["blocks_add"]}
-    return ids | {int(n) for s in strings(text_of(record)) for n in _NUMBER.findall(s)}
+    return ids | numbers(text_of(record))
+
+
+def numbers(value) -> set[int]:
+    """Every bug-like number in the strings of a value."""
+    return {int(n) for s in strings(value) for n in _NUMBER.findall(s)}
 
 
 def all_named(records: list[dict]) -> set[int]:
@@ -65,6 +70,8 @@ def hidden_bugs(named: set[int], visible: set[int], own: set[int]) -> set[int]:
 
 def redact_text(text: str, hidden: set[int]) -> str:
     """Replaces each mention of a hidden bug, with its link or its "bug" word."""
+    if not hidden:
+        return text
     ids = "|".join(map(str, sorted(hidden)))
     text = re.sub(rf"\[[^\]]*\]\({_LINK}(?:{ids})(?!\d)[^)]*\)", HIDDEN, text)
     text = re.sub(rf"{_LINK}(?:{ids})(?!\d)(?:#c\d+)?", HIDDEN, text)

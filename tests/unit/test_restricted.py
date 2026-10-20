@@ -61,3 +61,11 @@ def test_redact_all_drops_runs_on_hidden_bugs():
     a, b = make_record(1), make_record(1999901)
     assert restricted.redact_all([a, b], hidden={1999901}) == [a]
     assert restricted.redact_all([a], hidden=set()) == [a]
+
+
+def test_redact_with_no_hidden_bug_changes_nothing():
+    text = "In Foo::Bar, the fix (Windows) is small: see bug 1445470."
+    assert restricted.redact_text(text, set()) == text
+    assert restricted.redact_value({"tags": ["[gecko-triage:easy-fix]"]}, set()) == {
+        "tags": ["[gecko-triage:easy-fix]"]
+    }

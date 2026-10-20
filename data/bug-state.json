@@ -451,7 +451,7 @@
  },
  "2083549": {
   "assigned": true,
-  "open": true,
+  "open": false,
   "severity": "S3"
  },
  "2083602": {

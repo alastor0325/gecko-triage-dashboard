@@ -10,7 +10,7 @@ import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from . import bmo, hackbot, render, restricted, rotation, stats, store
+from . import bmo, fixtags, hackbot, render, restricted, rotation, stats, store
 from .summary import is_public, orphan_bugs, parse_summary, requestees, summary_bug_id
 from .teams import LOCAL_TEAM, TEAMS
 
@@ -19,6 +19,7 @@ RUNS = ROOT / "data" / "runs.json"
 PASSES = ROOT / "data" / "passes.json"
 ROTATION = ROOT / "data" / "rotation.json"
 BUG_STATE = ROOT / "data" / "bug-state.json"
+FIX_TAGS = ROOT / "data" / "fix-tags.json"
 # The rotation weeks kept: enough before today for one round, and the weeks ahead.
 ROTATION_BACK, ROTATION_AHEAD = timedelta(days=200), timedelta(days=60)
 CACHE = ROOT / ".cache" / "bmo"
@@ -117,10 +118,14 @@ def ingest(args) -> None:
     merged = store.shown(store.merge_records(store.load(RUNS, []), new))
     backfill = store.load_jsonl(Path(args.root) / "pilot" / "issue-types.jsonl")
     records = store.apply_issue_types(store.apply_log(merged, log), backfill)
-    named = restricted.all_named(records)
-    own = {r["bug_id"] for r in records}
+    proposal = fixtags.latest(Path(args.root) / "pilot")
+    fix = [fixtags.clean(line) for line in store.load_jsonl(proposal)] if proposal else []
+    named = restricted.all_named(records) | set().union(*map(restricted.numbers, fix))
+    own = {r["bug_id"] for r in records} | {f["bug_id"] for f in fix}
     hidden = restricted.hidden_bugs(named, bmo.fetch_visible(named), own)
     records = restricted.redact_all(records, hidden)
+    fix = [restricted.redact_value(f, hidden) for f in fix if f["bug_id"] not in hidden]
+    store.save(FIX_TAGS, {"file": proposal.name if proposal else None, "bugs": fix})
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)
     pilot_passes = store.load_jsonl(Path(args.root) / "pilot" / "passes.jsonl")
@@ -180,6 +185,7 @@ def build(args) -> None:
     passes = store.load(PASSES, [])
     saved = store.load(ROTATION, {"fetched_at": None, "slots": []})
     state = {int(b): v for b, v in store.load(BUG_STATE, {}).items()}
+    fix = {f["bug_id"]: f for f in store.load(FIX_TAGS, {"bugs": []})["bugs"]}
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name in ("review-stats.css", "favicon.svg"):
@@ -196,7 +202,10 @@ def build(args) -> None:
         if team.slug == LOCAL_TEAM:
             round_ = rotation.one_round(saved["slots"], clock.date())
             page["rotation"] = {**round_, "fetched_at": saved["fetched_at"]}
-        page["bugs"] = [{**b, **state.get(b["bug_id"], bmo.UNKNOWN_STATE)} for b in page["bugs"]]
+        page["bugs"] = [
+            {**b, **state.get(b["bug_id"], bmo.UNKNOWN_STATE), "fix": fix.get(b["bug_id"])}
+            for b in page["bugs"]
+        ]
         pages[team.slug] = page
         (out / team.slug).mkdir(exist_ok=True)
         (out / team.slug / "index.html").write_text(render.team_html(team_template, team, page))
