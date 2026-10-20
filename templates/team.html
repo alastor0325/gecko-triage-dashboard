@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Newsreader:opsz,wght@6..72,500&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../review-stats.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -23,7 +23,12 @@
   /* Room under the line, so overflow: hidden does not cut the tail of a J or a y. */
   .cal-grid .stat .value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;
     margin-top: 3px; }
+  /* Names in Newsreader: Fraunces draws a capital J that drops below the line. */
+  .cal-grid .stat .value:not(.is-empty) { font-family: "Newsreader", var(--serif); font-variation-settings: "opsz" 72;
+    font-weight: 500; }
   .cal-grid .stat .value.is-empty { color: var(--muted); font-size: 16px; line-height: 32.5px; }
+  /* A button centers its content; keep each week's lines at the top like the other tiles. */
+  .cal-grid button.stat { display: flex; flex-direction: column; justify-content: flex-start; }
   .cal-grid .stat.is-active { box-shadow: inset 3px 0 0 var(--red); }
   .cal-grid .stat .hint { font-family: var(--mono); font-size: 8.5px; color: var(--red); margin-top: 5px;
     text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
