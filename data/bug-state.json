@@ -390,7 +390,7 @@
  "2082607": {
   "assigned": true,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S3"
  },
  "2082667": {
@@ -493,9 +493,7 @@
  },
  "2083276": {
   "assigned": false,
-  "fix_tags": [
-   "[gecko-triage:easy-fix]"
-  ],
+  "fix_tags": [],
   "open": true,
   "severity": "S4"
  },

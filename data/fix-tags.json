@@ -141,9 +141,7 @@
  },
  {
   "bug_id": 2083276,
-  "tags": [
-   "[gecko-triage:easy-fix]"
-  ]
+  "tags": []
  },
  {
   "bug_id": 2083466,
