@@ -378,9 +378,11 @@ const withRuns = (b, runs) => ({...b, runs, run: runs[0], tags: [...b.tags, ...r
 // count on the page (tiles, charts, the Bugs list) uses this one window.
 const periodStart = () => dayKey(new Date(DATA.as_of) - (period().days - 1) * DAY_MS);
 // Per bug, its runs inside the period and the newest of them, with the tags that depend on it.
+// Kept per period: tiles, charts and the Bugs list all read it on each draw.
+const PERIOD_BUGS = {};
 function periodBugs() {
   const start = periodStart();
-  return DATA.bugs.map(b => {
+  return PERIOD_BUGS[state.period] ??= DATA.bugs.map(b => {
     const runs = b.runs.filter(r => dayKey(r.started_at) >= start);
     return runs.length ? withRuns(b, runs) : null;
   }).filter(Boolean);
@@ -391,7 +393,6 @@ const countBy = (list, key) => {
   return out;
 };
 const byCount = counts => Object.fromEntries(Object.entries(counts).sort((a, b) => b[1] - a[1]));
-const closeKind = r => r.resolution ?? (r.move_to ? `Reassigned to ${r.move_to}` : null);
 // The Overview numbers: each bug once, by its newest run in the period.
 function overview() {
   const runs = periodBugs().map(b => b.run);
@@ -399,7 +400,7 @@ function overview() {
   const sev = countBy(runs, r => r.severity);
   return {
     counts: {all: runs.length, ...Object.fromEntries(DATA.categories.map(c => [c.key, cats[c.key] ?? 0]))},
-    close_kinds: byCount(countBy(runs.filter(r => r.category === "close"), closeKind)),
+    close_kinds: byCount(countBy(runs, r => r.close_kind)),
     severity: Object.fromEntries(DATA.severities.map(k => [k, sev[k] ?? 0])),
     issue_types: byCount(countBy(runs, r => r.issue_type)),
   };

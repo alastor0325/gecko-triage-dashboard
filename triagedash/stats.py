@@ -174,6 +174,7 @@ def run_view(record: dict) -> dict:
         "tags": tags(record),
         "warning": warning(record),
         "issue_type": issue_type(record),
+        "close_kind": close_kind(record) if cat == "close" else None,
         "close_action": action,
         "label_kind": action.lower() if action else cat,
     }
@@ -290,10 +291,10 @@ def team_page(records: list[dict], as_of: datetime, passes: list[dict] = ()) -> 
             {"key": c, "label": CATEGORY_LABEL[c], "color": CATEGORY_COLOR[c]} for c in CATEGORIES
         ],
         "periods": [
-            {"key": k, "label": label, "days": days, "start": period_start(as_of, k)}
-            for k, (days, label) in PERIODS.items()
+            {"key": k, "label": label, "days": days} for k, (days, label) in PERIODS.items()
         ],
-        "overview": overview(records, as_of),
+        # Only the landing page reads these; the team page counts in the viewer's days.
+        "week_counts": overview(records, as_of)["1w"]["counts"],
         "bugs": (page_bugs := bugs(records, as_of)),
         "awaiting": sum(b["runs"][0]["outcome"] == AWAITING_REVIEW for b in page_bugs),
     }

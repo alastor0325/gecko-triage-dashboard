@@ -27,7 +27,7 @@ def team_html(template: str, team: Team, page: dict) -> str:
 def team_row(index: int, team: Team, page: dict | None) -> str:
     components = '<span class="sep">·</span>'.join(html.escape(c) for _, c in team.components)
     if page:
-        counts = page["overview"]["1w"]["counts"]
+        counts = page["week_counts"]
         stats = f"<strong>{counts['all']}</strong>bugs handled<br>{counts['close']} closed or moved"
     else:
         stats = "<strong>-</strong>no runs yet"

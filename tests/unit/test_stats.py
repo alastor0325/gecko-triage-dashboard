@@ -198,7 +198,6 @@ def test_team_page():
         "key": "1w",
         "label": "1-Week",
         "days": 7,
-        "start": "2026-10-08T00:00:00+00:00",
     }
     assert [b["bug_id"] for b in page["bugs"]] == [100]
 
