@@ -575,7 +575,9 @@ function draw() {
   document.getElementById("periods").hidden = state.view === "calendar";
   if (state.view === "overview") drawOverview(); else if (state.view === "bugs") drawBugs(); else drawCalendar();
   const parts = state.view === "calendar" ? ["calendar", state.week ?? "", state.calBug ?? ""]
-    : [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? "", state.issue] : [])];
+    : [state.view, state.period, ...(state.view === "bugs" ? [state.cat, state.bug ?? "", state.issue, encodeURIComponent(state.q.trim())] : [])];
+  // The search is part of the link, so a search can be shared; empty parts at the end go.
+  while (parts.length > 1 && parts.at(-1) === "") parts.pop();
   history.replaceState(null, "", "#" + parts.join("/"));
 }
 
@@ -589,7 +591,7 @@ function step(n) {
 }
 
 function readHash() {
-  const [view, period, cat, bugId, issue] = location.hash.slice(1).split("/");
+  const [view, period, cat, bugId, issue, q] = location.hash.slice(1).split("/");
   if (VIEWS.some(([k]) => k === view)) state.view = view;
   if (view === "calendar") {
     state.week = WEEKS.some(w => w.start === period) ? period : CURRENT_WEEK;
@@ -601,6 +603,8 @@ function readHash() {
   if (CATS.includes(cat)) state.cat = cat;
   if (bugId) state.bug = Number(bugId);
   state.issue = issue || "";
+  try { state.q = decodeURIComponent(q || ""); } catch { state.q = ""; }
+  document.getElementById("search").value = state.q;
 }
 
 const cycle = (list, key, dir) => {

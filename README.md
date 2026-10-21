@@ -32,16 +32,16 @@ Analyzed and in Needs info.
   it take it from `~/hackbot/pilot/issue-types.jsonl`, else `unknown`. The note of an
   `other` type stays in the data, unshown, to find values the list is missing.
 - **Bugs**: category filters with counts, and a search by id, title or tag (`/` puts the
-  cursor in it). A list (short view) shows one row per bug, with its newest run in the
-  period, newest first, under a header for each day ("Today", "Yesterday", then the date)
-  with its bug count. Up/Down or j/k step through it. Each row shows only the bug number,
-  its category (in the All and Close / Reassign tabs) and the `regression` and `new` tags.
-  A card (full view) shows all tags and the bot's
-  timeline on the bug: every run (posted or daily), newest first and none folded, each with
-  its day and time, every change and the whole comment. Test rounds rerun the same bugs
-  as tests, so the page data keeps only each bug's newest test run. Every bug number links
-  to Bugzilla, and each run names the agent version that made it
-  (`findings.agent_version`; older runs show no version).
+  cursor in it; the search is kept in the link, so a link opens the same search). A list
+  (short view) shows one row per bug, with its newest run in the period, newest first,
+  under a header for each day ("Today", "Yesterday", then the date) with its bug count.
+  Up/Down or j/k step through it. Each row shows only the bug number, its category (in the
+  All and Close / Reassign tabs) and the `regression` and `new` tags. A card (full view)
+  shows all tags and the bot's timeline on the bug: every run (posted or daily), newest
+  first and none folded, each with its day and time, every change and the whole comment.
+  Test rounds rerun the same bugs as tests, so the page data keeps only each bug's newest
+  test run. Every bug number links to Bugzilla, and each run names the agent version that
+  made it (`findings.agent_version`; older runs show no version).
 - **Calendar** (media only): one round of the weekly triage rotation, the current week
   and the weeks before it, one per engineer. Each open Analyzed or Needs info bug that
   nobody is assigned to sits in the week of its newest run, in two groups: bugs the
