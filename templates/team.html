@@ -604,7 +604,7 @@ function readHash() {
   if (bugId) state.bug = Number(bugId);
   state.issue = issue || "";
   try { state.q = decodeURIComponent(q || ""); } catch { state.q = ""; }
-  document.getElementById("search").value = state.q;
+  search.value = state.q;
 }
 
 const cycle = (list, key, dir) => {
