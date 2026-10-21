@@ -301,19 +301,18 @@ function mark(k, total) {
   if (RAN_DAYS.has(k)) return "0";
   return k >= KNOWN_UNTIL ? "" : "×";
 }
-// Bugs handled per local day, by the category of that day's newest run on each bug. The
-// axis starts at the first run, and has no gaps after it.
+// Bugs handled per local day of the period. The axis starts at the first run, and has no
+// gaps after it.
 function daily() {
   const days = DATA.periods.find(p => p.key === state.period).days;
   const first = DATA.first_run ? dayKey(DATA.first_run) : "";
   const keys = Array.from({length: days}, (_, i) => dayKey(new Date(DATA.as_of) - (days - 1 - i) * DAY_MS))
     .filter(k => k >= first);
   const perDay = Object.fromEntries(keys.map(k => [k, {}]));
-  for (const b of DATA.bugs) {
-    for (const r of b.runs) {  // newest first, so the first run seen on a day wins
-      const k = dayKey(r.started_at);
-      if (perDay[k] && !(b.bug_id in perDay[k])) perDay[k][b.bug_id] = r.category;
-    }
+  // Each bug once, on the day of its newest run, so the bars add up to the Summary.
+  for (const b of periodBugs()) {
+    const bucket = perDay[dayKey(b.run.started_at)];
+    if (bucket) bucket[b.bug_id] = b.run.category;
   }
   return keys.map(k => {
     const counts = Object.fromEntries(DATA.categories.map(c =>
@@ -345,7 +344,7 @@ function markSummary(perDay) {
 }
 
 function drawOverview() {
-  const o = DATA.overview[state.period];
+  const o = overview();
   const perDay = daily();
   document.getElementById("summary-title").textContent = `Summary (${period().label.toLowerCase()} window)`;
   // Each tile opens the Bugs view on its category.
@@ -375,16 +374,41 @@ function drawOverview() {
 // A bug with the runs the page shows, its newest run, and the tags that depend on them.
 // Python sends only the runs the page shows, so a second run means the bot came back.
 const withRuns = (b, runs) => ({...b, runs, run: runs[0], tags: [...b.tags, ...runs[0].tags, ...(runs.length > 1 ? ["again"] : [])]});
-// Per bug, the newest run inside the period, with the tags that depend on it.
+// A period is today and the days before it, in the viewer's own calendar days. Every
+// count on the page (tiles, charts, the Bugs list) uses this one window.
+const periodStart = () => dayKey(new Date(DATA.as_of) - (period().days - 1) * DAY_MS);
+// Per bug, its runs inside the period and the newest of them, with the tags that depend on it.
+function periodBugs() {
+  const start = periodStart();
+  return DATA.bugs.map(b => {
+    const runs = b.runs.filter(r => dayKey(r.started_at) >= start);
+    return runs.length ? withRuns(b, runs) : null;
+  }).filter(Boolean);
+}
+const countBy = (list, key) => {
+  const out = {};
+  for (const x of list) { const k = key(x); if (k != null) out[k] = (out[k] ?? 0) + 1; }
+  return out;
+};
+const byCount = counts => Object.fromEntries(Object.entries(counts).sort((a, b) => b[1] - a[1]));
+const closeKind = r => r.resolution ?? (r.move_to ? `Reassigned to ${r.move_to}` : null);
+// The Overview numbers: each bug once, by its newest run in the period.
+function overview() {
+  const runs = periodBugs().map(b => b.run);
+  const cats = countBy(runs, r => r.category);
+  const sev = countBy(runs, r => r.severity);
+  return {
+    counts: {all: runs.length, ...Object.fromEntries(DATA.categories.map(c => [c.key, cats[c.key] ?? 0]))},
+    close_kinds: byCount(countBy(runs.filter(r => r.category === "close"), closeKind)),
+    severity: Object.fromEntries(DATA.severities.map(k => [k, sev[k] ?? 0])),
+    issue_types: byCount(countBy(runs, r => r.issue_type)),
+  };
+}
 function shown() {
-  const start = period().start;
   const q = state.q.trim().toLowerCase();
   const text = b => `${b.bug_id} ${b.title} ${b.tags.join(" ")} ${b.run.outcome ?? ""} ${runLabel(b.run)} ${(b.fix?.tags ?? []).map(t => Object.values(DATA.fix_labels[t]).join(" ")).join(" ")} ${b.run.needinfo.map(ni => niLabel(ni) || "").join(" ")}`.toLowerCase();
   const matches = b => (!state.issue || b.run.issue_type === state.issue) && (!q || text(b).includes(q));
-  return DATA.bugs.map(b => {
-    const runs = b.runs.filter(r => r.started_at >= start);
-    return runs.length ? withRuns(b, runs) : null;
-  }).filter(b => b && matches(b))
+  return periodBugs().filter(matches)
     .sort((a, b) => b.run.started_at.localeCompare(a.run.started_at));
 }
 

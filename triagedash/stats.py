@@ -8,7 +8,7 @@ page buckets runs into days itself."""
 from __future__ import annotations
 
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from .markdown import render
 from .store import AWAITING_REVIEW, order
@@ -143,7 +143,15 @@ def acted(record: dict) -> bool:
 
 
 def period_start(as_of: datetime, key: str) -> str:
-    return (as_of - timedelta(days=PERIODS[key][0])).isoformat()
+    """The start of a period: midnight UTC of the first of its calendar days, today being
+    the last. The page counts the same days in the viewer's time zone."""
+    first = as_of.astimezone(UTC).date() - timedelta(days=PERIODS[key][0] - 1)
+    return datetime.combine(first, datetime.min.time(), UTC).isoformat()
+
+
+# The page cuts periods by the viewer's local day, which can start up to a day before the
+# UTC one, so its data reaches one day further back.
+DATA_MARGIN = timedelta(days=1)
 
 
 def run_view(record: dict) -> dict:
@@ -267,9 +275,10 @@ def known_until(records: list[dict], as_of: datetime) -> str:
 def team_page(records: list[dict], as_of: datetime, passes: list[dict] = ()) -> dict:
     """Records and passes are one team's. The page holds only the longest period."""
     longest = max(PERIODS, key=lambda k: PERIODS[k][0])
-    ran = ran_at(records, passes, period_start(as_of, longest))
+    start = (datetime.fromisoformat(period_start(as_of, longest)) - DATA_MARGIN).isoformat()
+    ran = ran_at(records, passes, start)
     until = known_until(records, as_of)
-    records = in_period(records, as_of, longest)
+    records = [r for r in records if acted(r) and r["started_at"] >= start]
     return {
         "as_of": as_of.isoformat(),
         "ran_at": ran,

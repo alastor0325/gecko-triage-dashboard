@@ -198,7 +198,7 @@ def test_team_page():
         "key": "1w",
         "label": "1-Week",
         "days": 7,
-        "start": "2026-10-07T12:00:00+00:00",
+        "start": "2026-10-08T00:00:00+00:00",
     }
     assert [b["bug_id"] for b in page["bugs"]] == [100]
 
@@ -263,3 +263,14 @@ def test_close_action_follows_close_kind_order():
     assert stats.run_view(moved)["label_kind"] == "reassigned"
     assert stats.run_view(make_record(decision="incomplete"))["label_kind"] == "close"
     assert stats.run_view(make_record(decision="needs_info"))["label_kind"] == "needs-info"
+
+
+def test_periods_are_calendar_days_ending_today():
+    assert stats.period_start(AS_OF, "1w") == "2026-10-08T00:00:00+00:00"
+    late = datetime(2026, 10, 14, 23, 59, tzinfo=UTC)
+    assert stats.period_start(late, "1w") == "2026-10-08T00:00:00+00:00"
+    # The page data reaches one day before the longest period, for viewers west of UTC.
+    assert stats.period_start(AS_OF, "3m") == "2026-07-17T00:00:00+00:00"
+    kept = make_record(1, source="daily", started_at="2026-07-16T06:00:00+00:00")
+    old = make_record(2, source="daily", started_at="2026-07-15T20:00:00+00:00")
+    assert [b["bug_id"] for b in stats.team_page([kept, old], AS_OF)["bugs"]] == [1]
