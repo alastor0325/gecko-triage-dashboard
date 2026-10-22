@@ -4593,7 +4593,7 @@
    }
   ],
   "other_bugs": [],
-  "outcome": "awaiting review",
+  "outcome": "skipped",
   "pending_actions": null,
   "posted": false,
   "posted_at": null,
@@ -4924,5 +4924,52 @@
   "started_at": "2026-10-22T16:51:00+00:00",
   "team": "media",
   "title": "Picture-in-picture doesn't work for mjpg"
+ },
+ {
+  "agent_version": "50cb2c37",
+  "asked": [
+   "media profile capture",
+   "content-process vmmap",
+   "process kill test"
+  ],
+  "blocks_add": [],
+  "bug_id": 2067925,
+  "comment": "Thank you for the two full vmmap captures and the test with hardware decoding off.\n\n**Analysis**\n\nThe 8,112 KiB regions are probably IPC Shmem buffers that each hold one 1920x1080 frame in 32-bit RGB. That is 8,294,400 bytes, rounded up to the 16 KiB page. The probable allocator is `RemoteMediaManagerParent::RecvReadback` in [RemoteMediaManagerParent.cpp](https://searchfox.org/firefox-main/rev/034cd8a8207e38b04afec5e6f75e5161f75a112f/dom/media/ipc/RemoteMediaManagerParent.cpp#312). It copies a decoded frame into a new Shmem when a content process asks for that frame as RGB. Software frames and hardware frames give the same buffer size, so this matches the growth with hardware decoding on and off.\n\nThe RDD keeps each buffer until the content process frees its copy, or until that content process closes its connection to the RDD. Code reading did not find which side keeps the buffers. Thus the cause is not located yet.\n\nThe missing `shmem-allocated` reporter in the RDD does not show that shared memory is not involved. The RDD tries to register that reporter before XPCOM starts, so the registration probably fails ([SharedMemoryHandle.cpp](https://searchfox.org/firefox-main/rev/034cd8a8207e38b04afec5e6f75e5161f75a112f/ipc/glue/SharedMemoryHandle.cpp#45)). In the attached about:memory, only the Main Process has this reporter. This is a separate problem in the IPC code.\n\nAndrew, could you please look at the `Readback` path and tell us what can keep these Shmems alive?\n\n**Next steps**\n\nPlease keep the suspected page open during this capture.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nWhen the RDD process is large again, could you please also do this test:\n\n1. Run a full `vmmap` on the content process of the suspected page. Attach the output to this bug.\n2. Open `about:processes`. Write down the RDD memory.\n3. Kill one content process that played video.\n4. Write down the RDD memory again, and the sites of that process.\n5. Do steps 3 and 4 for each content process that played video.",
+  "comment_count": null,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-08-31T20:37:38Z",
+  "issue_type": "performance",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": null,
+    "nick": "a+bugzilla",
+    "role": "reporter"
+   },
+   {
+    "name": "Andrew Osmond",
+    "nick": "aosmond",
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261022-173626-01199e",
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-10-22T17:36:26+00:00",
+  "team": "media",
+  "title": "macOS: RDD process reaches 34.6 GB physical footprint after ~80 h while about:memory accounts for only 8.5 MiB heap"
  }
 ]
