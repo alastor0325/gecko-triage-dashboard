@@ -4593,7 +4593,7 @@
    }
   ],
   "other_bugs": [],
-  "outcome": "awaiting review",
+  "outcome": "skipped",
   "pending_actions": null,
   "posted": false,
   "posted_at": null,
@@ -4637,7 +4637,7 @@
    }
   ],
   "other_bugs": [],
-  "outcome": "awaiting review",
+  "outcome": "skipped",
   "pending_actions": null,
   "posted": false,
   "posted_at": null,
@@ -4701,7 +4701,7 @@
   "move_to": null,
   "needinfo": [],
   "other_bugs": [],
-  "outcome": "awaiting review",
+  "outcome": "skipped",
   "pending_actions": null,
   "posted": false,
   "posted_at": null,
@@ -4860,7 +4860,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2084846,
-  "comment": "The cause is in the WebRender code, so this bug moves to Core :: Graphics: WebRender.\n\n**Analysis**\n\nThe `about:logging` profile in comment 2 shows hardware H.264 decode through D3D11 DXVA in the GPU process, with NV12 output. The decoder works. The GPU process Renderer logs this error about 120 times per second during playback:\n\n`[GFX1-]: RenderDXGITextureHost descriptor (1920x1080 fmt 16) does not match resource (1920x1088 DXGI 103)`\n\nThe 1088 rows come from normal decoder padding. When this check fails, `RenderDXGITextureHost` gives no video texture to WebRender for that frame, so the frame shows green. The screenshot and the video in comment 0 and comment 1 show this green image.\n\nThe regressor in the Regressed by field changed this check in `RenderDXGITextureHost` in [RenderD3D11TextureHost.cpp](https://searchfox.org/firefox-main/rev/034cd8a8207e38b04afec5e6f75e5161f75a112f/gfx/webrender_bindings/RenderD3D11TextureHost.cpp). It landed on 2026-10-21. This is a regression in Nightly 160, and comment 3 gives the regression range.\n\n**Next steps**\n\nR\u00e9mi, could you please confirm that your fix in progress also covers this padded NV12 case?",
+  "comment": "The cause is in the WebRender code, so this bug moves to Core :: Graphics: WebRender.\n\n**Analysis**\n\nThe `about:logging` profile in comment 2 shows hardware H.264 decode through D3D11 DXVA in the GPU process, with NV12 output. The decoder works. The GPU process Renderer logs this error about 120 times per second during playback:\n\n`[GFX1-]: RenderDXGITextureHost descriptor (1920x1080 fmt 16) does not match resource (1920x1088 DXGI 103)`\n\nThe 1088 rows come from normal decoder padding. When this check fails, `RenderDXGITextureHost` gives no video texture to WebRender for that frame, so the frame shows green. The screenshot and the video in comment 0 and comment 1 show this green image.\n\nThe regressor in the Regressed by field changed this check in `RenderDXGITextureHost` in [RenderD3D11TextureHost.cpp](https://searchfox.org/firefox-main/rev/034cd8a8207e38b04afec5e6f75e5161f75a112f/gfx/webrender_bindings/RenderD3D11TextureHost.cpp). It landed on 2026-10-21. This is a regression in Nightly 160, and comment 3 gives the regression range.\n\n**Next steps**\n\nR\u00e9mi is working on a fix for this check (comment 7), so this bug needs nothing more from triage.",
   "comment_count": null,
   "decision": "wrong_component",
   "dupe_of": null,
@@ -4870,15 +4870,9 @@
   "issue_type_note": null,
   "keywords_add": [],
   "move_to": "Core :: Graphics: WebRender",
-  "needinfo": [
-   {
-    "name": "R\u00e9mi Papilli\u00e9",
-    "nick": "wsmind",
-    "role": "assignee"
-   }
-  ],
+  "needinfo": [],
   "other_bugs": [],
-  "outcome": "awaiting review",
+  "outcome": "skipped",
   "pending_actions": null,
   "posted": false,
   "posted_at": null,
@@ -4916,7 +4910,7 @@
    }
   ],
   "other_bugs": [],
-  "outcome": "awaiting review",
+  "outcome": "skipped",
   "pending_actions": null,
   "posted": false,
   "posted_at": null,
