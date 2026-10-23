@@ -37,6 +37,11 @@
   .cal-panel .why { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
   .cal-list { list-style: none; margin: 0; padding: 0; }
   .cal-sev { margin: 8px 0 2px; color: var(--ink-soft); }
+  .cal-fold { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 0;
+    padding: 0; cursor: pointer; }
+  .cal-fold::before { content: "▾"; display: inline-block; width: 1.2em; color: var(--red); transition: transform 0.2s; }
+  .cal-fold[aria-expanded="false"]::before { transform: rotate(-90deg); }
+  .cal-fold:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
   .cal-list > li { border-left: 3px solid var(--c); margin: 4px 0; }
   .cal-bug { display: flex; gap: 10px; align-items: baseline; width: 100%; padding: 5px 10px; font: inherit;
     font-size: 13px; text-align: left; color: var(--ink); background: none; border: 0; cursor: pointer; }
@@ -234,7 +239,7 @@ const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "part
   "partly posted": {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
-const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null, calBug: null};
+const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null, calBug: null, calFolded: new Set()};
 // Run sources are named only once Hackbot runs exist; until then every run is local.
 const HAS_HACKBOT = DATA.bugs.some(b => b.runs.some(r => r.source === "hackbot"));
 
@@ -552,6 +557,9 @@ function calTile(w) {
 const SEV_ORDER = [...DATA.severities, "No severity"];
 const sevOf = b => [b.severity, b.runs[0].severity].find(s => DATA.severities.includes(s)) ?? "No severity";
 const sevRank = b => SEV_ORDER.indexOf(sevOf(b));
+// A group header that folds its list. A folded group stays folded in every week until it
+// is opened again.
+const fold = (key, tag, cls, label) => `<${tag} class="${cls}"><button type="button" class="cal-fold" data-cal-fold="${esc(key)}" aria-expanded="${!state.calFolded.has(key)}">${label}</button></${tag}>`;
 function calPanel(w) {
   const group = ([k, why]) => {
     const list = w.bugs.filter(b => b.runs[0].category === k);
@@ -563,12 +571,17 @@ function calPanel(w) {
         ${open ? `<div class="cal-card" id="calcard-${b.bug_id}">${cardId(b)}${cardBody(b)}</div>` : ""}</li>`;
     };
     if (!list.length) return "";
-    const head = `<h3 class="rail-day">${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span></h3>`;
+    const head = fold(k, "h3", "rail-day", `${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span>`);
+    if (state.calFolded.has(k)) return head;
     if (k !== "analyzed") return `${head}<ul class="cal-list">${list.map(row).join("")}</ul>`;
     // Analyzed bugs under a header per severity on Bugzilla, most severe first, as the Bugs
     // list is under a header per day. Needs info bugs stay newest first.
     const bySev = Map.groupBy([...list].sort((a, b) => sevRank(a) - sevRank(b)), sevOf);
-    return head + [...bySev].map(([sev, bs]) => `<h4 class="cal-sev">${esc(sev)} on Bugzilla · ${bs.length}</h4><ul class="cal-list">${bs.map(row).join("")}</ul>`).join("");
+    return head + [...bySev].map(([sev, bs]) => {
+      const key = `sev:${sev}`;
+      const sub = fold(key, "h4", "cal-sev", `${esc(sev)} on Bugzilla · ${bs.length}`);
+      return state.calFolded.has(key) ? sub : `${sub}<ul class="cal-list">${bs.map(row).join("")}</ul>`;
+    }).join("");
   };
   return `<div class="cal-panel" role="region" id="panel-${w.start}" aria-labelledby="week-${w.start}">${CAL_GROUPS.map(group).join("")}</div>`;
 }
@@ -643,9 +656,14 @@ search.addEventListener("input", () => {
   typing = setTimeout(() => { state.q = search.value; draw(); }, 120);
 });
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue], [data-week], [data-cal-bug]");
+  const el = e.target.closest("[data-view], [data-period], [data-cat], [data-bug], [data-step], [data-open-cat], [data-clear-issue], [data-week], [data-cal-bug], [data-cal-fold]");
   if (!el) return;
   if ("clearIssue" in el.dataset) { state.issue = ""; search.focus(); }
+  if (el.dataset.calFold) {
+    const k = el.dataset.calFold;
+    state.calFolded.has(k) ? state.calFolded.delete(k) : state.calFolded.add(k);
+    return redrawFocus(`[data-cal-fold="${CSS.escape(k)}"]`);
+  }
   if (el.dataset.calBug) {
     const id = Number(el.dataset.calBug);
     state.calBug = state.calBug === id ? null : id;
