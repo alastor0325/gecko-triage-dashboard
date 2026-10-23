@@ -172,7 +172,7 @@
  "2067925": {
   "assigned": true,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S3"
  },
  "2068806": {
