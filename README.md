@@ -47,7 +47,8 @@ Analyzed and in Needs info.
   nobody is assigned to sits in the week of its newest run, in two groups: bugs the
   engineer can start work on (under a header per severity on Bugzilla now, most severe first), and bugs to
   check if they want to be involved. A bug closed on Bugzilla now is left out. A click on
-  a week opens its bugs, and a click on a bug opens its card in place.
+  a week opens its bugs, and a click on a bug opens its card in place. Each severity section
+  and the Needs info section fold; Needs info starts folded.
 
 A Close / Reassign bug's category reads `Closed` when the run set a resolution, else
 `Reassigned` when it moved the bug.

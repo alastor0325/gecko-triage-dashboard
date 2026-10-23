@@ -41,6 +41,7 @@
     padding: 0; cursor: pointer; }
   .cal-fold::before { content: "▾"; display: inline-block; width: 1.2em; color: var(--red); transition: transform 0.2s; }
   .cal-fold[aria-expanded="false"]::before { transform: rotate(-90deg); }
+  @media (prefers-reduced-motion: reduce) { .cal-fold::before { transition: none; } }
   .cal-fold:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
   .cal-list > li { border-left: 3px solid var(--c); margin: 4px 0; }
   .cal-bug { display: flex; gap: 10px; align-items: baseline; width: 100%; padding: 5px 10px; font: inherit;
@@ -559,7 +560,10 @@ const sevOf = b => [b.severity, b.runs[0].severity].find(s => DATA.severities.in
 const sevRank = b => SEV_ORDER.indexOf(sevOf(b));
 // A section header that folds its list. A folded section stays folded in every week until
 // it is opened again. Needs info starts folded: the week's work is the Analyzed bugs.
-const fold = (key, tag, cls, label) => `<${tag} class="${cls}"><button type="button" class="cal-fold" data-cal-fold="${esc(key)}" aria-expanded="${!state.calFolded.has(key)}">${label}</button></${tag}>`;
+const fold = (key, tag, cls, label, list) => {
+  const open = !state.calFolded.has(key);
+  return `<${tag} class="${cls}"><button type="button" class="cal-fold" data-cal-fold="${esc(key)}" aria-expanded="${open}">${label}</button></${tag}>${open ? list : ""}`;
+};
 function calPanel(w) {
   const group = ([k, why]) => {
     const list = w.bugs.filter(b => b.runs[0].category === k);
@@ -574,17 +578,15 @@ function calPanel(w) {
     const label = `${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span>`;
     // Analyzed folds by its severity sections, so only Needs info folds as a whole.
     if (k !== "analyzed") {
-      const head = fold(k, "h3", "rail-day", label);
-      return state.calFolded.has(k) ? head : `${head}<ul class="cal-list">${list.map(row).join("")}</ul>`;
+      return fold(k, "h3", "rail-day", label, `<ul class="cal-list">${list.map(row).join("")}</ul>`);
     }
     const head = `<h3 class="rail-day">${label}</h3>`;
     // Analyzed bugs under a header per severity on Bugzilla, most severe first, as the Bugs
     // list is under a header per day. Needs info bugs stay newest first.
     const bySev = Map.groupBy([...list].sort((a, b) => sevRank(a) - sevRank(b)), sevOf);
     return head + [...bySev].map(([sev, bs]) => {
-      const key = `sev:${sev}`;
-      const sub = fold(key, "h4", "cal-sev", `${esc(sev)} on Bugzilla · ${bs.length}`);
-      return state.calFolded.has(key) ? sub : `${sub}<ul class="cal-list">${bs.map(row).join("")}</ul>`;
+      return fold(`sev:${sev}`, "h4", "cal-sev", `${esc(sev)} on Bugzilla · ${bs.length}`,
+        `<ul class="cal-list">${bs.map(row).join("")}</ul>`);
     }).join("");
   };
   return `<div class="cal-panel" role="region" id="panel-${w.start}" aria-labelledby="week-${w.start}">${CAL_GROUPS.map(group).join("")}</div>`;
