@@ -557,8 +557,8 @@ function calTile(w) {
 const SEV_ORDER = [...DATA.severities, "No severity"];
 const sevOf = b => [b.severity, b.runs[0].severity].find(s => DATA.severities.includes(s)) ?? "No severity";
 const sevRank = b => SEV_ORDER.indexOf(sevOf(b));
-// A group header that folds its list. A folded group stays folded in every week until it
-// is opened again.
+// A section header that folds its list. A folded section stays folded in every week until
+// it is opened again.
 const fold = (key, tag, cls, label) => `<${tag} class="${cls}"><button type="button" class="cal-fold" data-cal-fold="${esc(key)}" aria-expanded="${!state.calFolded.has(key)}">${label}</button></${tag}>`;
 function calPanel(w) {
   const group = ([k, why]) => {
@@ -571,9 +571,13 @@ function calPanel(w) {
         ${open ? `<div class="cal-card" id="calcard-${b.bug_id}">${cardId(b)}${cardBody(b)}</div>` : ""}</li>`;
     };
     if (!list.length) return "";
-    const head = fold(k, "h3", "rail-day", `${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span>`);
-    if (state.calFolded.has(k)) return head;
-    if (k !== "analyzed") return `${head}<ul class="cal-list">${list.map(row).join("")}</ul>`;
+    const label = `${esc(CAT[k].label)} · ${list.length}<span class="why">${why}</span>`;
+    // Analyzed folds by its severity sections, so only Needs info folds as a whole.
+    if (k !== "analyzed") {
+      const head = fold(k, "h3", "rail-day", label);
+      return state.calFolded.has(k) ? head : `${head}<ul class="cal-list">${list.map(row).join("")}</ul>`;
+    }
+    const head = `<h3 class="rail-day">${label}</h3>`;
     // Analyzed bugs under a header per severity on Bugzilla, most severe first, as the Bugs
     // list is under a header per day. Needs info bugs stay newest first.
     const bySev = Map.groupBy([...list].sort((a, b) => sevRank(a) - sevRank(b)), sevOf);
