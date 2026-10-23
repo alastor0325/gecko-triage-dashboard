@@ -239,7 +239,7 @@ const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "part
   "partly posted": {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
-const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null, calBug: null, calFolded: new Set()};
+const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null, calBug: null, calFolded: new Set(["needs-info"])};
 // Run sources are named only once Hackbot runs exist; until then every run is local.
 const HAS_HACKBOT = DATA.bugs.some(b => b.runs.some(r => r.source === "hackbot"));
 
@@ -558,7 +558,7 @@ const SEV_ORDER = [...DATA.severities, "No severity"];
 const sevOf = b => [b.severity, b.runs[0].severity].find(s => DATA.severities.includes(s)) ?? "No severity";
 const sevRank = b => SEV_ORDER.indexOf(sevOf(b));
 // A section header that folds its list. A folded section stays folded in every week until
-// it is opened again.
+// it is opened again. Needs info starts folded: the week's work is the Analyzed bugs.
 const fold = (key, tag, cls, label) => `<${tag} class="${cls}"><button type="button" class="cal-fold" data-cal-fold="${esc(key)}" aria-expanded="${!state.calFolded.has(key)}">${label}</button></${tag}>`;
 function calPanel(w) {
   const group = ([k, why]) => {
