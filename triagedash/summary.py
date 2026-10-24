@@ -10,6 +10,8 @@ from __future__ import annotations
 import re
 from datetime import UTC, datetime
 
+from . import fixtags
+
 _RUN_ID = re.compile(r"local-(\d{8}-\d{6})-[0-9a-f]+$")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _MENTION = re.compile(r"(?<![\w/:]):[A-Za-z][\w-]*\b")
@@ -177,6 +179,8 @@ def parse_summary(
         "agent_version": findings.get("agent_version"),
         "issue_type": findings.get("issue_type"),
         "issue_type_note": scrub(findings.get("issue_type_note")),
+        # None when the agent did not check fix tags yet, [] when it found none.
+        "fix_tags": fixtags.known(findings["fix_tags"]) if "fix_tags" in findings else None,
         "needinfo": [needinfo_entry(f.get("requestee"), meta, users) for f in needinfo_flags(own)],
         "blocks_add": _added(own, "blocks"),
         "keywords_add": _added(own, "keywords"),

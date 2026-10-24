@@ -24,6 +24,10 @@ def latest(pilot: Path) -> Path | None:
     return files[-1] if files else None
 
 
+def known(tags) -> list[str]:
+    return [t for t in tags or [] if t in LABELS]
+
+
 def posted(whiteboard: str | None) -> list[str]:
     """The known tags already on a bug's whiteboard."""
     return [t for t in LABELS if t in (whiteboard or "")]
@@ -31,7 +35,13 @@ def posted(whiteboard: str | None) -> list[str]:
 
 def clean(line: dict) -> dict:
     """A proposal line with only the bug and its known tags."""
-    return {"bug_id": line["bug_id"], "tags": [t for t in line.get("tags") or [] if t in LABELS]}
+    return {"bug_id": line["bug_id"], "tags": known(line.get("tags"))}
+
+
+def proposal(run_tags: list[str] | None, line: dict | None) -> dict | None:
+    """The proposed tags of a bug: its newest run's, even none, when the run checked them
+    (`run_tags` is a list); else the proposal file's line, for runs made before."""
+    return {"tags": run_tags} if run_tags is not None else line
 
 
 def shown(proposal: dict | None, state: dict) -> dict | None:

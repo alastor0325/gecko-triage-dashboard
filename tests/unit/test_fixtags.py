@@ -25,3 +25,13 @@ def test_latest_picks_the_newest_file(tmp_path):
     for d in ("2026-10-19", "2026-10-20"):
         (tmp_path / f"fix-tags-{d}.jsonl").write_text("")
     assert fixtags.latest(tmp_path).name == "fix-tags-2026-10-20.jsonl"
+
+
+def test_the_newest_run_tags_win_over_the_file():
+    line = {"bug_id": 1, "tags": []}
+    assert fixtags.proposal(["[gecko-triage:easy-fix]"], line) == {
+        "tags": ["[gecko-triage:easy-fix]"]
+    }
+    assert fixtags.proposal([], line) == {"tags": []}
+    assert fixtags.proposal(None, line) == line
+    assert fixtags.proposal(None, None) is None

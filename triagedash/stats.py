@@ -158,7 +158,7 @@ def run_view(record: dict) -> dict:
     keep = (
         "started_at", "source", "posted", "pending_actions", "outcome", "posted_at",
         "comment_count", "severity", "priority", "needinfo", "asked", "dupe_of", "blocks_add",
-        "keywords_add", "regressed_by_add", "other_bugs", "agent_version",
+        "keywords_add", "regressed_by_add", "other_bugs", "agent_version", "fix_tags",
     )  # fmt: skip
     cat = category(record)
     action = close_action(record) if cat == "close" else None

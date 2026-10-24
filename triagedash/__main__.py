@@ -208,7 +208,10 @@ def build(args) -> None:
             {
                 **b,
                 **state.get(b["bug_id"], bmo.UNKNOWN_STATE),
-                "fix": fixtags.shown(fix.get(b["bug_id"]), state.get(b["bug_id"], {})),
+                "fix": fixtags.shown(
+                    fixtags.proposal(b["runs"][0]["fix_tags"], fix.get(b["bug_id"])),
+                    state.get(b["bug_id"], {}),
+                ),
             }
             for b in page["bugs"]
         ]

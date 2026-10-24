@@ -218,3 +218,10 @@ def test_parse_keeps_the_issue_type_and_scrubs_its_note(meta):
     assert r["issue_type"] == "other"
     assert ":alice" not in r["issue_type_note"]
     assert parse(make_summary(), meta)["issue_type"] is None
+
+
+def test_parse_keeps_only_known_fix_tags(meta):
+    r = parse(make_summary(fix_tags=["[gecko-triage:easy-fix]", "[other]"]), meta)
+    assert r["fix_tags"] == ["[gecko-triage:easy-fix]"]
+    assert parse(make_summary(fix_tags=[]), meta)["fix_tags"] == []
+    assert parse(make_summary(), meta)["fix_tags"] is None
