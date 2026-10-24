@@ -727,8 +727,10 @@
  },
  "2085549": {
   "assigned": false,
-  "fix_tags": [],
+  "fix_tags": [
+   "[gecko-triage:easy-fix]"
+  ],
   "open": true,
-  "severity": "--"
+  "severity": "S3"
  }
 }
