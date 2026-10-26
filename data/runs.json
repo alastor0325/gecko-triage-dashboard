@@ -5979,7 +5979,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 1982487,
-  "comment": "The attached Firefox profile (https://share.firefox.dev/3JsHMqc) shows four fixed costs on the content main thread. The decoder support checks are not the cause. The code with these costs is unchanged in the current tree. Patch D336743 already changes all four.\n\n**Analysis**\n\n1. Type parsing: `MakeMediaContainerType` uses 47% of the run. [MediaMIMETypes.cpp](https://searchfox.org/firefox-main/rev/efd2d1e6f77570ae6bc5294731a68101e45c81a3/dom/media/MediaMIMETypes.cpp#167) calls `GetParameterAsNumber` for width, height, framerate and bitrate. Each call runs the full MIME header parser, also when the parameter is not in the string.\n2. A second parse for telemetry: `RecordTypeForTelemetry` uses 19% of the run. It parses the same type string again in [MediaSource.cpp](https://searchfox.org/firefox-main/rev/efd2d1e6f77570ae6bc5294731a68101e45c81a3/dom/media/mediasource/MediaSource.cpp#82), after `MediaSource::IsTypeSupported` already parsed it.\n3. DecoderDoctor: `DecoderDoctorDocumentWatcher::AddDiagnostics` uses 16% of the run. Above 128 entries, it calls `RemoveElementAt(0)` on each query, so it copies the full array each time ([DecoderDoctorDiagnostics.cpp](https://searchfox.org/firefox-main/rev/efd2d1e6f77570ae6bc5294731a68101e45c81a3/dom/media/doctor/DecoderDoctorDiagnostics.cpp#873)). The JS loop is one task, so the analysis timer does not empty the list.\n4. Error strings: `RESULT_DETAIL` in `MP4Decoder::GetTracksInfo` and `WebMDecoder::GetTracksInfo` uses about 15% of the run. It formats an `nsPrintfCString` with the function signature ([MediaResult.h](https://searchfox.org/firefox-main/rev/efd2d1e6f77570ae6bc5294731a68101e45c81a3/dom/media/MediaResult.h#100)). The callers only check `NS_FAILED`.\n\nThese costs do not depend on the type string. This explains why the invalid codec names and the first short run do not change the time. This is old code, not a regression.\n\n**Next steps**\n\nThe four fixes keep the results the same. From the profile shares, the 35 s run can go to about 19 s, against 13 s in Chrome. Two design points remain for the rest of the difference. First, DecoderDoctor stores one record for each query. Second, the MIME parser does one full pass for each parameter; `CMimeType::Parse` exists, but a different parser can change results for unusual strings.\n\naz, could you please review D336743 and decide on the two design points above?",
+  "comment": "Patch D336743 from the Hackbot bug-fix agent changes the four fixed costs that the attached profile shows. It waits for review.",
   "comment_count": null,
   "decision": "analyzed",
   "dupe_of": null,
@@ -5990,13 +5990,7 @@
   "issue_type_note": null,
   "keywords_add": [],
   "move_to": null,
-  "needinfo": [
-   {
-    "name": "az",
-    "nick": "az",
-    "role": "other"
-   }
-  ],
+  "needinfo": [],
   "other_bugs": [],
   "outcome": "awaiting review",
   "pending_actions": null,
