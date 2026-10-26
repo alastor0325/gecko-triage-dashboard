@@ -741,12 +741,12 @@
   "assigned": false,
   "fix_tags": [],
   "open": true,
-  "severity": "--"
+  "severity": "S3"
  },
  "2085349": {
   "assigned": false,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S3"
  },
  "2085469": {
@@ -777,14 +777,16 @@
  },
  "2085676": {
   "assigned": false,
-  "fix_tags": [],
+  "fix_tags": [
+   "[gecko-triage:easy-fix]"
+  ],
   "open": true,
-  "severity": "--"
+  "severity": "S3"
  },
  "2085701": {
   "assigned": false,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "--"
  }
 }
