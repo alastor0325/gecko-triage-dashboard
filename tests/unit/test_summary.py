@@ -225,3 +225,16 @@ def test_parse_keeps_only_known_fix_tags(meta):
     assert r["fix_tags"] == ["[gecko-triage:easy-fix]"]
     assert parse(make_summary(fix_tags=[]), meta)["fix_tags"] == []
     assert parse(make_summary(), meta)["fix_tags"] is None
+
+
+def test_a_run_that_adds_a_security_group_keeps_no_text(meta):
+    changes = {"groups": {"add": ["core-security"]}}
+    r = parse(make_summary(changes=changes, comment="the crash is in X"), meta)
+    assert r["security_hold"] is True
+    assert (r["comment"], r["asked"], r["severity"], r["needinfo"]) == (None, [], None, [])
+    assert parse(make_summary(), meta)["security_hold"] is False
+    removed = make_summary(changes={"groups": {"remove": ["core-security"]}})
+    assert parse(removed, meta)["security_hold"] is False
+    bad = make_summary()
+    bad["actions"][1]["params"]["changes"] = None
+    assert parse(bad, meta)["security_hold"] is False

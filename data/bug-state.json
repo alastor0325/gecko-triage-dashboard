@@ -773,7 +773,7 @@
   "assigned": false,
   "fix_tags": [],
   "open": true,
-  "severity": "--"
+  "severity": "S2"
  },
  "2085676": {
   "assigned": false,

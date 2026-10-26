@@ -27,6 +27,7 @@ def test_old_and_new_name_of_analyzed():
     assert not stats.acted(make_record(decision="brand_new"))
     assert not stats.acted(make_record(decision="needs_info", outcome="skipped"))
     assert not stats.acted(make_record(decision="watching", comment=None))
+    assert not stats.acted(make_record(security_hold=True, severity="S2"))
     assert stats.acted(make_record(decision="watching", comment=None, severity="S3"))
 
 
@@ -273,3 +274,10 @@ def test_periods_are_calendar_days_ending_today():
     kept = make_record(1, source="daily", started_at="2026-07-16T06:00:00+00:00")
     old = make_record(2, source="daily", started_at="2026-07-15T20:00:00+00:00")
     assert [b["bug_id"] for b in stats.team_page([kept, old], AS_OF)["bugs"]] == [1]
+
+
+def test_a_held_bug_is_left_out_with_its_earlier_runs():
+    old = make_record(1, source="daily", started_at="2026-10-13T10:00:00+00:00")
+    held = make_record(1, source="daily", security_hold=True)
+    other = make_record(2, source="daily")
+    assert [b["bug_id"] for b in stats.bugs([old, held, other], AS_OF)] == [2]

@@ -162,3 +162,9 @@ def test_apply_issue_types_fills_only_runs_without_a_type():
     assert "x@y.z" not in a["issue_type_note"]
     (c,) = store.apply_issue_types([make_record(3, run_id="c")], lines)
     assert c["issue_type"] is None
+
+
+def test_apply_issue_types_skips_a_held_run():
+    held = make_record(1, run_id="a", security_hold=True)
+    (r,) = store.apply_issue_types([held], [{"run_id": "a", "issue_type": "drm", "note": "x"}])
+    assert r["issue_type"] is None

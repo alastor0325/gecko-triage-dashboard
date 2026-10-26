@@ -125,7 +125,8 @@ def ingest(args) -> None:
     own = {r["bug_id"] for r in records}
     hidden = restricted.hidden_bugs(named, bmo.fetch_visible(named), own)
     records = restricted.redact_all(records, hidden)
-    fix = [f for f in fix if f["bug_id"] not in hidden]
+    held = {r["bug_id"] for r in records if r["security_hold"]}
+    fix = [f for f in fix if f["bug_id"] not in hidden | held]
     store.save(FIX_TAGS, fix)
     print(f"pilot log: {sum(r['posted'] for r in records)} posted runs")
     store.save(RUNS, records)

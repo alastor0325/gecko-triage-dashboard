@@ -110,7 +110,7 @@ def apply_issue_types(records: list[dict], lines: list[dict]) -> list[dict]:
     out = []
     for r in records:
         line = by_run.get(r["run_id"])
-        if r["issue_type"] or line is None:
+        if r["issue_type"] or line is None or r["security_hold"]:
             out.append(r)
         else:
             out.append(

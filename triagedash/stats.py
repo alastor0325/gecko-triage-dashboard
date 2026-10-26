@@ -132,12 +132,13 @@ def changed_nothing(record: dict) -> bool:
 def acted(record: dict) -> bool:
     """A run whose decision has a category and that does something on Bugzilla. Failed
     runs, preflight skips, runs that ended before they decided, runs the pilot log marks
-    skipped, and runs that change nothing are left out."""
+    skipped, runs that change nothing, and runs held for a security group are left out."""
     return (
         not record["error"]
         and record["decision"] in CATEGORY
         and record["outcome"] != "skipped"
         and not changed_nothing(record)
+        and not record["security_hold"]
         and bool(record["started_at"])
     )
 
@@ -219,9 +220,12 @@ def shown_runs(bug_runs: list[dict]) -> list[dict]:
 def bugs(records: list[dict], as_of: datetime) -> list[dict]:
     """Each bug the bot changed, with the runs the page shows. Title and the `new` tag come
     from the newest run."""
+    # A bug that a run put in a security group is left out, with all its earlier runs.
+    held = {r["bug_id"] for r in records if r["security_hold"]}
     by_bug: dict[int, list[dict]] = {}
     for r in sorted(filter(acted, records), key=order, reverse=True):
-        by_bug.setdefault(r["bug_id"], []).append(r)
+        if r["bug_id"] not in held:
+            by_bug.setdefault(r["bug_id"], []).append(r)
     return [
         {
             "bug_id": bug_id,

@@ -84,6 +84,25 @@ def update_actions(summary: dict, bug_id: int) -> tuple[dict, list[dict]]:
     return own, other
 
 
+# What a run held for a security group keeps: no finding, only that it ran.
+HELD = {
+    "comment": None, "asked": [], "issue_type": None, "issue_type_note": None, "fix_tags": None,
+    "severity": None, "priority": None, "needinfo": [], "keywords_add": [], "blocks_add": [],
+    "regressed_by_add": [], "move_to": None, "resolution": None, "dupe_of": None,
+    "other_bugs": [],
+}  # fmt: skip
+
+
+def adds_security_group(summary: dict) -> bool:
+    """Whether the run puts a bug in a security group. Such a bug is held for a person,
+    so the public page must not show what the run found."""
+    return any(
+        (((a.get("params") or {}).get("changes") or {}).get("groups") or {}).get("add")
+        for a in summary.get("actions") or []
+        if a.get("type") == "bugzilla.update_bug"
+    )
+
+
 def needinfo_flags(changes: dict) -> list[dict]:
     return [f for f in changes.get("flags") or [] if f.get("name") == "needinfo"]
 
@@ -157,6 +176,7 @@ def parse_summary(
     ]
     comment = comments[-1] if comments else None
     record = {
+        "security_hold": False,
         "posted": False,
         "rejected": False,
         "pending_actions": None,
@@ -190,6 +210,9 @@ def parse_summary(
         "dupe_of": own.get("dupe_of"),
         "other_bugs": other_bugs,
     }
+    if adds_security_group(summary):
+        # Held for a person: keep nothing the run found in the public data.
+        record.update(HELD, security_hold=True)
     return scrub(record)
 
 

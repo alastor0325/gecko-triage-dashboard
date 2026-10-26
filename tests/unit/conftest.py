@@ -35,6 +35,7 @@ def make_summary(
 
 def make_record(bug_id=100, started_at="2026-10-14T10:00:00+00:00", run_id=None, **overrides):
     record = {
+        "security_hold": False,
         "posted": False,
         "rejected": False,
         "outcome": None,
