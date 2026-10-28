@@ -88,8 +88,8 @@ def update_actions(summary: dict, bug_id: int) -> tuple[dict, list[dict]]:
 HELD = {
     "comment": None, "asked": [], "issue_type": None, "issue_type_note": None, "fix_tags": None,
     "severity": None, "priority": None, "needinfo": [], "keywords_add": [], "blocks_add": [],
-    "regressed_by_add": [], "move_to": None, "resolution": None, "dupe_of": None,
-    "other_bugs": [],
+    "regressed_by_add": [], "see_also_add": [], "move_to": None, "resolution": None,
+    "dupe_of": None, "other_bugs": [],
 }  # fmt: skip
 
 
@@ -137,6 +137,18 @@ def needinfo_role(requestee: str | None, meta: dict) -> str:
 def _added(changes: dict, field: str) -> list:
     value = changes.get(field)
     return list(value.get("add", [])) if isinstance(value, dict) else []
+
+
+_SHOW_BUG = re.compile(r"bugzilla\.mozilla\.org/show_bug\.cgi\?id=(\d+)$")
+
+
+def see_also(values: list) -> list:
+    """See-also entries: a Bugzilla bug as its id, any other link as it is."""
+    out = []
+    for v in values:
+        m = _SHOW_BUG.search(str(v))
+        out.append(int(v) if str(v).isdigit() else int(m.group(1)) if m else str(v))
+    return out
 
 
 def _move_target(changes: dict, meta: dict) -> str | None:
@@ -203,6 +215,7 @@ def parse_summary(
         "fix_tags": fixtags.known(findings["fix_tags"]) if "fix_tags" in findings else None,
         "needinfo": [needinfo_entry(f.get("requestee"), meta, users) for f in needinfo_flags(own)],
         "blocks_add": _added(own, "blocks"),
+        "see_also_add": see_also(_added(own, "see_also")),
         "keywords_add": _added(own, "keywords"),
         "regressed_by_add": _added(own, "regressed_by"),
         "move_to": _move_target(own, meta),

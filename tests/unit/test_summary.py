@@ -238,3 +238,18 @@ def test_a_run_that_adds_a_security_group_keeps_no_text(meta):
     bad = make_summary()
     bad["actions"][1]["params"]["changes"] = None
     assert parse(bad, meta)["security_hold"] is False
+
+
+def test_parse_keeps_see_also(meta):
+    changes = {
+        "see_also": {
+            "add": [
+                1771179,
+                "https://bugzilla.mozilla.org/show_bug.cgi?id=1735412",
+                "https://github.com/w3c/media-source/issues/1",
+            ]
+        }
+    }
+    r = parse(make_summary(changes=changes), meta)
+    assert r["see_also_add"] == [1771179, 1735412, "https://github.com/w3c/media-source/issues/1"]
+    assert parse(make_summary(), meta)["see_also_add"] == []

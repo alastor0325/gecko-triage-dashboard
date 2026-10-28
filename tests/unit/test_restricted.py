@@ -69,3 +69,10 @@ def test_redact_with_no_hidden_bug_changes_nothing():
     assert restricted.redact_value({"tags": ["[gecko-triage:easy-fix]"]}, set()) == {
         "tags": ["[gecko-triage:easy-fix]"]
     }
+
+
+def test_see_also_is_checked_and_redacted():
+    r = make_record(100, see_also_add=[1999901, 1445470, "https://example.org/x"])
+    assert {1999901, 1445470} <= restricted.named_bugs(r)
+    (out,) = restricted.redact_all([r], hidden={1999901})
+    assert out["see_also_add"] == [1445470, "https://example.org/x"]

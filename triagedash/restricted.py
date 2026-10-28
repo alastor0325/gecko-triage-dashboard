@@ -39,6 +39,7 @@ def text_of(record: dict) -> dict:
 def named_bugs(record: dict) -> set[int]:
     """Every bug the record names, its own included."""
     ids = {record["bug_id"], *record["blocks_add"], *record["regressed_by_add"]}
+    ids |= {b for b in record["see_also_add"] if isinstance(b, int)}
     if record["dupe_of"]:
         ids.add(record["dupe_of"])
     for o in record["other_bugs"]:
@@ -98,6 +99,7 @@ def redact(record: dict, hidden: set[int]) -> dict:
         **record,
         "blocks_add": keep(record["blocks_add"]),
         "regressed_by_add": keep(record["regressed_by_add"]),
+        "see_also_add": keep(record["see_also_add"]),
         "dupe_of": None if record["dupe_of"] in hidden else record["dupe_of"],
         "other_bugs": [
             {**o, "blocks_add": keep(o["blocks_add"])}

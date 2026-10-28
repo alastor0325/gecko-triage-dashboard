@@ -435,6 +435,7 @@ function changes(r) {
     r.needinfo.length && ["Needinfo", r.needinfo.map(niChip).join("")],
     r.asked.length && ["Asked for", esc(r.asked.join(", "))],
     r.blocks_add.length && ["Blocks", bugList(r.blocks_add)],
+    r.see_also_add.length && ["See also", r.see_also_add.map(v => typeof v === "number" ? bug(v) : link(esc(v), esc(v))).join(", ")],
     r.regressed_by_add.length && ["Regressed by", bugList(r.regressed_by_add)],
     r.keywords_add.length && ["Keywords", esc(r.keywords_add.join(", "))],
     ...r.other_bugs.map(o => ["Meta bug", `${bugList(o.blocks_add)}, added to ${bug(o.bug_id)}`]),
