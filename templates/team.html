@@ -426,6 +426,8 @@ const niChip = ni => {
   return `<span class="ni-chip">${niLabel(ni) ? `${esc(niLabel(ni))}<span class="ni-role">${role}</span>` : role}</span>`;
 };
 
+// A see-also entry: a bug link, an http(s) link, or plain text (never a script URL).
+const seeAlso = v => typeof v === "number" ? bug(v) : /^https?:\/\//i.test(v) ? link(esc(v), esc(v)) : esc(v);
 // One row per change, most harmful first. Rows that take the bug off the team are red.
 function changes(r) {
   const rows = [
@@ -435,7 +437,7 @@ function changes(r) {
     r.needinfo.length && ["Needinfo", r.needinfo.map(niChip).join("")],
     r.asked.length && ["Asked for", esc(r.asked.join(", "))],
     r.blocks_add.length && ["Blocks", bugList(r.blocks_add)],
-    r.see_also_add.length && ["See also", r.see_also_add.map(v => typeof v === "number" ? bug(v) : link(esc(v), esc(v))).join(", ")],
+    r.see_also_add.length && ["See also", r.see_also_add.map(seeAlso).join(", ")],
     r.regressed_by_add.length && ["Regressed by", bugList(r.regressed_by_add)],
     r.keywords_add.length && ["Keywords", esc(r.keywords_add.join(", "))],
     ...r.other_bugs.map(o => ["Meta bug", `${bugList(o.blocks_add)}, added to ${bug(o.bug_id)}`]),
