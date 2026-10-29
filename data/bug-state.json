@@ -113,6 +113,12 @@
   "open": true,
   "severity": "S3"
  },
+ "1955763": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
  "1958667": {
   "assigned": false,
   "fix_tags": [],
@@ -284,7 +290,7 @@
   "severity": "S4"
  },
  "2075947": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S3"
@@ -910,7 +916,7 @@
   "severity": "S3"
  },
  "2086852": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S3"
