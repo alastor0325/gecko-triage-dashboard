@@ -8339,5 +8339,365 @@
   "started_at": "2026-10-31T08:21:08+00:00",
   "team": "media",
   "title": "Intermittent /webaudio/idlharness.https.window.html | single tracking bug"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
+  "blocks_add": [],
+  "bug_id": 2068257,
+  "comment": "Thanks for checking.\n\n**Analysis**\n\nMozilla does not publish a Nightly Flatpak of Firefox. The AMD direct-export fixes that Tymur names in comment 4 are only in Nightly now. The bug also still waits for the separate VP9, AV1 and H.264 tests and the Flatpak runtime version from comment 6.\n\n**Next steps**\n\nDo these steps in the Flatpak build that you use now.\n\n1. Set `media.hardware-video-decoding-vulkan.direct-export.enabled` to `true` in `about:config`.\n2. Close every Firefox window and start Firefox again.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nAlso copy the text of `about:support` from the same Flatpak build. Paste it into a comment on this bug.",
+  "comment_count": 8,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-09-01T20:33:43Z",
+  "fix_tags": [],
+  "issue_type": "codec-support",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "kdebugs8",
+    "nick": "kdebugs8",
+    "role": "reporter"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:17:35Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-3cb411",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "[flatpak] media.hardware-video-decoding-vulkan.direct-export.enabled"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [],
+  "blocks_add": [
+   2023365
+  ],
+  "bug_id": 2002658,
+  "comment": "This intermittent timeout occurs only on Windows 11 25h2, on opt and shippable builds, 32 and 64 bit. Treeherder shows 43 failures from 2026-10-25 to 2026-11-01.\n\n**Analysis**\n\nThe CI logs of tasks fTI_ZFdaQWaw-S-6rCPlaA and VPagsbOASCKUwLdGmOKNog show two hang points. In both, a synthesized key never reaches the popup document, and the test waits until the harness timeout. The retry in a new browser also fails, so earlier tests do not cause it. The logs show no JS error and no assertion.\n\n- Pattern A: the hang is at the first key, CapsLock, in the first popup. The log has no \"Received keydown event: CapsLock\" line.\n- Pattern B: all blocklisted keys and Space pass in the first popup. The hang is at Ctrl+F5 in the second popup, in `testCtrlF5Activation`. The log has no \"Received keydown event: F5\" line.\n\nThe probable cause is a focus race in the test. The opener waits only for the popup `load` event, then posts the message ([test_autoplay_policy_key_blacklist.html](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/autoplay/test/mochitest/test_autoplay_policy_key_blacklist.html#34)). It does not wait for the popup to get focus. The helper sends each key one time from a chrome script into `Services.wm.getMostRecentWindow(\"navigator:browser\")` ([file_autoplay_policy_key_blacklist.html](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/autoplay/test/mochitest/file_autoplay_policy_key_blacklist.html#56)). The key goes to the focused element of that chrome window. If the content `<browser>` does not have focus yet, chrome gets the key and the one-shot `keydown` listener never fires.\n\nThe line \"Unable to restore focus\" after each timeout agrees with this. The popup stays open because `child.close()` never runs. No log proves where the key lands yet. A try run with `MOZ_LOG=Focus:5`, or an `info()` that logs the focused element of `browserWin` when the key is sent, can confirm it. Why only the Windows 11 workers show the race is not known. Bug 2012615 also shows focus failures on these workers.\n\nRegression status: no change in Firefox code is known to cause this. No change to the test or the helper matches the start of the failures in November 2025. Bug 2001938 added the second popup and the Ctrl+F5 subtest, where Pattern B hangs.\n\n**Fix direction**\n\nThe fix stays in the two test files under `dom/media/autoplay/test/mochitest/`:\n\n1. In the opener, await `SimpleTest.promiseFocus(child)` after the `load` event.\n2. Send each key to the popup window, not to `getMostRecentWindow`.\n3. Focus the content `<browser>` of that window before each key.\n4. Close the popup in a `SimpleTest.registerCleanupFunction`, so a failure does not affect later tests.\n\nThis bug blocks the autoplay meta bug 2023365. It also waits for the request to Jim Mathies in comment 102. Alastor, could you please look at this fix direction, because the test covers the autoplay policy?",
+  "comment_count": 103,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2025-11-26T22:51:04Z",
+  "fix_tags": [],
+  "issue_type": "other",
+  "issue_type_note": "intermittent test timeout",
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Alastor Wu",
+    "nick": "alwu",
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:17:39Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-7eea4f",
+  "security_hold": false,
+  "see_also_add": [
+   2001938
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "High frequency dom/media/autoplay/test/mochitest/test_autoplay_policy_key_blacklist.html | single tracking bug"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2087904,
+  "comment": "This shutdown hang is in the QuotaManager code, not in media code. The bug moves to Core :: Storage: Quota Manager, the owner of `dom/quota` in its `moz.build`. The `MozPromise` frame in the summary is only the runnable that runs `ShutdownStorageOp` on the `QuotaManager IO` thread.\n\n**Analysis**\n\nThe `QuotaManager IO` thread waits in `fsync` from `nsFileStreamBase::Flush()`. The call chain is `ShutdownStorageOp::DoDirectoryWork`, `ShutdownStorageInternal`, `UnloadQuota`, `SettleDirectoryMetadata2`, then `CreateDirectoryMetadata2`. The crash is on Nightly 161, build 20261031095059, on Linux.\n\nBug 2068772 (fixed in 158) put the cache DB upserts of `UnloadQuota` into transactions of 50 origins. That change does not cover the `.metadata-v2` file write. In the current tree, `CreateDirectoryMetadata2` still calls `stream->Flush()` once for each dirty origin ([ActorsParent.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/quota/ActorsParent.cpp#3820)). The loop is in `UnloadQuota` ([ActorsParent.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/quota/ActorsParent.cpp#3365)). Thus the shutdown time still grows with the number of dirty origins and the disk `fsync` latency.\n\nOne crash report cannot show if one `fsync` stalled or if many dirty origins each paid for one. The idea list in bug 2068772 comment 0 (an async metadata flush, or a shorter dirty-origin flush delay) applies to the open part.\n\n**Next steps**\n\nArnaud, you changed this loop in bug 2068772. Could you please look at the remaining per-origin `fsync` in `UnloadQuota`?",
+  "comment_count": 1,
+  "decision": "wrong_component",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-01T21:35:23Z",
+  "fix_tags": [],
+  "issue_type": "other",
+  "issue_type_note": "QuotaManager shutdown hang, not media",
+  "keywords_add": [],
+  "move_to": "Core :: Storage: Quota Manager",
+  "needinfo": [
+   {
+    "name": "Arnaud Bienner",
+    "nick": "abienner",
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:17:44Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-9ad766",
+  "security_hold": false,
+  "see_also_add": [
+   2068772
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "mozilla::MozPromise<T>::ThenValueBase::ResolveOrRejectRunnable::Run blocks QuotaManager IO shutdown inside __GI_fsync"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [
+   "media capture with MediaControl",
+   "about:support"
+  ],
+  "blocks_add": [
+   2011679
+  ],
+  "bug_id": 2087875,
+  "comment": "This bug repeats bug 2083336, which was closed by its reporter. The problem still occurs, so this bug stays open to track it. This bug blocks bug 2011679, which tracks Bluetooth audio and video problems.\n\n**Analysis**\n\nThe media profile in bug 2083336 comment 5 shows that Firefox sends audible data to the Windows audio output during the silent time. The volume is not zero and the media element is not muted. At the start of the first video, the Windows audio service blocks the stream start for about 5 seconds. The `media.hardwaremediakeys.enabled` pref controls only the Windows media controls (SMTC) in [WindowsSMTCProvider.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/widget/windows/WindowsSMTCProvider.cpp). That code does not change an audio stream, a device or the volume. The profile has no media control log, so the link between the media controls and the silence is not known yet.\n\n**Next steps**\n\nBefore the capture, set `media.hardwaremediakeys.enabled` to `true` in `about:config`. Then restart Firefox. After step 2 below, add `,MediaControl:5` to the end of the log modules text. Record at least two playlist videos that start with no sound. Do not disconnect the Bluetooth device during the capture.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nPlease also copy the full text of `about:support` and attach it to this bug.",
+  "comment_count": 2,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-01T14:42:53Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Civan Corche\u0219",
+    "nick": "civancor",
+    "role": "reporter"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:17:49Z",
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-aa7241",
+  "security_hold": false,
+  "see_also_add": [
+   2083336
+  ],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "bluetooth audio stops working every time i open a new youtube video"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [
+   "media profile",
+   "about:support"
+  ],
+  "blocks_add": [],
+  "bug_id": 2087878,
+  "comment": "Thank you for the sample file.\n\n**Analysis**\n\nThe attached file uses HEVC Main profile, level 5.1, 3840x2160 at 60 fps, with AAC audio. The file layout looks valid for Firefox. On Windows, Firefox decodes HEVC only with hardware decoding and the Windows HEVC decoder, so we need the data from your system.\n\n**Next steps**\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nPlease also attach about:support:\n\n1. Open `about:support`.\n2. Click **Copy text to clipboard**.\n3. Paste the text into a new comment on this bug.",
+  "comment_count": 2,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-01T15:02:19Z",
+  "fix_tags": [],
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": null,
+    "nick": null,
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:17:53Z",
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-b76e17",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "MIME type not supported on regular h265 mp4"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2087824,
+  "comment": "Bug 2048390 has the same signature. Its fix landed on 2026-08-31. It blocks hardware video encoding for Intel Ivy Bridge and older, Intel Baytrail, and AMD drivers below 31.0.0.0. This crash is on Intel Haswell, and that blocklist does not cover Haswell.\n\n**Analysis**\n\nThe crash report is Nightly 161 on Windows 10. It shows Intel device 0x0a16 with driver 10.18.15.4248 and a second NVIDIA adapter (0x0fe4). The loaded `mfx_mft_h264ve_64.dll` is version 6.15.5.20. The GPU process crashes 2 seconds after start, on a null read in the Intel encoder DLL.\n\n`GPUParent::RecvInit` starts `MCSInfo::GetSupportFromFactory` on a background thread. For H.264, `CanCreateWMFEncoder` checks `gfxVars::UseH264HwEncode()` ([WMFDataEncoderUtils.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/platforms/wmf/WMFDataEncoderUtils.cpp#74)). Then `MFTEncoder::Create` calls `ActivateObject` on the Intel encoder ([MFTEncoder.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/platforms/wmf/MFTEncoder.cpp#523)). The Intel DLL crashes inside this call. The DLL has no symbols, so the null object is not known.\n\n`UseH264HwEncode` stays true because no `FEATURE_HARDWARE_VIDEO_ENCODING` entry matches this device. The entries from bug 2048390 are in `GfxInfo::GetGfxDriverInfo()` ([GfxInfo.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/widget/windows/GfxInfo.cpp#1510)). Device 0x0A16 is in `DeviceFamily::IntelHaswell` ([GfxDriverInfo.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/widget/GfxDriverInfo.cpp#243)), not in `IntelHDGraphicsToIvyBridge`. The entries use `AdapterMatch::Any`, so they also match an Intel adapter next to an NVIDIA adapter.\n\nThis cause explains the other facts. The probe runs at each GPU process start, so a few installations give many reports with uptime under 10 seconds. Bugs 2047978 and 2067319 limit hardware encoding to the GPU process, so no new reports come from the RDD process. The signature exists since 2021, so this is not a regression of a recent change.\n\n**Fix direction**\n\nAdd a `FEATURE_HARDWARE_VIDEO_ENCODING` entry for `DeviceFamily::IntelHaswell` next to the bug 2048390 entries. One option blocks the full device family. The other option blocks drivers up to 10.18.15.4248. With `AdapterMatch::Any`, the entry also turns off NVIDIA hardware encoding on these dual-GPU laptops, as for Ivy Bridge.\n\nOpen points:\n- Do Haswell drivers newer than 10.18.15.4248 also crash? A crash-stats facet of the driver version on Haswell devices can show this.\n- Before 2026-10-27, most reports came from CPU model 58 (Ivy Bridge) with driver 10.18.10.4358. It is not confirmed that the bug 2048390 entries match all of those device ids.\n\nAndrew, could you please look at the fix direction? You wrote the hardware encoding blocklist in bug 2048390.",
+  "comment_count": 1,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-01T00:20:27Z",
+  "fix_tags": [],
+  "issue_type": "codec-support",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Andrew Osmond",
+    "nick": "aosmond",
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:17:57Z",
+  "priority": "P2",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-dfeae3",
+  "security_hold": false,
+  "see_also_add": [
+   2048390
+  ],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "Crash in [@ <unknown in mfx_mft_h264ve_64.dll> | CServerContextActivator::CreateInstance]"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2087741,
+  "comment": "Thank you for the about:support and the profile.\n\n**Analysis**\n\nThe `about:logging` profile in comment 4 shows that the Widevine CDM refuses to decrypt the video and the audio. The page creates a Widevine session, and both license updates succeed. Then the only key changes to `output-restricted`. A `getStatusForPolicy` check for HDCP 1.0 also gives `output-restricted`. Every output protection reply that the CDM gets has a link mask of 0 and a protection mask of 0.\n\nThe probable cause is the output protection reply in the GMP code. Gecko sets the HDCP protection bit in [ChromiumCDMProxy.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/gmp/ChromiumCDMProxy.cpp#394) when `media.widevine.hdcp-protection-mask` is true, which is the default. But `ChromiumCDMParent` keeps only the link mask. When the CDM asks again, the cached reply sends a protection mask of 0 ([ChromiumCDMParent.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/gmp/ChromiumCDMParent.cpp#649)). A query that comes before the CDM callback exists also gets 0 ([ChromiumCDMParent.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/gmp/ChromiumCDMParent.cpp#639)). So the CDM sees no HDCP on the output, and it restricts the key.\n\nA second defect makes the failure silent. On `NoKeyErr`, [EMEDecoderModule.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/platforms/agnostic/eme/EMEDecoderModule.cpp#187) sends the audio sample to the CDM again at once. [CDMCaps.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/eme/CDMCaps.cpp#20) counts `output-restricted` as usable, so the decoder does not wait for a key change. The profile shows `kNoKey` for the same AAC sample 6,382 times in 49 seconds. The CDM gives black frames for the H.264 video. No audio comes out, so the seek never completes and the element stays at `HAVE_METADATA`.\n\n**Regression status**\n\nThis is a regression from the reporter's view, between Firefox 158 and 159. The investigation found no change in these Gecko paths in Firefox 159. The probable trigger is the release rollout of Widevine 4.10.3112.0 on 2026-10-29 (bug 2074938). The about:support shows that this profile downloaded 4.10.3112.0 on 2026-10-30. Bug 1705138 had the same `output-restricted` symptom after an earlier Widevine update. A test of Firefox 158 with Widevine 4.10.3112.0 can confirm the trigger.\n\n**Fix direction**\n\n1. Keep the protection mask beside `mOutputProtectionLinkMask`, and send it on the cached reply and on the early reply.\n2. On `NoKeyErr` in `EMEDecryptor::Decrypted`, wait for the next key status change before the sample goes back to the CDM.\n\nThe cause is in the GMP code, so this bug moves to Audio/Video: GMP. Andrew, could you please look at the output protection reply with Widevine 4.10.3112.0?",
+  "comment_count": 5,
+  "decision": "wrong_component",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-31T04:20:48Z",
+  "fix_tags": [],
+  "issue_type": "drm",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": "Core :: Audio/Video: GMP",
+  "needinfo": [
+   {
+    "name": "Andrew Osmond",
+    "nick": "aosmond",
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:18:02Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-ec082d",
+  "security_hold": false,
+  "see_also_add": [
+   2074938,
+   1705138
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "Firefox 159 breaks video playback on viki.com"
+ },
+ {
+  "agent_version": "ab713911",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 1821102,
+  "comment": "Thanks for the local test page in comment 23 (attachment 9672196). It shows the problem every time.\n\n**Analysis**\n\nThe test page confirms the first path from comment 18. A running AudioContext keeps its audio stream started for as long as the context runs. In [MediaTrackGraph.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/MediaTrackGraph.cpp#391), `AudioTrackPresent()` returns true for every Web Audio track in the graph, and `CheckDriver()` keeps the audio driver while it is true. The graph has no silence timer. Only `suspend()`, `close()` or the end of the window removes the tracks.\n\nBug 1771179 tracks the fix: pause the audio stream after some time of silence, and keep `currentTime` moving. Bug 1863193 reports the same cause on Windows. The test page plays an oscillator at gain 0.0001. These samples are not zero, but they are below the -72 dB threshold in [AudibilityMonitor.h](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/AudibilityMonitor.h#20). Thus [AudioDestinationNode.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/webaudio/AudioDestinationNode.cpp#823) reports the context as not audible, so Firefox shows no tab audio indicator and takes no \"audio-playing\" wake lock.\n\nThis fact matters for the silence test in bug 1771179. A test that looks only for zero samples does not catch this page. A test against the audibility threshold catches it, but it also pauses output that is very quiet.\n\nThe Bluetooth case in comment 14 agrees with this cause. On a default device change, the macOS cubeb backend moves a running stream to the new default device and starts it again. It does not restart a stopped stream. So comment 14 shows a stream that was still running, probably from a running AudioContext or an audio track that did not end. It does not show a leaked stream.\n\nCode reading also shows a probable second path on macOS. Bug 2052692 landed on 2026-07-14 and turned on `media.audio.reuse-stream-on-seek` by default on macOS. When a playing media element seeks, [AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/e924f94175311819d7b549a732d0d8ee1263b31d/dom/media/mediasink/AudioSinkWrapper.cpp#730) keeps its audio stream running for reuse. Only the next `Start()` or the shutdown of the decoder releases it. If the element is paused when the seek completes, `Start()` does not run, and the stream can stay open with silence. No test confirms this path yet, and it cannot explain the reports from 2023 to 2025.\n\n**Next steps**\n\nKarl, could you please look at the test page in attachment 9672196 for the silence test in bug 1771179?\n\nAlastor, could you please check whether the stream stays running after a seek ends on a paused element? A quick test is `a.currentTime = 0; a.pause()` on a playing `<audio>`, then `pmset -g assertions`.\n\nThe bug also still waits for the profiles that comment 18 asked qseminq and Lukas for. They can show which graph keeps the stream after the Bluetooth device goes away.",
+  "comment_count": 24,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2023-03-08T16:50:08Z",
+  "fix_tags": [],
+  "issue_type": "performance",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Karl Tomlinson",
+    "nick": "karlt",
+    "role": "other"
+   },
+   {
+    "name": "Alastor Wu",
+    "nick": "alwu",
+    "role": "other"
+   }
+  ],
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-01T23:18:09Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261101-225424-f7839f",
+  "security_hold": false,
+  "see_also_add": [
+   2052692,
+   1863193
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-01T22:54:24+00:00",
+  "team": "media",
+  "title": "Firefox keeps coreaudiod active, which prevents sleep on MacOS"
  }
 ]
