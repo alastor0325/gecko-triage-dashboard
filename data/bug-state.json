@@ -692,7 +692,7 @@
  "2083467": {
   "assigned": false,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S2"
  },
  "2083517": {
