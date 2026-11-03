@@ -119,7 +119,7 @@ def is_new(filed: str | None, as_of: datetime) -> bool:
 
 # What a run can do on Bugzilla: its comment and every field change.
 EFFECTS = (
-    "comment", "severity", "priority", "needinfo", "blocks_add", "keywords_add",
+    "comment", "severity", "priority", "needinfo", "needinfo_cleared", "blocks_add", "keywords_add",
     "regressed_by_add", "see_also_add", "move_to", "resolution", "dupe_of", "other_bugs",
 )  # fmt: skip
 
@@ -158,9 +158,9 @@ DATA_MARGIN = timedelta(days=1)
 def run_view(record: dict) -> dict:
     keep = (
         "started_at", "source", "posted", "pending_actions", "outcome", "posted_at",
-        "comment_count", "severity", "priority", "needinfo", "asked", "dupe_of", "blocks_add",
-        "keywords_add", "regressed_by_add", "see_also_add", "other_bugs", "agent_version",
-        "fix_tags",
+        "comment_count", "severity", "priority", "needinfo", "needinfo_cleared", "asked",
+        "dupe_of", "blocks_add", "keywords_add", "regressed_by_add", "see_also_add", "other_bugs",
+        "agent_version", "fix_tags",
     )  # fmt: skip
     cat = category(record)
     action = close_action(record) if cat == "close" else None

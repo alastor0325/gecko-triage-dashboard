@@ -87,8 +87,9 @@ def update_actions(summary: dict, bug_id: int) -> tuple[dict, list[dict]]:
 # What a run held for a security group keeps: no finding, only that it ran.
 HELD = {
     "comment": None, "asked": [], "issue_type": None, "issue_type_note": None, "fix_tags": None,
-    "severity": None, "priority": None, "needinfo": [], "keywords_add": [], "blocks_add": [],
-    "regressed_by_add": [], "see_also_add": [], "move_to": None, "resolution": None,
+    "severity": None, "priority": None, "needinfo": [], "needinfo_cleared": 0,
+    "keywords_add": [], "blocks_add": [], "regressed_by_add": [], "see_also_add": [],
+    "move_to": None, "resolution": None,
     "dupe_of": None, "other_bugs": [],
 }  # fmt: skip
 
@@ -105,6 +106,12 @@ def adds_security_group(summary: dict) -> bool:
 
 def needinfo_flags(changes: dict) -> list[dict]:
     return [f for f in changes.get("flags") or [] if f.get("name") == "needinfo"]
+
+
+def cleared_flags(changes: dict) -> int:
+    """How many existing flags the run clears: an entry with the flag's id and status X.
+    gecko-triage clears only a needinfo set on the bot, answered by the run's comment."""
+    return sum(1 for f in changes.get("flags") or [] if f.get("id") and f.get("status") == "X")
 
 
 def requestees(summary: dict, bug_id: int) -> set[str]:
@@ -214,6 +221,7 @@ def parse_summary(
         # None when the agent did not check fix tags yet, [] when it found none.
         "fix_tags": fixtags.known(findings["fix_tags"]) if "fix_tags" in findings else None,
         "needinfo": [needinfo_entry(f.get("requestee"), meta, users) for f in needinfo_flags(own)],
+        "needinfo_cleared": cleared_flags(own),
         "blocks_add": _added(own, "blocks"),
         "see_also_add": see_also(_added(own, "see_also")),
         "keywords_add": _added(own, "keywords"),

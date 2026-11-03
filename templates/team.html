@@ -435,6 +435,7 @@ function changes(r) {
     r.move_to && ["Reassigned", `to ${esc(r.move_to)}`, true],
     (r.severity || r.priority) && ["S/P", esc([r.severity, r.priority].filter(Boolean).join(" / "))],
     r.needinfo.length && ["Needinfo", r.needinfo.map(niChip).join("")],
+    r.needinfo_cleared && ["Needinfo cleared", `${r.needinfo_cleared === 1 ? "the request to the bot" : `${r.needinfo_cleared} requests to the bot`}, answered here`],
     r.asked.length && ["Asked for", esc(r.asked.join(", "))],
     r.blocks_add.length && ["Blocks", bugList(r.blocks_add)],
     r.see_also_add.length && ["See also", r.see_also_add.map(seeAlso).join(", ")],

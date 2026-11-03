@@ -253,3 +253,14 @@ def test_parse_keeps_see_also(meta):
     r = parse(make_summary(changes=changes), meta)
     assert r["see_also_add"] == [1771179, 1735412, "https://github.com/w3c/media-source/issues/1"]
     assert parse(make_summary(), meta)["see_also_add"] == []
+
+
+def test_parse_counts_cleared_flags(meta):
+    flags = [
+        {"name": "needinfo", "status": "?", "requestee": "dev@example.com"},
+        {"id": 7, "status": "X"},
+    ]
+    r = parse(make_summary(changes={"flags": flags}), meta)
+    assert r["needinfo_cleared"] == 1
+    assert len(r["needinfo"]) == 1
+    assert parse(make_summary(), meta)["needinfo_cleared"] == 0

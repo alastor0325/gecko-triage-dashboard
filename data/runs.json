@@ -16,6 +16,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -53,6 +54,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -92,6 +94,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -127,6 +130,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [
    {
     "blocks_add": [
@@ -171,6 +175,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -220,6 +225,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -257,6 +263,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -304,6 +311,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -356,6 +364,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -401,6 +410,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -448,6 +458,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -487,6 +498,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -533,6 +545,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -570,6 +583,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -607,6 +621,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -642,6 +657,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -677,6 +693,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -712,6 +729,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -749,6 +767,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -795,6 +814,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -832,6 +852,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -871,6 +892,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -908,6 +930,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -945,6 +968,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -991,6 +1015,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -1034,6 +1059,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -1080,6 +1106,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1117,6 +1144,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1161,6 +1189,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1196,6 +1225,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1231,6 +1261,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -1268,6 +1299,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1307,6 +1339,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -1342,6 +1375,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -1377,6 +1411,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -1412,6 +1447,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1449,6 +1485,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1488,6 +1525,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1526,6 +1564,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1563,6 +1602,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -1598,6 +1638,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -1633,6 +1674,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -1668,6 +1710,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1706,6 +1749,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1745,6 +1789,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1782,6 +1827,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [
    {
     "blocks_add": [
@@ -1835,6 +1881,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1872,6 +1919,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1918,6 +1966,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -1955,6 +2004,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -1990,6 +2040,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2025,6 +2076,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2060,6 +2112,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -2095,6 +2148,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2130,6 +2184,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2171,6 +2226,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2215,6 +2271,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2250,6 +2307,7 @@
   "keywords_add": [],
   "move_to": "Core :: Widget: Gtk",
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2288,6 +2346,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2337,6 +2396,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2374,6 +2434,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2413,6 +2474,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2460,6 +2522,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2511,6 +2574,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2548,6 +2612,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -2589,6 +2654,7 @@
     "role": "assignee"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2624,6 +2690,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2659,6 +2726,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2694,6 +2762,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2729,6 +2798,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2764,6 +2834,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -2801,6 +2872,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2836,6 +2908,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2880,6 +2953,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2915,6 +2989,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -2959,6 +3034,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3002,6 +3078,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3042,6 +3119,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3082,6 +3160,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3123,6 +3202,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3164,6 +3244,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3203,6 +3284,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3243,6 +3325,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3278,6 +3361,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3313,6 +3397,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3348,6 +3433,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3383,6 +3469,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3423,6 +3510,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3458,6 +3546,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3493,6 +3582,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3528,6 +3618,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3572,6 +3663,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3613,6 +3705,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3650,6 +3743,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3687,6 +3781,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3724,6 +3819,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3759,6 +3855,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -3803,6 +3900,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3838,6 +3936,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3875,6 +3974,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3922,6 +4022,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -3967,6 +4068,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4002,6 +4104,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -4037,6 +4140,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -4072,6 +4176,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -4107,6 +4212,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -4148,6 +4254,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4185,6 +4292,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -4220,6 +4328,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4257,6 +4366,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4292,6 +4402,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -4327,6 +4438,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4366,6 +4478,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4412,6 +4525,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4447,6 +4561,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -4482,6 +4597,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -4519,6 +4635,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4556,6 +4673,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4601,6 +4719,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4638,6 +4757,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4679,6 +4799,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4718,6 +4839,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -4762,6 +4884,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4797,6 +4920,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -4838,6 +4962,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -4876,6 +5001,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -4920,6 +5046,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -4957,6 +5084,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5002,6 +5130,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5050,6 +5179,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -5097,6 +5227,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5135,6 +5266,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -5170,6 +5302,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -5207,6 +5340,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -5242,6 +5376,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -5286,6 +5421,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5323,6 +5459,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5358,6 +5495,7 @@
   "keywords_add": [],
   "move_to": "Core :: Graphics: WebRender",
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -5399,6 +5537,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5449,6 +5588,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5493,6 +5633,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5537,6 +5678,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5584,6 +5726,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5629,6 +5772,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5666,6 +5810,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5705,6 +5850,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5759,6 +5905,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5802,6 +5949,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5839,6 +5987,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5876,6 +6025,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5923,6 +6073,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -5962,6 +6113,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6003,6 +6155,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6042,6 +6195,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -6083,6 +6237,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6126,6 +6281,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6164,6 +6320,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6201,6 +6358,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6238,6 +6396,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6275,6 +6434,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6310,6 +6470,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -6345,6 +6506,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6382,6 +6544,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6417,6 +6580,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6452,6 +6616,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -6487,6 +6652,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6535,6 +6701,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6579,6 +6746,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6616,6 +6784,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -6653,6 +6822,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6697,6 +6867,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6732,6 +6903,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6773,6 +6945,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6808,6 +6981,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -6849,6 +7023,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6886,6 +7061,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -6935,6 +7111,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -6975,6 +7152,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7012,6 +7190,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7052,6 +7231,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7092,6 +7272,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7131,6 +7312,7 @@
   ],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -7172,6 +7354,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7207,6 +7390,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -7242,6 +7426,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7283,6 +7468,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7321,6 +7507,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7359,6 +7546,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7409,6 +7597,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7444,6 +7633,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7489,6 +7679,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7533,6 +7724,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7577,6 +7769,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7614,6 +7807,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7653,6 +7847,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -7690,6 +7885,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7725,6 +7921,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7760,6 +7957,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -7795,6 +7993,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -7830,6 +8029,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -7871,6 +8071,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7918,6 +8119,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7961,6 +8163,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -7998,6 +8201,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -8043,6 +8247,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8080,6 +8285,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8131,6 +8337,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8166,6 +8373,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8205,6 +8413,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "no_action",
   "pending_actions": null,
@@ -8240,6 +8449,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8285,6 +8495,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8320,6 +8531,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8366,6 +8578,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8409,6 +8622,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8452,6 +8666,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8500,6 +8715,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8546,6 +8762,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8587,6 +8804,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8630,6 +8848,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8679,6 +8898,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8717,6 +8937,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8760,6 +8981,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8797,6 +9019,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -8832,6 +9055,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -8873,6 +9097,7 @@
     "role": "other"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8908,6 +9133,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "skipped",
   "pending_actions": null,
@@ -8943,6 +9169,7 @@
   "keywords_add": [],
   "move_to": null,
   "needinfo": [],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -8990,6 +9217,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -9038,6 +9266,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -9083,6 +9312,7 @@
     "role": "reporter"
    }
   ],
+  "needinfo_cleared": 0,
   "other_bugs": [],
   "outcome": "posted",
   "pending_actions": null,
@@ -9102,5 +9332,372 @@
   "started_at": "2026-11-02T18:15:14+00:00",
   "team": "media",
   "title": "Intermittent 5-15s delay before YouTube playback starts with uBlock Origin enabled"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2087741,
+  "comment": null,
+  "comment_count": null,
+  "decision": "watching",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-31T04:20:48Z",
+  "fix_tags": [],
+  "issue_type": "drm",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "no_action",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261103-181355-0448bc",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "Firefox 159 breaks video playback on viki.com"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [],
+  "blocks_add": [
+   1904915
+  ],
+  "bug_id": 1950599,
+  "comment": "Thanks for the profile in comment 8. Here is what it shows, and the probable cause in the code.\n\n**Profile analysis**\n\nThe profile has the decoder threads of the GPU and Utility processes. It does not have the content process of the YouTube tab, so it has no `MediaDecoderStateMachine` or `MediaSource` markers. The video uses the WMF hardware H.264 decoder at 1920x1080.\n\n- At 229.71 s, the audio decoder restarts at time 0. This is about 2.2 s before the video reaches its end.\n- At 231.93 s, the video decoder flushes. Its first new sample is the keyframe at 18.82 s, not a frame near 0.\n- After the loop, no video sample between 0 and 18.8 s goes to the decoder. The decoder then gets no input for 18.5 s, until the audio reaches 18.8 s.\n\nSo the frozen picture is the frame at 18.8 s. It stays on screen until the audio clock reaches it.\n\n**Probable cause**\n\nThis cause comes from code reading. No log from the content process confirms it yet.\n\nYouTube sets the `loop` attribute. With `media.seamless-looping-video` at its default `true`, `LoopingDecodingState` in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/MediaDecoderStateMachine.cpp#1097) loops each track on its own, without a normal seek.\n\n1. After about 218 s of 1080p playback, MSE eviction probably removed the first 18.8 s of video from the SourceBuffer. The smaller audio buffer keeps its start.\n2. At the video end, `RequestDataFromStartPosition` resets the video demuxer and seeks it to 0. `MediaSourceTrackDemuxer::Reset` in [MediaSourceDemuxer.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/mediasource/MediaSourceDemuxer.cpp#311) calls `TrackBuffersManager::Seek` with time 0. For time 0, [TrackBuffersManager.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/mediasource/TrackBuffersManager.cpp#2938) does not check the buffered range and selects the first keyframe in the buffer, here 18.8 s.\n3. `MediaSourceTrackDemuxer::DoSeek` rejects the seek to 0 and waits for data, because 0 is not buffered. `LoopingDecodingState::HandleError` in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/MediaDecoderStateMachine.cpp#3220) only waits. When data arrives, `HandleVideoWaited` in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/MediaDecoderStateMachine.cpp#1330) asks for the next sample and does not seek again.\n4. Both tracks get the same loop offset, so audio from 0 and video from 18.8 s stay 18.8 s apart. The video sink drops only late frames, so the early frame stays on screen.\n\nA normal seek does seek again after the wait. This explains why a manual seek to 0 always works. The cause is in the MSE demuxer and the state machine, not in a decoder. This explains the same problem with AV1 software decoding (comment 9). The case in comment 0 with normal video and offset sound is probably the same problem with the audio start evicted.\n\nBug 2023823 reports the same problem on long YouTube videos. There, `media.seamless-looping-video` set to `false` stops the problem (comment 3). A larger video eviction threshold also makes the video return to 0. These two facts support the cause above.\n\nThe probable cause is the seamless video looping of bug 1262276, which bug 1799205 enabled by default in Firefox 109. This bug now blocks the YouTube playback meta bug 1904915.\n\n**Fix direction**\n\nOn MSE, check that time 0 is buffered on both tracks before seamless looping starts. If it is not, leave seamless looping and let the media element do a normal loop seek to 0. A simpler option is to turn off seamless video looping for MSE where [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/MediaDecoderStateMachine.cpp#3002) reads the pref. The state machine already has `mIsMSE`. A mochitest can show the fix: append media, remove the start of the video buffer, and let the element loop.\n\nAlastor, could you please review this analysis and decide the fix direction?\n\n**Workaround**\n\n1. Open `about:config`.\n2. Set `media.seamless-looping-video` to `false`.\n\nThe loop then uses a normal seek to 0.",
+  "comment_count": null,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2025-02-26T10:28:34Z",
+  "fix_tags": [],
+  "issue_type": "av-sync",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Alastor Wu",
+    "nick": "alwu",
+    "role": "other"
+   }
+  ],
+  "needinfo_cleared": 1,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261103-181355-11e861",
+  "security_hold": false,
+  "see_also_add": [
+   2023823,
+   1262276,
+   1799205
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "Looping a video on YouTube has a high chance causing the video/audio to completely mismatch"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2087455,
+  "comment": "Thanks for the test. It confirms the cause. This comment comes from an automated triage account. The next step goes to a developer.\n\n**Analysis**\n\nThe sites do not choose the audio mode. Firefox chooses it from the audio path that the page uses. SoundCloud sends its media element through Web Audio, so it gets the low latency mode.\n\nFirefox opens every Web Audio graph at the minimum latency of the device ([GraphDriver.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/GraphDriver.cpp#580), [CubebUtils.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/CubebUtils.cpp#766)). On this phone, that is 128 frames. cubeb selects `AAUDIO_PERFORMANCE_MODE_LOW_LATENCY` for 4000 frames or less, and `AAUDIO_PERFORMANCE_MODE_POWER_SAVING` above that ([cubeb_aaudio.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/media/libcubeb/src/cubeb_aaudio.cpp#1434)). The low latency stream does not go through the system equalizer. Your value of 4096 is above 4000, so the stream used the power saving mode and the equalizer applied.\n\nThe graph does not know if the page needs low latency. A graph that only `createMediaElementSource` feeds gets the same latency as a game or a synthesizer. Firefox does not implement `latencyHint` yet (bug 2020377). cubeb has no option to select the AAudio mode separately from the latency.\n\nThis is probably not a regression. The mapping from latency to mode is in cubeb since 2020.\n\n**Fix direction**\n\nThe fix needs a decision between low Web Audio latency and working system effects on Android. These directions can be combined:\n\n- Implement `latencyHint` (bug 2020377). The \"playback\" value selects the power saving mode. This alone does not fix SoundCloud, because SoundCloud uses the default value.\n- On Android, give a higher latency to graphs with no audio input, or to graphs that only media elements feed.\n- Add a stream option to cubeb that selects the AAudio mode separately from the latency. `media/libcubeb` comes from github.com/mozilla/cubeb, so this change lands upstream first.\n\nOpen point: a test with `media.cubeb_latency_mtg_frames` set to 2048 keeps the low latency mode with a larger buffer. Its result can show if the mode alone causes the equalizer skip.\n\nPaul, could you please look at this bug and choose a direction for the Web Audio latency on Android?",
+  "comment_count": null,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-30T11:54:15Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Paul Adenot",
+    "nick": "padenot",
+    "role": "other"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261103-181355-3a80c4",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "Android system-wide equalizer not applied"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2083602,
+  "comment": "The request in comment 2 has had no reply for 15 days. We close this bug as incomplete for now.\n\nIf the sound still stutters when Firefox runs in the background, please reopen this bug. Then add the data that comment 2 asks for: the profile, the `about:support` text and the result in a Private Browsing window.",
+  "comment_count": null,
+  "decision": "incomplete",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-19T08:08:18Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": "INCOMPLETE",
+  "run_id": "local-20261103-181355-5759ad",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "Google Meet sound stutters when Firefox runs in background"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2080458,
+  "comment": "Nobody answered the log request in comment 2 in the last 14 days. We close this bug as incomplete for now.\n\nIf the problem continues in a current Firefox version, please reopen this bug. Then do these steps:\n\n1. Make sure that the FFmpeg `libavcodec` package of your distribution is installed.\n2. Open a terminal.\n3. Start Firefox with `MOZ_LOG=\"FFmpegVideo:5\" MOZ_LOG_FILE=/tmp/ffmpeg.log firefox`.\n4. Open Facebook and try to play a video.\n5. Close Firefox.\n6. Attach to this bug each file in `/tmp` whose name starts with `ffmpeg.log`.",
+  "comment_count": null,
+  "decision": "incomplete",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-10T14:14:34Z",
+  "fix_tags": [],
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": "INCOMPLETE",
+  "run_id": "local-20261103-181355-5a59d5",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "firefox v 157.0.1 fails to play videos on facebook"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2087878,
+  "comment": "Thank you for the profile and about:support.\n\nThis is a duplicate of bug 1963910. Firefox on Windows decodes HEVC only with a Windows HEVC decoder and hardware decoding. Normally, that decoder comes from the HEVC Video Extensions. Windows on your computer does not have this decoder.\n\n**Analysis**\n\nIn about:support, the \"Codec Support Information\" row for HEVC shows \"Install extension\". Firefox shows this text when Windows reports that no HEVC decoder component is installed ([WMFDecoderModule.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/platforms/wmf/WMFDecoderModule.cpp#137)).\n\nThe `about:logging` profile in comment 3 agrees. Firefox finds no usable decoder for `video/hevc`, and playback stops with `NS_ERROR_DOM_MEDIA_METADATA_ERR`. Firefox creates no decoder, so this is not a hardware decoding failure.\n\nThe `HEVC_HW_DECODE` entry in the Decision Log only shows that Firefox does not block HEVC on your GPU. It does not show that the Windows decoder is present.\n\n**Workaround**\n\nCaution: the Microsoft Store can charge a small fee for \"HEVC Video Extensions\".\n\n1. Open `about:support`.\n2. In the HEVC row of \"Codec Support Information\", click \"Install extension\".\n3. Install \"HEVC Video Extensions\" from the Microsoft Store.\n4. Close every Firefox window and start Firefox again.\n5. Open the video again.\n\nA free item, \"HEVC Video Extensions from Device Manufacturer\", is also available. Bug 2049680 comment 4 says that only some versions of it work. If HEVC still does not play after you install an extension, bug 2049680 tracks that problem.",
+  "comment_count": null,
+  "decision": "duplicate",
+  "dupe_of": 1963910,
+  "error": false,
+  "filed": "2026-11-01T15:02:19Z",
+  "fix_tags": [],
+  "issue_type": "codec-support",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": "DUPLICATE",
+  "run_id": "local-20261103-181355-5c8e6a",
+  "security_hold": false,
+  "see_also_add": [
+   2049680
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "MIME type not supported on regular h265 mp4"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2088304,
+  "comment": "Thanks for the profile. It shows the cause, so this bug moves to Core :: Privacy: Anti-Tracking.\n\n**Analysis**\n\nThe profile in comment 1 is from Nightly build 20261102221420 on Windows 11. All 9 requests for the Twitch playlist `https://usher.ttvnw.net/api/v2/channel/hls/<channel>.m3u8` fail with `NS_ERROR_TRACKING_URI`. None of them gets an HTTP response. For these requests, the parent process stacks show `ContentClassifierService::MaybeCancelChannel` that calls `nsHttpChannel::CancelByURLClassifier`. uBlock Origin is installed, but it resumes the channel and does not cancel it.\n\nThe player never gets the playlist, so it requests no video segments. Media Source Extensions get no data, and the profile has no `NS_ERROR_DOM_MEDIA_*` marker. The failure occurs before the media code gets any data.\n\nThe probable cause is bug 2053164, which enabled the ContentClassifier engines together with ETP in Nightly. It landed on 2026-11-02, between the good build 2026-11-02-09-39-42 and the bad build 2026-11-02-22-14-20. The code is in [ContentClassifierService.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/toolkit/components/content-classifier/ContentClassifierService.cpp). In the profile, `privacy.trackingprotection.content.protection.engines` is `email-trackers,cryptominers,fingerprinters,social-trackers,harmful-addon,trackers,major-exceptions`. `ttvnw.net` is a Twitch domain, so this looks like a first-party request that the classifier blocks as a tracker. The profile does not show which engine or list entry matched.\n\n**Next steps**\n\nTim, could you please look at why the ContentClassifier blocks `usher.ttvnw.net` on twitch.tv? A ContentClassifier `MOZ_LOG` for one Twitch load can show the engine that matched.\n\nThis is a regression in Nightly 161. The question to the reporter in comment 3 stays open: does the stream play when Enhanced Tracking Protection is off for twitch.tv?",
+  "comment_count": null,
+  "decision": "wrong_component",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-03T01:33:43Z",
+  "fix_tags": [],
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
+  "keywords_add": [
+   "regression"
+  ],
+  "move_to": "Core :: Privacy: Anti-Tracking",
+  "needinfo": [
+   {
+    "name": "Tim Huang",
+    "nick": "timhuang",
+    "role": "other"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261103-181355-8173a3",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": "S2",
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "Twitch fails to load m3u8 on nightly 161"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [
+   "Edge media-keys test",
+   "Windows update info"
+  ],
+  "blocks_add": [],
+  "bug_id": 2087875,
+  "comment": "Thank you for the three test results.\n\n**Analysis**\n\nEdge has the same problem on the same Bluetooth device, and the Firefox level bar in the Volume Mixer moves. So Windows gets the sound from Firefox. The sound stops after that point, probably in Windows, the Bluetooth driver or the device.\n\nThe `about:logging` profile in comment 3 shows audible sound data with no underruns for each video. At each change of video, Firefox tells the Windows media controls (SMTC) \"paused\" and \"playing\" two times in less than 1 second. At the second change, the Windows audio service blocks the stream stop for 15 seconds and the stream start for 5 seconds.\n\nWhen `media.hardwaremediakeys.enabled` is `false`, Firefox does not register with SMTC at all ([MediaControlKeyManager.cpp](https://searchfox.org/firefox-main/rev/7a315fc898bbd3e61ba7dd220a8fb1d0721a1eb7/dom/media/mediacontrol/MediaControlKeyManager.cpp#71)). The audio path does not change. So the SMTC playback state is the probable trigger. Edge probably also sends this state to Windows by default. This bug stays in bug 2011679, which tracks Bluetooth audio and video problems.\n\n**Next steps**\n\nCould you please do this test in Microsoft Edge?\n\n1. Open `edge://flags` in Edge.\n2. Search for \"Hardware Media Key Handling\" and set it to \"Disabled\".\n3. Restart Edge.\n4. Play the same playlist on the same Bluetooth device.\n5. Tell us if each new video now has sound.\n6. Set the flag back to \"Default\" after the test.\n\nDid the problem start after a Windows update? If yes, please tell us which update.\n\nThe bug also waits for the answer to the question in comment 4 about the last Firefox version that worked.",
+  "comment_count": null,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-01T14:42:53Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Civan Corche\u0219",
+    "nick": "civancor",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261103-181355-d0fcd6",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "bluetooth audio stops working every time i open a new youtube video"
+ },
+ {
+  "agent_version": "41c292ad",
+  "asked": [
+   "last working version"
+  ],
+  "blocks_add": [
+   1904915
+  ],
+  "bug_id": 2088159,
+  "comment": "Thank you for the report.\n\n**Analysis**\n\nBug 2064949 is a similar report on ESR 115 on Windows 7 and 8.1. In that bug, YouTube still played on 115.41 and only one news site failed. Thus this problem possibly started in a later 115 ESR update. Bug 1904915 tracks YouTube playback problems.\n\n**Next steps**\n\nThis bug waits for the about:support contents and the media profile that comment 2 asks for.\n\nDid videos play on YouTube in an earlier 115 ESR version? If yes, please tell us the last version that worked.",
+  "comment_count": null,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-02T16:27:04Z",
+  "fix_tags": [],
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "awaiting review",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261103-181355-de4dab",
+  "security_hold": false,
+  "see_also_add": [
+   2064949
+  ],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-03T18:13:55+00:00",
+  "team": "media",
+  "title": "HTML player does not receive stream in ESR 115.44 release on Windows 7-x64"
  }
 ]
