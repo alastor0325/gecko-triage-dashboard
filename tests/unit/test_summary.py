@@ -261,6 +261,6 @@ def test_parse_counts_cleared_flags(meta):
         {"id": 7, "status": "X"},
     ]
     r = parse(make_summary(changes={"flags": flags}), meta)
-    assert r["needinfo_cleared"] == 1
+    assert r["needinfo_cleared"] == 2
     assert len(r["needinfo"]) == 1
     assert parse(make_summary(), meta)["needinfo_cleared"] == 0

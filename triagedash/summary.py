@@ -105,7 +105,12 @@ def adds_security_group(summary: dict) -> bool:
 
 
 def needinfo_flags(changes: dict) -> list[dict]:
-    return [f for f in changes.get("flags") or [] if f.get("name") == "needinfo"]
+    """The needinfo requests the run sets; a cleared one (status X) is not a request."""
+    return [
+        f
+        for f in changes.get("flags") or []
+        if f.get("name") == "needinfo" and f.get("status", "?") == "?"
+    ]
 
 
 def cleared_flags(changes: dict) -> int:
