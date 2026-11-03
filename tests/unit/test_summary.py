@@ -259,6 +259,7 @@ def test_parse_counts_cleared_flags(meta):
     flags = [
         {"name": "needinfo", "status": "?", "requestee": "dev@example.com"},
         {"id": 7, "status": "X"},
+        {"name": "needinfo", "id": 8, "status": "X"},
     ]
     r = parse(make_summary(changes={"flags": flags}), meta)
     assert r["needinfo_cleared"] == 2
