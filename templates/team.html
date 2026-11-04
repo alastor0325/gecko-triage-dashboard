@@ -536,7 +536,9 @@ const CAL_GROUPS = [["analyzed", "You can start work on these"], ["needs-info", 
 const wday = d => day(d + "T12:00:00");
 const WEEKS = (DATA.rotation?.weeks ?? []).map(w => ({...w, bugs: []}));
 for (const b of DATA.bugs) {
-  if (!b.open || b.assigned || !CAL_GROUPS.some(([k]) => k === b.runs[0].category)) continue;
+  // A stale or rejected draft never reached Bugzilla, so it is no work for the week.
+  if (!b.open || b.assigned || ["stale", "rejected"].includes(b.runs[0].outcome)
+      || !CAL_GROUPS.some(([k]) => k === b.runs[0].category)) continue;
   const k = dayKey(b.runs[0].started_at);
   WEEKS.find(w => k >= w.start && k < w.end)?.bugs.push(withRuns(b, b.runs));
 }

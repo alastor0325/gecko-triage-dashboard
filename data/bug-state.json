@@ -1105,7 +1105,7 @@
   "assigned": false,
   "fix_tags": [],
   "open": true,
-  "severity": "--"
+  "severity": "S3"
  },
  "2088881": {
   "assigned": false,
@@ -1128,7 +1128,7 @@
  "2089046": {
   "assigned": false,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "--"
  }
 }
