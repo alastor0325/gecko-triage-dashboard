@@ -79,7 +79,8 @@ def close_kind(record: dict) -> str | None:
 
 # Outcomes that need a look. `posted` and `awaiting review` are the normal path, so they
 # get no tag; the run line in the card still says them.
-PROBLEM_OUTCOMES = ("partly posted", "apply failed")
+# `stale`: the bug changed after the run, so the draft will not be posted as it is.
+PROBLEM_OUTCOMES = ("partly posted", "apply failed", "stale")
 
 
 def outcome_tags(record: dict) -> list[str]:

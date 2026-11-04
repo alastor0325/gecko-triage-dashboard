@@ -237,7 +237,7 @@ const ROLES = {reporter: "reporter", assignee: "assignee", other: "another perso
 // Each tag the page can show, in display order: its CSS class, and whether the short view
 // shows it. The short view keeps only the tags that change what to look at first.
 const TAGS = {rejected: {cls: "partly", rail: true}, "apply failed": {cls: "partly", rail: true},
-  "partly posted": {cls: "partly", rail: true},
+  "partly posted": {cls: "partly", rail: true}, stale: {cls: "partly", rail: true},
   regression: {cls: "regression", rail: true}, new: {cls: "new", rail: true},
   "dev needinfo": {cls: "outline"}, again: {cls: "outline"}};
 const state = {view: "overview", period: "1w", cat: "all", q: "", bug: null, issue: "", week: null, calBug: null, calFolded: new Set(["needs-info"])};

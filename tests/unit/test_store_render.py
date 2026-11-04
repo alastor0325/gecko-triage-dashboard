@@ -168,3 +168,9 @@ def test_apply_issue_types_skips_a_held_run():
     held = make_record(1, run_id="a", security_hold=True)
     (r,) = store.apply_issue_types([held], [{"run_id": "a", "issue_type": "drm", "note": "x"}])
     assert r["issue_type"] is None
+
+
+def test_apply_log_keeps_a_stale_review():
+    run = make_record(1, run_id="a", source="daily")
+    (r,) = apply_log([run], [{"run_id": "a", "review": "stale"}])
+    assert (r["outcome"], r["posted"]) == ("stale", False)

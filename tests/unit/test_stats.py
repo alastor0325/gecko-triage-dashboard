@@ -91,6 +91,7 @@ def test_outcome_tags():
     assert stats.tags(make_record(outcome="awaiting review")) == []
     assert stats.tags(make_record(posted=True, outcome="partly posted")) == ["partly posted"]
     assert stats.tags(make_record(outcome="apply failed")) == ["apply failed"]
+    assert stats.tags(make_record(outcome="stale")) == ["stale"]
     assert stats.tags(make_record(outcome="rejected", rejected=True)) == ["rejected"]
     assert stats.tags(make_record(outcome="posted", posted=True, rejected=True)) == ["rejected"]
 
