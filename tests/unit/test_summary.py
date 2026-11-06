@@ -46,6 +46,11 @@ def test_scrub_keeps_about_pages_and_urls():
     assert scrub("(:jdoe)") == "(:[person])"
 
 
+def test_scrub_removes_at_mentions():
+    assert scrub("@jdoe, could you please test?") == "@[person], could you please test?"
+    assert scrub("(@jdoe)") == "(@[person])"
+
+
 def test_needinfo_role(meta):
     assert needinfo_role("reporter@example.com", meta) == "reporter"
     assert needinfo_role("dev@example.com", meta) == "assignee"

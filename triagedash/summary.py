@@ -14,7 +14,7 @@ from . import fixtags
 
 _RUN_ID = re.compile(r"local-(\d{8}-\d{6})-[0-9a-f]+$")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
-_MENTION = re.compile(r"(?<![\w/:]):[A-Za-z][\w-]*\b")
+_MENTION = re.compile(r"(?<![\w/:@])([:@])[A-Za-z][\w-]*\b")
 
 
 def run_started_at(run_id: str) -> str | None:
@@ -27,9 +27,9 @@ def run_started_at(run_id: str) -> str | None:
 
 
 def scrub(value):
-    """Removes emails and `:nick` mentions from every string, at any depth."""
+    """Removes emails and `:nick` and `@nick` mentions from every string, at any depth."""
     if isinstance(value, str):
-        return _MENTION.sub(":[person]", EMAIL.sub("[email]", value))
+        return _MENTION.sub(r"\1[person]", EMAIL.sub("[email]", value))
     if isinstance(value, list):
         return [scrub(v) for v in value]
     if isinstance(value, dict):
