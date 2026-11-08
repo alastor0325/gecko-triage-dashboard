@@ -37,6 +37,35 @@ def test_fetch_users_batches_and_caches(tmp_path, monkeypatch):
     assert len(calls) == 1
 
 
+def test_fetch_users_ignores_the_case_of_a_login(tmp_path, monkeypatch):
+    def fake_urlopen(url, timeout):
+        return io.StringIO(
+            json.dumps({"users": [{"name": "D-Name@Example.com", "real_name": "D", "nick": "d"}]})
+        )
+
+    monkeypatch.setattr(bmo.urllib.request, "urlopen", fake_urlopen)
+    assert bmo.fetch_users({"d-name@example.com"}, tmp_path) == {
+        "d-name@example.com": {"real_name": "D", "nick": "d"}
+    }
+
+
+def test_fetch_users_looks_up_one_by_one_when_a_name_is_unknown(tmp_path, monkeypatch):
+    import urllib.error
+
+    def fake_urlopen(url, timeout):
+        if "gone%40example.com" in url:
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+        return io.StringIO(
+            json.dumps({"users": [{"name": "a@example.com", "real_name": "A", "nick": "a"}]})
+        )
+
+    monkeypatch.setattr(bmo.urllib.request, "urlopen", fake_urlopen)
+    assert bmo.fetch_users({"a@example.com", "gone@example.com"}, tmp_path) == {
+        "a@example.com": {"real_name": "A", "nick": "a"},
+        "gone@example.com": {"real_name": None, "nick": None},
+    }
+
+
 def test_fetch_users_splits_into_chunks(tmp_path, monkeypatch):
     calls = []
 

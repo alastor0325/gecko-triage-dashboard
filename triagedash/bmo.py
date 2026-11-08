@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -74,19 +75,37 @@ def fetch_state(bug_ids: set[int]) -> dict[int, dict]:
 USER_CHUNK = 100  # names per request, to keep the URL short
 
 
+def _users(names: list[str]) -> dict[str, dict]:
+    """The Bugzilla accounts of ``names``, keyed by the lowercase login."""
+    query = "&".join(f"names={urllib.parse.quote(e)}" for e in names)
+    with urllib.request.urlopen(
+        f"{USERS}?{query}&include_fields=name,real_name,nick", timeout=60
+    ) as resp:
+        return {u["name"].lower(): u for u in json.load(resp).get("users") or []}
+
+
 def fetch_users(emails: set[str], cache_dir: Path) -> dict[str, dict]:
     """The public Bugzilla real name and nick of each account, fetching only the accounts
-    not cached yet. An unknown account maps to empty fields."""
-    path = cache_dir / "users.json"
+    not cached yet. An unknown account maps to empty fields. Bugzilla logins ignore case,
+    so the cache keys them in lowercase."""
+    path = cache_dir / "users-v2.json"
     cache = store.load(path, {})
-    missing = sorted(e for e in emails if e not in cache)
+    missing = sorted({e.lower() for e in emails} - cache.keys())
     for i in range(0, len(missing), USER_CHUNK):
         chunk = missing[i : i + USER_CHUNK]
-        query = "&".join(f"names={urllib.parse.quote(e)}" for e in chunk)
-        with urllib.request.urlopen(
-            f"{USERS}?{query}&include_fields=name,real_name,nick", timeout=60
-        ) as resp:
-            found = {u["name"]: u for u in json.load(resp).get("users") or []}
+        try:
+            found = _users(chunk)
+        except urllib.error.HTTPError as e:
+            # Bugzilla refuses the whole lookup when one name is not an account.
+            if e.code != 404:
+                raise
+            found = {}
+            for name in chunk:
+                try:
+                    found |= _users([name])
+                except urllib.error.HTTPError as one:
+                    if one.code != 404:
+                        raise
         for e in chunk:
             cache[e] = {
                 "real_name": found.get(e, {}).get("real_name"),
@@ -94,4 +113,4 @@ def fetch_users(emails: set[str], cache_dir: Path) -> dict[str, dict]:
             }
     if missing:
         store.save(path, cache)
-    return {e: cache[e] for e in emails}
+    return {e: cache[e.lower()] for e in emails}

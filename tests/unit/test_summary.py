@@ -30,12 +30,13 @@ def test_run_started_at_reads_the_name_as_utc():
 def test_scrub_walks_dicts():
     assert scrub({"a": ["x@example.com"], "b": {"c": ":jdoe"}}) == {
         "a": ["[email]"],
-        "b": {"c": ":[person]"},
+        "b": {"c": ":jdoe"},
     }
 
 
-def test_scrub_removes_emails_and_mentions():
-    assert scrub("ask a@b.example.org and :jdoe now") == "ask [email] and :[person] now"
+def test_scrub_removes_emails_and_keeps_mentions():
+    # The page shows a comment as Bugzilla shows it; only an email is hidden.
+    assert scrub("ask a@b.example.org and :jdoe now") == "ask [email] and :jdoe now"
     assert scrub(["x@example.com", 3]) == ["[email]", 3]
     assert scrub(None) is None
 
@@ -43,12 +44,10 @@ def test_scrub_removes_emails_and_mentions():
 def test_scrub_keeps_about_pages_and_urls():
     assert scrub("attach about:support and about:memory") == "attach about:support and about:memory"
     assert scrub("see https://example.org:8080/x") == "see https://example.org:8080/x"
-    assert scrub("(:jdoe)") == "(:[person])"
 
 
-def test_scrub_removes_at_mentions():
-    assert scrub("@jdoe, could you please test?") == "@[person], could you please test?"
-    assert scrub("(@jdoe)") == "(@[person])"
+def test_scrub_keeps_at_mentions():
+    assert scrub("@jdoe, could you please test?") == "@jdoe, could you please test?"
 
 
 def test_needinfo_role(meta):
@@ -56,6 +55,12 @@ def test_needinfo_role(meta):
     assert needinfo_role("dev@example.com", meta) == "assignee"
     assert needinfo_role("x@example.com", meta) == "other"
     assert needinfo_role(None, meta) == "unknown"
+
+
+def test_needinfo_role_ignores_the_case_of_a_login(meta):
+    # Bugzilla logins ignore case; a draft can spell the reporter in lowercase.
+    assert needinfo_role("Reporter@Example.com", meta) == "reporter"
+    assert needinfo_role("DEV@example.com", meta) == "assignee"
 
 
 def test_record_holds_no_email_in_any_field(meta):
@@ -145,7 +150,7 @@ def test_scrub_keeps_cpp_scopes():
 
 def test_parse_keeps_the_comment_scrubbed(meta):
     r = parse(make_summary(comment="Thanks. Please ask x@example.com or :jdoe."), meta)
-    assert r["comment"] == "Thanks. Please ask [email] or :[person]."
+    assert r["comment"] == "Thanks. Please ask [email] or :jdoe."
     assert parse({"traceback": "boom"}, meta)["comment"] is None
 
 
@@ -218,10 +223,10 @@ def test_team_comes_from_the_run_input_not_the_component(meta):
     assert parse(make_summary(), moved, team="media")["team"] == "media"
 
 
-def test_parse_keeps_the_issue_type_and_scrubs_its_note(meta):
+def test_parse_keeps_the_issue_type_and_its_note(meta):
     r = parse(make_summary(issue_type="other", issue_type_note="seen by :alice"), meta)
     assert r["issue_type"] == "other"
-    assert ":alice" not in r["issue_type_note"]
+    assert r["issue_type_note"] == "seen by :alice"
     assert parse(make_summary(), meta)["issue_type"] is None
 
 

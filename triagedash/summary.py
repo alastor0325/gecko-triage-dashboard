@@ -1,8 +1,9 @@
 """Turns one gecko-triage run's `summary.json` into a dashboard record.
 
 A record holds no email address, because the site is public: a needinfo requestee becomes
-a role and their public Bugzilla name and nick, and every string is scrubbed in
-`parse_summary`. The page builds the `Name (:nick)` label.
+a role and their public Bugzilla name and nick, and every string loses its emails in
+`parse_summary`. A comment keeps its `@nick` and `:nick` mentions, as Bugzilla shows them.
+The page builds the `Name (:nick)` label.
 """
 
 from __future__ import annotations
@@ -14,7 +15,6 @@ from . import fixtags
 
 _RUN_ID = re.compile(r"local-(\d{8}-\d{6})-[0-9a-f]+$")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
-_MENTION = re.compile(r"(?<![\w/:@])([:@])[A-Za-z][\w-]*\b")
 
 
 def run_started_at(run_id: str) -> str | None:
@@ -27,9 +27,9 @@ def run_started_at(run_id: str) -> str | None:
 
 
 def scrub(value):
-    """Removes emails and `:nick` and `@nick` mentions from every string, at any depth."""
+    """Removes emails from every string, at any depth."""
     if isinstance(value, str):
-        return _MENTION.sub(r"\1[person]", EMAIL.sub("[email]", value))
+        return EMAIL.sub("[email]", value)
     if isinstance(value, list):
         return [scrub(v) for v in value]
     if isinstance(value, dict):
@@ -139,9 +139,11 @@ def needinfo_entry(requestee: str | None, meta: dict, users: dict[str, dict]) ->
 def needinfo_role(requestee: str | None, meta: dict) -> str:
     if not requestee:
         return "unknown"
-    if requestee == meta.get("creator"):
+    # Bugzilla logins ignore case.
+    who = requestee.lower()
+    if who == (meta.get("creator") or "").lower():
         return "reporter"
-    if requestee == meta.get("assigned_to"):
+    if who == (meta.get("assigned_to") or "").lower():
         return "assignee"
     return "other"
 
