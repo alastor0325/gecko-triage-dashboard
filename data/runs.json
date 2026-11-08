@@ -161,7 +161,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080729,
-  "comment": "**Analysis**\n\nThe crash data agrees with the cause in comment 0. In [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaDecoderStateMachine.cpp#4744), `RequestDebugInfo` returns a pending promise when `OwnerThread()->Dispatch` fails. The function checks the result only with a `MOZ_ASSERT`. When the dispatch fails, the runnable releases its reference to the promise immediately. Then the lambda in [MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaDecoder.cpp#1660) drops the last reference to that pending promise. The `FirstFrameLoaded` ThenValue from [MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaDecoder.cpp#844) stays on a chained promise, and `AssertIsDead` crashes.\n\n`MediaFormatReader::RequestDebugInfo` in [MediaFormatReader.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaFormatReader.cpp#3437) has the same problem. It uses `InvokeAsync`, which ignores the dispatch result. The main thread hop in `MediaDecoder::RequestDebugInfo` has the same exposure. The data does not show why the task queue stops before `mShuttingDown` becomes true.\n\nThe check that crashes is enabled only in debug, Nightly and Developer Edition builds. On Release, the only effect is one lost `first_frame_loaded` telemetry sample. In the last 30 days, 22 crash reports show this crash reason. The closed intermittent bugs 1896281 and 1899996 show the same failure in CI.\n\nThis problem started with bug 1888265. That change added the `FirstFrameLoaded` call. It also changed the dispatch check from `MOZ_DIAGNOSTIC_ASSERT` to `MOZ_ASSERT`.\n\n**Next steps**\n\nThe recommended fix is to reject the promise when the dispatch fails in `MediaDecoderStateMachine::RequestDebugInfo`. The same change also applies to `MediaFormatReader::RequestDebugInfo` and to the main thread hop. `FirstFrameLoaded` already handles a rejection. The open needinfo on :[person] covers the next step.",
+  "comment": "**Analysis**\n\nThe crash data agrees with the cause in comment 0. In [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaDecoderStateMachine.cpp#4744), `RequestDebugInfo` returns a pending promise when `OwnerThread()->Dispatch` fails. The function checks the result only with a `MOZ_ASSERT`. When the dispatch fails, the runnable releases its reference to the promise immediately. Then the lambda in [MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaDecoder.cpp#1660) drops the last reference to that pending promise. The `FirstFrameLoaded` ThenValue from [MediaDecoder.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaDecoder.cpp#844) stays on a chained promise, and `AssertIsDead` crashes.\n\n`MediaFormatReader::RequestDebugInfo` in [MediaFormatReader.cpp](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/dom/media/MediaFormatReader.cpp#3437) has the same problem. It uses `InvokeAsync`, which ignores the dispatch result. The main thread hop in `MediaDecoder::RequestDebugInfo` has the same exposure. The data does not show why the task queue stops before `mShuttingDown` becomes true.\n\nThe check that crashes is enabled only in debug, Nightly and Developer Edition builds. On Release, the only effect is one lost `first_frame_loaded` telemetry sample. In the last 30 days, 22 crash reports show this crash reason. The closed intermittent bugs 1896281 and 1899996 show the same failure in CI.\n\nThis problem started with bug 1888265. That change added the `FirstFrameLoaded` call. It also changed the dispatch check from `MOZ_DIAGNOSTIC_ASSERT` to `MOZ_ASSERT`.\n\n**Next steps**\n\nThe recommended fix is to reject the promise when the dispatch fails in `MediaDecoderStateMachine::RequestDebugInfo`. The same change also applies to `MediaFormatReader::RequestDebugInfo` and to the main thread hop. `FirstFrameLoaded` already handles a rejection. The open needinfo on :alwu covers the next step.",
   "comment_count": 2,
   "decision": "analyzed",
   "dupe_of": null,
@@ -753,7 +753,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2080317,
-  "comment": "**Analysis**\n\nThis crash is a Rust panic in the parent process on macOS, so the whole browser closes. Crash-stats shows 40 crashes in the last 6 months, mostly on arm64 with macOS 26. The crashes come from release, beta, nightly and ESR.\n\nThe assert that fires is `assert_ne!(id, kAudioObjectUnknown)` in `get_stream_virtual_format` ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#397)). `get_channel_count` gives each stream ID to that function ([mod.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#1747)). The caller `audiounit_get_devices_of_type` removes 0 device IDs first ([mod.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#2096)), so the 0 is a stream ID and not a device ID.\n\nThe 0 stream ID comes from `get_device_streams`. It makes a zero-filled vec from the first size query and fills it with a second query ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#257)). It does not truncate the vec to the size that the second query returns. When the stream list gets shorter between the two queries, 0 entries stay in the vec. The `ds.stream > id` filter removes them only for input devices ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#316)), so output devices crash.\n\nIn the crash report, a CoreAudio property-change notification runs on another thread at the same time. This agrees with a device list change between the two queries. The report cannot exclude a literal 0 from CoreAudio, but the fix below covers both cases.\n\n**Regressor**\n\nBug 1670633 (the cubeb-coreaudio-rs update to 964e1462, November 2023) changed `get_channel_count` to call `get_device_streams` and `get_stream_virtual_format`. Before that change, this path had no stream ID assert. The signature first shows in build 20240118, which agrees with this change. Bug 1575883, which comment 0 names, is older than this call path. Bug 1902801 fixed a similar panic in `get_device_streams` for aggregate input devices only, so it does not cover this crash.\n\n**Fix direction**\n\nThe fix belongs upstream in cubeb-coreaudio-rs, and then in a vendor update:\n\n1. Truncate `streams` to the size that the second query returns in `get_device_streams`.\n2. Remove `kAudioObjectUnknown` stream IDs for all device types, not only for input.\n3. In `get_channel_count`, count a 0 stream ID as 0 channels instead of asserting.\n4. Apply the same truncation in `get_devices` ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#73)).\n\nBecause this crash closes the whole browser, we suggest that a developer decides if the highest severity applies. The open needinfo on :[person] stays for the developer review.",
+  "comment": "**Analysis**\n\nThis crash is a Rust panic in the parent process on macOS, so the whole browser closes. Crash-stats shows 40 crashes in the last 6 months, mostly on arm64 with macOS 26. The crashes come from release, beta, nightly and ESR.\n\nThe assert that fires is `assert_ne!(id, kAudioObjectUnknown)` in `get_stream_virtual_format` ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#397)). `get_channel_count` gives each stream ID to that function ([mod.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#1747)). The caller `audiounit_get_devices_of_type` removes 0 device IDs first ([mod.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#2096)), so the 0 is a stream ID and not a device ID.\n\nThe 0 stream ID comes from `get_device_streams`. It makes a zero-filled vec from the first size query and fills it with a second query ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#257)). It does not truncate the vec to the size that the second query returns. When the stream list gets shorter between the two queries, 0 entries stay in the vec. The `ds.stream > id` filter removes them only for input devices ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#316)), so output devices crash.\n\nIn the crash report, a CoreAudio property-change notification runs on another thread at the same time. This agrees with a device list change between the two queries. The report cannot exclude a literal 0 from CoreAudio, but the fix below covers both cases.\n\n**Regressor**\n\nBug 1670633 (the cubeb-coreaudio-rs update to 964e1462, November 2023) changed `get_channel_count` to call `get_device_streams` and `get_stream_virtual_format`. Before that change, this path had no stream ID assert. The signature first shows in build 20240118, which agrees with this change. Bug 1575883, which comment 0 names, is older than this call path. Bug 1902801 fixed a similar panic in `get_device_streams` for aggregate input devices only, so it does not cover this crash.\n\n**Fix direction**\n\nThe fix belongs upstream in cubeb-coreaudio-rs, and then in a vendor update:\n\n1. Truncate `streams` to the size that the second query returns in `get_device_streams`.\n2. Remove `kAudioObjectUnknown` stream IDs for all device types, not only for input.\n3. In `get_channel_count`, count a 0 stream ID as 0 channels instead of asserting.\n4. Apply the same truncation in `get_devices` ([device_property.rs](https://searchfox.org/firefox-main/rev/3934f7874da5d43c3eac71e6f44e0afe79d9071f/third_party/rust/cubeb-coreaudio/src/backend/device_property.rs#73)).\n\nBecause this crash closes the whole browser, we suggest that a developer decides if the highest severity applies. The open needinfo on :padenot stays for the developer review.",
   "comment_count": 1,
   "decision": "analyzed",
   "dupe_of": null,
@@ -1435,7 +1435,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2077676,
-  "comment": "Thank you for the patch stack. A check of the current tree confirms the five defects in comment 0. None of them is a regression: the code is old.\n\n**Analysis**\n\n- **Normalization and shared tables.** [PeriodicWave.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/blink/PeriodicWave.cpp#157) limits the partials by the first frequency that asks for a table, and takes the normalization scale from that table. A lower frequency then rebuilds all tables in place. The built-in waves are shared per AudioContext through `BasicWaveFormCache`, so one oscillator can change the amplitude of another. The `(unsigned)(nyquist / fundamentalFrequency)` cast is also undefined for very small frequencies.\n- **Phase on a waveform change.** [OscillatorNode.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/OscillatorNode.cpp#104) sets `mPhase` to 0 when the type changes to sine. After a change from sine to a table type, the engine reads the phase in radians as a table index.\n- **Table selection.** In the render loop, [OscillatorNode.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/OscillatorNode.cpp#247) fetches the tables with the old `mFinalFrequency`. It updates the frequency for the current sample after that.\n- **Extreme detune.** [OscillatorNode.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/OscillatorNode.cpp#167) does not clamp `frequency * mDetuneRatio` to the Nyquist limit. The float `mDetuneRatio` becomes infinite above about 153600 cents. The phase increment can then be infinite, or NaN at a frequency of 0. The two `detune-limiting.html` WPT subtests already fail.\n- **Offline destination.** The offline destination track uses the generic external output path. [AudioNodeTrack.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/AudioNodeTrack.cpp#501) appends each chunk to the track segment, but the destination engine already keeps a copy. The graph prunes the segment after about 50 ms, so this blocks buffer reuse but does not leak.\n\nThe approach in the patch stack matches these causes. Bug 1424902 reports the missing Nyquist clamp, so this stack can possibly fix it too. No team meta bug matches this area.\n\n**Next steps**\n\nThe patch stack needs review from the Web Audio reviewers. The open needinfo for :[person] from BugBot stays as it is.",
+  "comment": "Thank you for the patch stack. A check of the current tree confirms the five defects in comment 0. None of them is a regression: the code is old.\n\n**Analysis**\n\n- **Normalization and shared tables.** [PeriodicWave.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/blink/PeriodicWave.cpp#157) limits the partials by the first frequency that asks for a table, and takes the normalization scale from that table. A lower frequency then rebuilds all tables in place. The built-in waves are shared per AudioContext through `BasicWaveFormCache`, so one oscillator can change the amplitude of another. The `(unsigned)(nyquist / fundamentalFrequency)` cast is also undefined for very small frequencies.\n- **Phase on a waveform change.** [OscillatorNode.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/OscillatorNode.cpp#104) sets `mPhase` to 0 when the type changes to sine. After a change from sine to a table type, the engine reads the phase in radians as a table index.\n- **Table selection.** In the render loop, [OscillatorNode.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/OscillatorNode.cpp#247) fetches the tables with the old `mFinalFrequency`. It updates the frequency for the current sample after that.\n- **Extreme detune.** [OscillatorNode.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/OscillatorNode.cpp#167) does not clamp `frequency * mDetuneRatio` to the Nyquist limit. The float `mDetuneRatio` becomes infinite above about 153600 cents. The phase increment can then be infinite, or NaN at a frequency of 0. The two `detune-limiting.html` WPT subtests already fail.\n- **Offline destination.** The offline destination track uses the generic external output path. [AudioNodeTrack.cpp](https://searchfox.org/firefox-main/rev/8014960797439064c025f6bbc6a236558bd4f35f/dom/media/webaudio/AudioNodeTrack.cpp#501) appends each chunk to the track segment, but the destination engine already keeps a copy. The graph prunes the segment after about 50 ms, so this blocks buffer reuse but does not leak.\n\nThe approach in the patch stack matches these causes. Bug 1424902 reports the missing Nyquist clamp, so this stack can possibly fix it too. No team meta bug matches this area.\n\n**Next steps**\n\nThe patch stack needs review from the Web Audio reviewers. The open needinfo for :karlt from BugBot stays as it is.",
   "comment_count": 16,
   "decision": "analyzed",
   "dupe_of": null,
@@ -2208,7 +2208,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2083178,
-  "comment": "Thanks for the report.\n\n**Analysis**\n\nOn Android and Windows, `MP4TrackDemuxer` does not check the NAL units of HEVC samples. The HEVC keyframe check in [MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/dom/media/mp4/MP4Demuxer.cpp#476) is inside `#ifdef MOZ_APPLEMEDIA`. Bug 2049615 added it for macOS only. H.264 samples get the NAL check on all platforms, so only HEVC has this problem.\n\nWith no sync table and no sample flags, every sample has the container keyframe flag. `TrackBuffersManager` keeps that flag. A seek then starts decoding on a non-IRAP picture. The file has only one IDR, so the MediaCodec decoder and the MF decoder probably output no frame after the seek. The WMF MediaEngine path uses the same flag through `MFSampleExtension_CleanPoint` in [MFMediaEngineStream.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/dom/media/platforms/wmf/MFMediaEngineStream.cpp#454), so it has the same cause.\n\n`endOfStream()` only changes how the failure shows. Without it, `MediaFormatReader` waits for more data after the drain, and the seek stalls. With it, the seek completes at the end of the stream.\n\n**Fix direction**\n\nRun the existing HEVC check (`H265::IsKeyFrame` or `H265::IsRandomAccessPoint`) on all platforms in `MP4TrackDemuxer::GetNextSample()`. Keep the container flag when the sample does not parse. Use the same policy that bug 2072130 chooses for H.264. The \"single-idr-no-stss\" test in bug 2072130 can cover this change.\n\n:[person], could you please confirm that MediaCodec can start decoding after a seek on a CRA picture? This decides if Android can use IRAP pictures as keyframes, or only IDR pictures.",
+  "comment": "Thanks for the report.\n\n**Analysis**\n\nOn Android and Windows, `MP4TrackDemuxer` does not check the NAL units of HEVC samples. The HEVC keyframe check in [MP4Demuxer.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/dom/media/mp4/MP4Demuxer.cpp#476) is inside `#ifdef MOZ_APPLEMEDIA`. Bug 2049615 added it for macOS only. H.264 samples get the NAL check on all platforms, so only HEVC has this problem.\n\nWith no sync table and no sample flags, every sample has the container keyframe flag. `TrackBuffersManager` keeps that flag. A seek then starts decoding on a non-IRAP picture. The file has only one IDR, so the MediaCodec decoder and the MF decoder probably output no frame after the seek. The WMF MediaEngine path uses the same flag through `MFSampleExtension_CleanPoint` in [MFMediaEngineStream.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/dom/media/platforms/wmf/MFMediaEngineStream.cpp#454), so it has the same cause.\n\n`endOfStream()` only changes how the failure shows. Without it, `MediaFormatReader` waits for more data after the drain, and the seek stalls. With it, the seek completes at the end of the stream.\n\n**Fix direction**\n\nRun the existing HEVC check (`H265::IsKeyFrame` or `H265::IsRandomAccessPoint`) on all platforms in `MP4TrackDemuxer::GetNextSample()`. Keep the container flag when the sample does not parse. Use the same policy that bug 2072130 chooses for H.264. The \"single-idr-no-stss\" test in bug 2072130 can cover this change.\n\n:jolin, could you please confirm that MediaCodec can start decoding after a seek on a CRA picture? This decides if Android can use IRAP pictures as keyframes, or only IDR pictures.",
   "comment_count": 1,
   "decision": "analyzed",
   "dupe_of": null,
@@ -2295,7 +2295,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2081641,
-  "comment": "The crash is in the Wayland compositor code, not in the media code. No frame of the crash stack is in dom/media/.\n\n**Analysis**\n\nThe crash report shows the `Renderer` thread of the parent process on the software WebRender compositor (`SwCompositor`). `NativeLayerWaylandExternal::AttachExternalImage` in [NativeLayerWayland.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/gfx/layers/NativeLayerWayland.cpp) uploads an SHM video frame with a null GL context. Then the `MOZ_DIAGNOSTIC_ASSERT(aGLContext)` in [SHMBufSurface.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/gtk/SHMBufSurface.cpp) fires.\n\nCrash-stats shows 52 crashes on 160.0a1 on many Linux distributions. The first build is 20261013210959, which has the reland of bug 2068021. The crashes continue in build 20261017095211, so Nightly does not have a fix yet. Comment 3 says that only Nightly uses the software compositor for popups.\n\nThe `mUseExternalTextures` condition in [TextureHost.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/gfx/layers/composite/TextureHost.cpp) does not exclude the software compositor. We suggest one of two fixes: gate that condition on a hardware GL compositor, or make `AttachExternalImage` accept a null GL context.\n\nComment 4 describes two other defects on the hardware GL compositor path. The first is a `GL_TEXTURE_2D` and `GL_TEXTURE_RECTANGLE` target mismatch. The second is that red and blue change places for BGRA buffers. These defects do not cause this crash. We recommend a separate bug for them, so that each fix has its own record.\n\n**Next steps**\n\nThe crashing file [SHMBufSurface.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/gtk/SHMBufSurface.cpp) belongs to Core :: Widget: Gtk in [moz.build](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/gtk/moz.build). This bug moves to that component. :[person] owns this bug and already has an open needinfo here.",
+  "comment": "The crash is in the Wayland compositor code, not in the media code. No frame of the crash stack is in dom/media/.\n\n**Analysis**\n\nThe crash report shows the `Renderer` thread of the parent process on the software WebRender compositor (`SwCompositor`). `NativeLayerWaylandExternal::AttachExternalImage` in [NativeLayerWayland.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/gfx/layers/NativeLayerWayland.cpp) uploads an SHM video frame with a null GL context. Then the `MOZ_DIAGNOSTIC_ASSERT(aGLContext)` in [SHMBufSurface.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/gtk/SHMBufSurface.cpp) fires.\n\nCrash-stats shows 52 crashes on 160.0a1 on many Linux distributions. The first build is 20261013210959, which has the reland of bug 2068021. The crashes continue in build 20261017095211, so Nightly does not have a fix yet. Comment 3 says that only Nightly uses the software compositor for popups.\n\nThe `mUseExternalTextures` condition in [TextureHost.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/gfx/layers/composite/TextureHost.cpp) does not exclude the software compositor. We suggest one of two fixes: gate that condition on a hardware GL compositor, or make `AttachExternalImage` accept a null GL context.\n\nComment 4 describes two other defects on the hardware GL compositor path. The first is a `GL_TEXTURE_2D` and `GL_TEXTURE_RECTANGLE` target mismatch. The second is that red and blue change places for BGRA buffers. These defects do not cause this crash. We recommend a separate bug for them, so that each fix has its own record.\n\n**Next steps**\n\nThe crashing file [SHMBufSurface.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/gtk/SHMBufSurface.cpp) belongs to Core :: Widget: Gtk in [moz.build](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/gtk/moz.build). This bug moves to that component. :stransky owns this bug and already has an open needinfo here.",
   "comment_count": 6,
   "decision": "wrong_component",
   "dupe_of": null,
@@ -2551,7 +2551,7 @@
    1766429
   ],
   "bug_id": 2083351,
-  "comment": "Thank you for the report and the sample file.\n\n**Analysis**\n\nThe sample is H.264 at 1280x720 and 59.94 fps, with AAC audio. The about:support in comment 0 shows `layers.acceleration.disabled: true`. Thus it shows the state without the problem. It also shows `HARDWARE_VIDEO_DECODING` as available, with hardware decoding for H.264.\n\nBug 2045880 reports a similar stall when a local MP4 plays again after it ends. That report is on Windows with hardware acceleration off, so the two bugs can have different causes. This bug blocks bug 1610199 (Linux VA-API playback) and bug 1766429 (Linux playback).\n\n**Next steps**\n\nBefore the capture, turn hardware acceleration on again in Settings. Then restart Firefox. During the capture, play the clip to the end. Then replay it and wait until the playback continues.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\n:[person], could you please try the attached sample on Intel VA-API, and say if the replay stall reproduces?",
+  "comment": "Thank you for the report and the sample file.\n\n**Analysis**\n\nThe sample is H.264 at 1280x720 and 59.94 fps, with AAC audio. The about:support in comment 0 shows `layers.acceleration.disabled: true`. Thus it shows the state without the problem. It also shows `HARDWARE_VIDEO_DECODING` as available, with hardware decoding for H.264.\n\nBug 2045880 reports a similar stall when a local MP4 plays again after it ends. That report is on Windows with hardware acceleration off, so the two bugs can have different causes. This bug blocks bug 1610199 (Linux VA-API playback) and bug 1766429 (Linux playback).\n\n**Next steps**\n\nBefore the capture, turn hardware acceleration on again in Settings. Then restart Firefox. During the capture, play the clip to the end. Then replay it and wait until the playback continues.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps. If the profile or the media content is private, send it to [email] instead.\n\n:stransky, could you please try the attached sample on Intel VA-API, and say if the replay stall reproduces?",
   "comment_count": 1,
   "decision": "needs_info",
   "dupe_of": null,
@@ -2636,7 +2636,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 1763978,
-  "comment": "Thank you for the new data in bug 1958667.\n\n**Analysis**\n\nThe cause from comment 13 is still in the tree, because bug 1832469 backed out the fix. [WinUtils.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/windows/WinUtils.cpp#1642) calls `GetFinalPathNameByHandleW` with `VOLUME_NAME_DOS` only. This call fails on drives that a third-party driver mounts without the Mount Manager, such as ImDisk and VeraCrypt. Then [GMPProcessParent.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/dom/media/gmp/GMPProcessParent.cpp#198) stops the launch, and the GMP process does not start.\n\nThe backed-out patch changed the call for all paths, also in `nsLocalFile::ResolveSymlink`. That change broke resource:// loads in content processes with symlinked objdirs. A safer fix keeps the `VOLUME_NAME_DOS` call first. Only when that call fails, it retries with `VOLUME_NAME_NT` and maps the result to a DOS path. Normal volumes then keep the current behavior.\n\nThe new data in bug 1958667 comes from Firefox 159.0b2 with the profile on a VeraCrypt D: drive. In the media profile in bug 1958667 comment 17, the Widevine CDM loads and `MediaKeys` creation succeeds. After that, the site does not create a session, and playback does not start. The parent process also logs \"IPC failure for GetKeySystemCapabilities!\" from [UtilityMediaServiceChild.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/ipc/glue/UtilityMediaServiceChild.cpp#240). That message comes from the Media Foundation CDM utility process, not from GMP. Thus this capture can show a second problem on the same drive.\n\n**Next steps**\n\n:[person], could you please look at a fallback-only re-land of the patch? Could you please also tell us if the failure in bug 1958667 comment 17 needs its own bug?",
+  "comment": "Thank you for the new data in bug 1958667.\n\n**Analysis**\n\nThe cause from comment 13 is still in the tree, because bug 1832469 backed out the fix. [WinUtils.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/widget/windows/WinUtils.cpp#1642) calls `GetFinalPathNameByHandleW` with `VOLUME_NAME_DOS` only. This call fails on drives that a third-party driver mounts without the Mount Manager, such as ImDisk and VeraCrypt. Then [GMPProcessParent.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/dom/media/gmp/GMPProcessParent.cpp#198) stops the launch, and the GMP process does not start.\n\nThe backed-out patch changed the call for all paths, also in `nsLocalFile::ResolveSymlink`. That change broke resource:// loads in content processes with symlinked objdirs. A safer fix keeps the `VOLUME_NAME_DOS` call first. Only when that call fails, it retries with `VOLUME_NAME_NT` and maps the result to a DOS path. Normal volumes then keep the current behavior.\n\nThe new data in bug 1958667 comes from Firefox 159.0b2 with the profile on a VeraCrypt D: drive. In the media profile in bug 1958667 comment 17, the Widevine CDM loads and `MediaKeys` creation succeeds. After that, the site does not create a session, and playback does not start. The parent process also logs \"IPC failure for GetKeySystemCapabilities!\" from [UtilityMediaServiceChild.cpp](https://searchfox.org/firefox-main/rev/e77c5131fd07ddab0731efab207539f5ae3a00ce/ipc/glue/UtilityMediaServiceChild.cpp#240). That message comes from the Media Foundation CDM utility process, not from GMP. Thus this capture can show a second problem on the same drive.\n\n**Next steps**\n\n:aosmond, could you please look at a fallback-only re-land of the patch? Could you please also tell us if the failure in bug 1958667 comment 17 needs its own bug?",
   "comment_count": 20,
   "decision": "analyzed",
   "dupe_of": null,
@@ -2935,7 +2935,7 @@
    1766429
   ],
   "bug_id": 2071303,
-  "comment": "Thank you for the report and the about:support data.\n\n**Analysis**\n\nThe about:support shows the Intel Arc (BMG G31) as the active GPU, and `HARDWARE_VIDEO_DECODING_VULKAN` is available. No modified pref explains the failure.\n\nThe Vulkan decoder selects its GPU in `SelectVulkanDecoderPhysicalDevice` in [FFmpegVulkanVideoDecoder.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/platforms/ffmpeg/FFmpegVulkanVideoDecoder.cpp#1067). The code uses the match with the renderer GPU only to sort the list. When no GPU matches, it takes the first discrete GPU. Comment 3 shows this result: the log says `matches renderer: false`, and the NVIDIA GPU wakes up on an Optimus laptop.\n\nThe NVIDIA check from bug 2067923 is `NvidiaDrmModesetDisabled` in [FFmpegVulkanVideoDecoder.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/platforms/ffmpeg/FFmpegVulkanVideoDecoder.cpp#913). It reads `/sys/module/nvidia_drm/parameters/modeset`. When `nvidia-drm` is not loaded, this file does not exist, so the NVIDIA GPU stays a candidate. A GPU with no DRM node cannot export the decoded frame, so playback stops with \"Failed to export NV12 FD\". The fix for bug 2067923 is not in 155.0.1, and it does not cover a module that is not loaded.\n\nSuggested fix direction:\n1. When the renderer GPU is known and no Vulkan GPU matches it, do not use Vulkan decoding. Fall back to VA-API or software decoding on the renderer GPU.\n2. Skip a GPU that has no DRM node. Treat a missing `nvidia_drm` module as unusable.\n\nThe pref `media.hardware-video-decoding-vulkan.enabled` set to `false` in `about:config` turns off Vulkan decoding.\n\nThis bug blocks bug 2053144 (Vulkan video decoding on Linux) and bug 1766429 (Linux playback).\n\n**Next steps**\n\n:[person], could you please look at the device selection rule for multi-GPU systems?",
+  "comment": "Thank you for the report and the about:support data.\n\n**Analysis**\n\nThe about:support shows the Intel Arc (BMG G31) as the active GPU, and `HARDWARE_VIDEO_DECODING_VULKAN` is available. No modified pref explains the failure.\n\nThe Vulkan decoder selects its GPU in `SelectVulkanDecoderPhysicalDevice` in [FFmpegVulkanVideoDecoder.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/platforms/ffmpeg/FFmpegVulkanVideoDecoder.cpp#1067). The code uses the match with the renderer GPU only to sort the list. When no GPU matches, it takes the first discrete GPU. Comment 3 shows this result: the log says `matches renderer: false`, and the NVIDIA GPU wakes up on an Optimus laptop.\n\nThe NVIDIA check from bug 2067923 is `NvidiaDrmModesetDisabled` in [FFmpegVulkanVideoDecoder.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/platforms/ffmpeg/FFmpegVulkanVideoDecoder.cpp#913). It reads `/sys/module/nvidia_drm/parameters/modeset`. When `nvidia-drm` is not loaded, this file does not exist, so the NVIDIA GPU stays a candidate. A GPU with no DRM node cannot export the decoded frame, so playback stops with \"Failed to export NV12 FD\". The fix for bug 2067923 is not in 155.0.1, and it does not cover a module that is not loaded.\n\nSuggested fix direction:\n1. When the renderer GPU is known and no Vulkan GPU matches it, do not use Vulkan decoding. Fall back to VA-API or software decoding on the renderer GPU.\n2. Skip a GPU that has no DRM node. Treat a missing `nvidia_drm` module as unusable.\n\nThe pref `media.hardware-video-decoding-vulkan.enabled` set to `false` in `about:config` turns off Vulkan decoding.\n\nThis bug blocks bug 2053144 (Vulkan video decoding on Linux) and bug 1766429 (Linux playback).\n\n**Next steps**\n\n:stransky, could you please look at the device selection rule for multi-GPU systems?",
   "comment_count": null,
   "decision": "analyzed",
   "dupe_of": null,
@@ -3105,7 +3105,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2083351,
-  "comment": "Thank you for the profile in comment 2.\n\n**Analysis**\n\nThe profile shows the cause. VA-API decoding in the RDD process works without errors. The stall is in the `MediaDecoderStateMachine` buffering logic, not in the decoder.\n\n1. When the clip plays again after it ends, the state machine treats the seek to 0 as a warm seek (\"startSinkAfterWarmSeek=true\"). The code sets this flag in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/MediaDecoderStateMachine.cpp#3254).\n2. With hardware decoding, a warm seek prerolls only 1 video frame. The pref `media.seek-resume.video-preroll-frames-hw` is 1 in [StaticPrefList.yaml](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/modules/libpref/init/StaticPrefList.yaml#14132). Software decoding prerolls 3 frames, so it does not stall.\n3. 1 frame is less than `LOW_VIDEO_FRAMES` (2), so `HasLowDecodedVideo()` is true immediately. The state machine enters buffering 2 ms after playback starts, through the check in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/MediaDecoderStateMachine.cpp#3204).\n4. Buffering cannot end early for this file. The buffered range ends at 4.97 s (the end of the video track), but the duration is 5.0 s (the audio track). Thus `HasLowBufferedData()` stays true, and only the 15 s buffering timeout ends the wait (\"Buffered for 15.271s\").\n\nThis is a regression from bug 2050845, which added the warm seek preroll in Firefox 154. :[person] wrote that change.\n\n**Fix direction**\n\n- Keep the hardware warm preroll at or above `LOW_VIDEO_FRAMES`, or skip the low-data check until the queues refill after a warm resume.\n- Do not treat a seek from the ended state as a warm seek.\n- As a separate change, limit the `HasLowBufferedData()` end to the buffered end when the download is complete.\n\nThis bug blocks bug 1610199 (Linux VA-API playback) and bug 1766429 (Linux playback). Bug 2045880 shows a similar replay stall without hardware decoding, so it stays a related bug. :[person], the cause is now known, so a VA-API test of the sample is no longer necessary.",
+  "comment": "Thank you for the profile in comment 2.\n\n**Analysis**\n\nThe profile shows the cause. VA-API decoding in the RDD process works without errors. The stall is in the `MediaDecoderStateMachine` buffering logic, not in the decoder.\n\n1. When the clip plays again after it ends, the state machine treats the seek to 0 as a warm seek (\"startSinkAfterWarmSeek=true\"). The code sets this flag in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/MediaDecoderStateMachine.cpp#3254).\n2. With hardware decoding, a warm seek prerolls only 1 video frame. The pref `media.seek-resume.video-preroll-frames-hw` is 1 in [StaticPrefList.yaml](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/modules/libpref/init/StaticPrefList.yaml#14132). Software decoding prerolls 3 frames, so it does not stall.\n3. 1 frame is less than `LOW_VIDEO_FRAMES` (2), so `HasLowDecodedVideo()` is true immediately. The state machine enters buffering 2 ms after playback starts, through the check in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/4523d65b575546e2b588dfb8b91e3d94ebeec19a/dom/media/MediaDecoderStateMachine.cpp#3204).\n4. Buffering cannot end early for this file. The buffered range ends at 4.97 s (the end of the video track), but the duration is 5.0 s (the audio track). Thus `HasLowBufferedData()` stays true, and only the 15 s buffering timeout ends the wait (\"Buffered for 15.271s\").\n\nThis is a regression from bug 2050845, which added the warm seek preroll in Firefox 154. :alwu wrote that change.\n\n**Fix direction**\n\n- Keep the hardware warm preroll at or above `LOW_VIDEO_FRAMES`, or skip the low-data check until the queues refill after a warm resume.\n- Do not treat a seek from the ended state as a warm seek.\n- As a separate change, limit the `HasLowBufferedData()` end to the buffered end when the download is complete.\n\nThis bug blocks bug 1610199 (Linux VA-API playback) and bug 1766429 (Linux playback). Bug 2045880 shows a similar replay stall without hardware decoding, so it stays a related bug. :stransky, the cause is now known, so a VA-API test of the sample is no longer necessary.",
   "comment_count": 3,
   "decision": "analyzed",
   "dupe_of": null,
@@ -4316,7 +4316,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2084005,
-  "comment": "Thanks for the report.\n\n**Analysis**\n\nThe crash report is from a Fenix Nightly 160 content process on Android 12 (API 31). The crash is on the `WebrtcWorker` thread, at the `MOZ_DIAGNOSTIC_CRASH` in the black frame branch of `ProcessVideoFrame` ([VideoFrameConverter.h](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/VideoFrameConverter.h#491)). Crash Stats shows 2 crashes with this reason, all in 160.0a1.\n\nThe black frame branch gets a buffer from `mScalingPool`, which keeps at most `CONVERTER_BUFFER_POOL_SIZE` (5) buffers of one size. `CreateI420Buffer` returns `nullptr` when all 5 buffers are still in use, or when the allocation fails. The scaling branch uses the same pool ([VideoFrameConverter.h](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/VideoFrameConverter.h#396)). It drops the frame and asserts only after 100 failures in a row. The black frame branch crashes on the first failure.\n\nA possible trigger is `SetTrackEnabled(false)`. The black frame then has the same size as the scaled frames that the encoder still holds, and `mLastFrameConverted` holds one more buffer. The crash report does not show which of the two `nullptr` causes occurred. The device had about 250 MiB of free physical memory.\n\nIn Beta and Release builds, the same branch logs a warning, drops the frame and continues. Bug 1931877 only changed the macro name, so it did not cause this crash. Bug 1538558 is an older intermittent with the same assertion message.\n\n**Next steps**\n\nWe suggest that the black frame branch handle a `nullptr` buffer like the scaling branch. It can count the failures in a row and assert only after about 100. A real leak then still trips the assertion. Andreas Pehrson (:[person]) made the last change to this logic in bug 1938047 and knows this code.",
+  "comment": "Thanks for the report.\n\n**Analysis**\n\nThe crash report is from a Fenix Nightly 160 content process on Android 12 (API 31). The crash is on the `WebrtcWorker` thread, at the `MOZ_DIAGNOSTIC_CRASH` in the black frame branch of `ProcessVideoFrame` ([VideoFrameConverter.h](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/VideoFrameConverter.h#491)). Crash Stats shows 2 crashes with this reason, all in 160.0a1.\n\nThe black frame branch gets a buffer from `mScalingPool`, which keeps at most `CONVERTER_BUFFER_POOL_SIZE` (5) buffers of one size. `CreateI420Buffer` returns `nullptr` when all 5 buffers are still in use, or when the allocation fails. The scaling branch uses the same pool ([VideoFrameConverter.h](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/VideoFrameConverter.h#396)). It drops the frame and asserts only after 100 failures in a row. The black frame branch crashes on the first failure.\n\nA possible trigger is `SetTrackEnabled(false)`. The black frame then has the same size as the scaled frames that the encoder still holds, and `mLastFrameConverted` holds one more buffer. The crash report does not show which of the two `nullptr` causes occurred. The device had about 250 MiB of free physical memory.\n\nIn Beta and Release builds, the same branch logs a warning, drops the frame and continues. Bug 1931877 only changed the macro name, so it did not cause this crash. Bug 1538558 is an older intermittent with the same assertion message.\n\n**Next steps**\n\nWe suggest that the black frame branch handle a `nullptr` buffer like the scaling branch. It can count the failures in a row and assert only after about 100. A real leak then still trips the assertion. Andreas Pehrson (:pehrsons) made the last change to this logic in bug 1938047 and knows this code.",
   "comment_count": 2,
   "decision": "analyzed",
   "dupe_of": null,
@@ -4354,7 +4354,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2075849,
-  "comment": "The pernosco session in comment 10 is now available. Bugmon confirms that the testcase reproduces the assertion every time.\n\n**Analysis**\n\n- The assertion means that the graph did not finish its shutdown in 20 s after `ForceShutDown` ([AudioContext.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/webaudio/AudioContext.cpp#806), [MediaTrackGraph.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/MediaTrackGraph.cpp#1771)). In a release build, `Notify` removes the shutdown blocker and the graph leaks ([MediaTrackGraph.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/MediaTrackGraph.cpp#1774)). We found no crash path in release builds.\n- The stack has no `MediaTrackGraphShutDownRunnable` or `AudioCallbackDriver::Shutdown` frame. This is different from bug 2071751, where many queued cubeb `Init()` calls delayed the shutdown. Here the testcase uses only one AudioContext at 48 kHz.\n- The worker shutdown in `nsThread::Shutdown()` runs a nested event loop. That loop still runs events, because the timer itself ran in it.\n- Main hypothesis, not confirmed: the graph stopped its iterations before it handled the shutdown message. One possible cause is a cubeb stream that stops its callbacks and sends no `CUBEB_STATE_ERROR` ([GraphDriver.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/GraphDriver.cpp#1103)). Another possible cause is a shutdown message that stays in the new tail dispatch path.\n- The bugmon range in comment 2 has only Fenix and WPT meta changes. It does not explain the regression, so the regressor is not known.\n\n**Next steps**\n\nWe recommend these checks in the pernosco session, at the time `Notify` runs:\n\n1. Check whether `mForceShutDownReceived` is set.\n2. Check `mAudioStreamState` and `mFallbackDriverState` of the `AudioCallbackDriver`.\n3. Check the time of the last `DataCallback`.\n\nThe open needinfo on :[person] from comment 5 stays. This trace can also answer the question in bug 2071751 about an idle or blocked CubebOperation thread.",
+  "comment": "The pernosco session in comment 10 is now available. Bugmon confirms that the testcase reproduces the assertion every time.\n\n**Analysis**\n\n- The assertion means that the graph did not finish its shutdown in 20 s after `ForceShutDown` ([AudioContext.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/webaudio/AudioContext.cpp#806), [MediaTrackGraph.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/MediaTrackGraph.cpp#1771)). In a release build, `Notify` removes the shutdown blocker and the graph leaks ([MediaTrackGraph.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/MediaTrackGraph.cpp#1774)). We found no crash path in release builds.\n- The stack has no `MediaTrackGraphShutDownRunnable` or `AudioCallbackDriver::Shutdown` frame. This is different from bug 2071751, where many queued cubeb `Init()` calls delayed the shutdown. Here the testcase uses only one AudioContext at 48 kHz.\n- The worker shutdown in `nsThread::Shutdown()` runs a nested event loop. That loop still runs events, because the timer itself ran in it.\n- Main hypothesis, not confirmed: the graph stopped its iterations before it handled the shutdown message. One possible cause is a cubeb stream that stops its callbacks and sends no `CUBEB_STATE_ERROR` ([GraphDriver.cpp](https://searchfox.org/firefox-main/rev/fc216bdbdf04fca964b8f241844b0e6d048cc245/dom/media/GraphDriver.cpp#1103)). Another possible cause is a shutdown message that stays in the new tail dispatch path.\n- The bugmon range in comment 2 has only Fenix and WPT meta changes. It does not explain the regression, so the regressor is not known.\n\n**Next steps**\n\nWe recommend these checks in the pernosco session, at the time `Notify` runs:\n\n1. Check whether `mForceShutDownReceived` is set.\n2. Check `mAudioStreamState` and `mFallbackDriverState` of the `AudioCallbackDriver`.\n3. Check the time of the last `DataCallback`.\n\nThe open needinfo on :karlt from comment 5 stays. This trace can also answer the question in bug 2071751 about an idle or blocked CubebOperation thread.",
   "comment_count": 11,
   "decision": "analyzed",
   "dupe_of": null,
@@ -5896,8 +5896,8 @@
   "needinfo": [
    {
     "name": null,
-    "nick": null,
-    "role": "other"
+    "nick": "DaisyTheFoxxo",
+    "role": "reporter"
    },
    {
     "name": "Tymur Boiko",
@@ -6927,7 +6927,7 @@
   "asked": [],
   "blocks_add": [],
   "bug_id": 2086472,
-  "comment": "This looks like a focus problem in the notification bar code, not in the media code. Moving to Toolkit :: UI Widgets.\n\n**Analysis**\n\nThe \"Enable DRM\" button callback is in [EncryptedMediaParent.sys.mjs](https://searchfox.org/firefox-main/rev/ff3b300c151f45f09f300284659f24f5d95b0f25/browser/actors/EncryptedMediaParent.sys.mjs#95). It turns on the DRM prefs and reloads the tab. Then the bar closes.\n\nWhen a bar that has focus closes, `_removeNotificationElement()` in [notificationbox.js](https://searchfox.org/firefox-main/rev/ff3b300c151f45f09f300284659f24f5d95b0f25/toolkit/content/widgets/notificationbox.js#300) calls `Services.focus.moveFocus()` with `MOVEFOCUS_FORWARD`. This moves focus into the page as if the user pressed Tab. The content process focuses the first tab stop of the page with `FLAG_BYKEY`, so that element matches `:[person]`. On Amazon, the first tab stop is the \"Skip to: Main content\" link. The site opens its keyboard shortcuts panel when that link gets focus. The screenshot shows a focus ring on \"Main content\" and no bar, which agrees with this.\n\nThis also explains the platforms. On Windows and Linux, a mouse click focuses the bar button. On macOS, a mouse click does not focus the button ([nsXULElement.cpp](https://searchfox.org/firefox-main/rev/ff3b300c151f45f09f300284659f24f5d95b0f25/dom/xul/nsXULElement.cpp#336)), so `moveFocus()` does not run. The reload then removes the panel, so it shows only for a moment. This cause is probable: it comes from code reading, not from a log.\n\nThis is not a known regression. The `moveFocus()` call is old, and the problem also reproduces on Firefox 159.\n\n**Next steps**\n\nHanna, could you please look at this bug? We suggest that `notificationbox.js` gives focus back to the tab's `<browser>` when a focused bar closes, in place of a forward focus move. This change fixes every bar whose button closes it. A smaller fix is to focus the browser in the EME button callback before the bar closes.",
+  "comment": "This looks like a focus problem in the notification bar code, not in the media code. Moving to Toolkit :: UI Widgets.\n\n**Analysis**\n\nThe \"Enable DRM\" button callback is in [EncryptedMediaParent.sys.mjs](https://searchfox.org/firefox-main/rev/ff3b300c151f45f09f300284659f24f5d95b0f25/browser/actors/EncryptedMediaParent.sys.mjs#95). It turns on the DRM prefs and reloads the tab. Then the bar closes.\n\nWhen a bar that has focus closes, `_removeNotificationElement()` in [notificationbox.js](https://searchfox.org/firefox-main/rev/ff3b300c151f45f09f300284659f24f5d95b0f25/toolkit/content/widgets/notificationbox.js#300) calls `Services.focus.moveFocus()` with `MOVEFOCUS_FORWARD`. This moves focus into the page as if the user pressed Tab. The content process focuses the first tab stop of the page with `FLAG_BYKEY`, so that element matches `:focus-visible`. On Amazon, the first tab stop is the \"Skip to: Main content\" link. The site opens its keyboard shortcuts panel when that link gets focus. The screenshot shows a focus ring on \"Main content\" and no bar, which agrees with this.\n\nThis also explains the platforms. On Windows and Linux, a mouse click focuses the bar button. On macOS, a mouse click does not focus the button ([nsXULElement.cpp](https://searchfox.org/firefox-main/rev/ff3b300c151f45f09f300284659f24f5d95b0f25/dom/xul/nsXULElement.cpp#336)), so `moveFocus()` does not run. The reload then removes the panel, so it shows only for a moment. This cause is probable: it comes from code reading, not from a log.\n\nThis is not a known regression. The `moveFocus()` call is old, and the problem also reproduces on Firefox 159.\n\n**Next steps**\n\nHanna, could you please look at this bug? We suggest that `notificationbox.js` gives focus back to the tab's `<browser>` when a focused bar closes, in place of a forward focus move. This change fixes every bar whose button closes it. A smaller fix is to focus the browser in the EME button callback before the bar closes.",
   "comment_count": 1,
   "decision": "wrong_component",
   "dupe_of": null,
@@ -8243,7 +8243,7 @@
   "needinfo": [
    {
     "name": null,
-    "nick": "duck",
+    "nick": null,
     "role": "other"
    }
   ],
@@ -8757,9 +8757,9 @@
   "move_to": null,
   "needinfo": [
    {
-    "name": null,
-    "nick": null,
-    "role": "other"
+    "name": "Line Riedel",
+    "nick": "WangleTheDangle",
+    "role": "reporter"
    }
   ],
   "needinfo_cleared": 0,
@@ -10150,7 +10150,7 @@
    1790066
   ],
   "bug_id": 2088156,
-  "comment": "Thank you for the report and the screenshot.\n\n**Analysis**\n\nThe stuck entry comes from the media control code, not from GTK. The box character in the entry is also in the Firefox tab title, so it comes from the page title.\n\nA tab's controller deactivates only when no media is controlled and the page has no active media session ([MediaController.cpp](https://searchfox.org/firefox-main/rev/cf103b9362d64aa14c7adc0c0e4b9469ccbf6caa/dom/media/mediacontrol/MediaController.cpp#486)). This agrees with the analysis in comment 3. When the page sets no metadata, Firefox uses the document title ([MediaStatusManager.cpp](https://searchfox.org/firefox-main/rev/cf103b9362d64aa14c7adc0c0e4b9469ccbf6caa/dom/media/mediacontrol/MediaStatusManager.cpp#195)). A navigation inside X keeps the same document, so the entry shows the title of the new post.\n\nBug 1696731 shows a second way to get the same entry. There, YouTube hides the old video element but keeps it, so the element stays controllable. It is not known which case applies on X. The bug also waits for the answer to the question in comment 3 to Alastor, on whether this behavior is intended.\n\n**Next steps**\n\n:[person], could you please do this test and add the result to this bug? The result shows which of the two cases applies on X.\n\n1. Play a video with sound in a post on X.\n2. Go to a post with no video in the same tab.\n3. Click the play button in the GNOME media entry.\n4. Tell us if you hear the sound of the old video.",
+  "comment": "Thank you for the report and the screenshot.\n\n**Analysis**\n\nThe stuck entry comes from the media control code, not from GTK. The box character in the entry is also in the Firefox tab title, so it comes from the page title.\n\nA tab's controller deactivates only when no media is controlled and the page has no active media session ([MediaController.cpp](https://searchfox.org/firefox-main/rev/cf103b9362d64aa14c7adc0c0e4b9469ccbf6caa/dom/media/mediacontrol/MediaController.cpp#486)). This agrees with the analysis in comment 3. When the page sets no metadata, Firefox uses the document title ([MediaStatusManager.cpp](https://searchfox.org/firefox-main/rev/cf103b9362d64aa14c7adc0c0e4b9469ccbf6caa/dom/media/mediacontrol/MediaStatusManager.cpp#195)). A navigation inside X keeps the same document, so the entry shows the title of the new post.\n\nBug 1696731 shows a second way to get the same entry. There, YouTube hides the old video element but keeps it, so the element stays controllable. It is not known which case applies on X. The bug also waits for the answer to the question in comment 3 to Alastor, on whether this behavior is intended.\n\n**Next steps**\n\n:sonickydon, could you please do this test and add the result to this bug? The result shows which of the two cases applies on X.\n\n1. Play a video with sound in a post on X.\n2. Go to a post with no video in the same tab.\n3. Click the play button in the GNOME media entry.\n4. Tell us if you hear the sound of the old video.",
   "comment_count": 4,
   "decision": "needs_info",
   "dupe_of": null,
@@ -10958,5 +10958,324 @@
   "started_at": "2026-11-07T01:58:49+00:00",
   "team": "media",
   "title": "Firefox is impossible to watch for tiktok, and subtitles especially the ai ones on online video players0"
+ },
+ {
+  "agent_version": "6224745a",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2085224,
+  "comment": "Christian, thank you for the tests in Firefox 158 and 158.0.1.\n\nThis bug has had no reply to the request in comment 5 for 14 days, so it closes as incomplete. The probable cause is still bug 2082265, which is fixed in Firefox 159. Nobody confirmed this cause on this machine.\n\n**Next steps**\n\nChristian, could you please add a comment to this bug if the titles still do not play in Firefox 159? Keep `media.wmf.media-engine.enabled` at its default value `2` for this test. Please also attach the text of `about:support` from Firefox 159. Please also do the capture steps of comment 5. Then the bug can open again.",
+  "comment_count": 6,
+  "decision": "incomplete",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-23T02:11:37Z",
+  "fix_tags": [],
+  "issue_type": "drm",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-07T23:56:59Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": "INCOMPLETE",
+  "run_id": "local-20261107-232347-084f26",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-07T23:23:47+00:00",
+  "team": "media",
+  "title": "Firefox 158 \u2013 Netflix and Disney+ Playback Failure on Windows (WMF Media Engine Regression)"
+ },
+ {
+  "agent_version": "6224745a",
+  "asked": [
+   "media profile capture",
+   "about:support"
+  ],
+  "blocks_add": [
+   2023365
+  ],
+  "bug_id": 2090627,
+  "comment": "Thanks for the clear steps.\n\n**Analysis**\n\nThe player panel on this page uses a plain `<audio>` element with an MP3 file. The tab speaker icon follows the audible state that the media element reports, see [HTMLMediaElement.cpp](https://searchfox.org/firefox-main/rev/fc7282b70b35dd34585b4b3eb481b337c9819d87/dom/media/mediaelement/HTMLMediaElement.cpp#8998). The 15s buttons of the panel mute the element, seek, and then unmute it. The code alone does not show which step misses the audible state on the first play.\n\n**Next steps**\n\nStefan, could you please record a capture with the same autoplay prefs? Stop the capture when audio plays with no speaker icon. Do not use the 15s buttons before the capture stops.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. Under **Log module selection**, choose **\"Media playback\"** in the **Logging preset:** drop-down.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nStefan, could you please also attach about:support?\n\n1. Open `about:support`.\n2. Click \"Copy text to clipboard\".\n3. Paste the text into a comment on this bug.",
+  "comment_count": 2,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-07T17:06:57Z",
+  "fix_tags": [],
+  "issue_type": "other",
+  "issue_type_note": "tab audible indicator missing",
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Stefan P.",
+    "nick": "basic.master",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-07T23:57:02Z",
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261107-232347-0c904b",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-07T23:23:47+00:00",
+  "team": "media",
+  "title": "No speaker icon on tab when autoplay disabled and playing podcast on specific website"
+ },
+ {
+  "agent_version": "6224745a",
+  "asked": [
+   "RDD crash ids"
+  ],
+  "blocks_add": [],
+  "bug_id": 2068257,
+  "comment": "Thanks for the profile.\n\n**Analysis**\n\nThe profile in comment 9 is from Firefox 159 on twitch.tv, with H.264 video. Each time Firefox starts a hardware H.264 decoder, the RDD process crashes about 0.5 seconds later. The media log then shows `NS_ERROR_DOM_MEDIA_REMOTE_CRASHED_RDD_OR_GPU_ERR` and \"Video remote decoder crashed, disable HW acceleration\". Firefox then uses a software decoder, so the hardware decoder stays idle. The profile shows five such crashes, one after each quality change of the stream.\n\nThe bundled ffvpx has no H.264 decoder. So the FFmpeg of the Flatpak runtime (libavcodec 61, FFmpeg 7.x) does the Vulkan decode. Firefox 159 does not check the version of a system libavcodec before it uses direct export. Bug 2056593 had the same setup: Flatpak, FFmpeg 7.1.3, an AMD GPU and direct export, with a segfault in `libvulkan_radeon.so`. There, Tymur found that the FFmpeg fix for that crash first shipped in FFmpeg 8.1 (bug 2056593, comment 9). This is the probable cause here too, but the crash stack is not in the profile.\n\nThe fix of bug 2085082 adds a check in [FFmpegVideoDecoder.cpp](https://searchfox.org/firefox-main/rev/fc7282b70b35dd34585b4b3eb481b337c9819d87/dom/media/platforms/ffmpeg/FFmpegVideoDecoder.cpp#517). On an AMD GPU, a system FFmpeg older than 63.20.101 does not use direct export. Firefox then uses the copy path, which works for this setup (comment 0). This fix is in Firefox 161, and it is not in Firefox 159. GPUs of other vendors with an old system FFmpeg have no such check yet.\n\nThis bug stays under the Vulkan video decoding meta bug 2053144 and the Linux playback meta bug 1766429. It also still waits for the Flatpak runtime version that Tymur asked for in comment 6.\n\n**Next steps**\n\n@kdebugs8, could you please add the crash reports of the RDD process from the comment 9 session?\n\n1. Open `about:crashes`.\n2. Find the reports from the time of the profile.\n3. Click **Submit** on each report that is not submitted.\n4. Copy each report ID that starts with `bp-`. Paste the IDs into a comment on this bug.\n\nIf `about:crashes` shows no report, run `dmesg` and paste the `segfault` lines from that time.",
+  "comment_count": 10,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-09-01T20:33:43Z",
+  "fix_tags": [],
+  "issue_type": "codec-support",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "kdebugs8",
+    "nick": "kdebugs8",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-07T23:57:06Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261107-232347-249cb6",
+  "security_hold": false,
+  "see_also_add": [
+   2056593,
+   2085082
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-07T23:23:47+00:00",
+  "team": "media",
+  "title": "[flatpak] media.hardware-video-decoding-vulkan.direct-export.enabled"
+ },
+ {
+  "agent_version": "6224745a",
+  "asked": [
+   "normal-mode media profile",
+   "about:support",
+   "last working version"
+  ],
+  "blocks_add": [],
+  "bug_id": 2064949,
+  "comment": "Thank you for the profile in comment 4.\n\n**Analysis**\n\nThe `about:logging` profile in comment 4 has only the main process and the decoder process. The decoder process decoded H.264 video at 1280x720 with no error. Then a flush came, and the decoding stopped. The process of the page is not in the profile, so the profile does not show why the player stopped. The capture also ran in Troubleshoot Mode, which turns off hardware decoding.\n\nIf \"Error Code: 2\" in comment 9 is the error code of the media element, it is `MEDIA_ERR_NETWORK`. For Media Source playback, Firefox gives this code when the page script calls `endOfStream(\"network\")` ([MediaSource.cpp](https://searchfox.org/firefox-main/rev/fc7282b70b35dd34585b4b3eb481b337c9819d87/dom/media/mediasource/MediaSource.cpp#400-403)). Firefox's own decode errors give code 3 or 4. So the cause is not known yet. It can be a failed network request, or a change on the site.\n\n**Next steps**\n\n@D-1blsvhfeasjl, could you please capture a new profile in normal mode, not in Troubleshoot Mode? Do not close the wcvb.com tab before the click on **Stop Logging**.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. Under **Log module selection**, choose **\"Media playback\"** in the **Logging preset:** drop-down.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\n@D-1blsvhfeasjl, could you please attach the text of `about:support`? Open `about:support`, click \"Copy text to clipboard\" and paste it into a comment.\n\n@D-1blsvhfeasjl, could you please tell us the last Firefox version that played the video? The list is in Settings, under \"Firefox Updates\", in \"Show Update History\".",
+  "comment_count": 10,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-08-19T23:42:34Z",
+  "fix_tags": [],
+  "issue_type": "playback-failure",
+  "issue_type_note": null,
+  "keywords_add": [
+   "regression"
+  ],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": null,
+    "nick": "D-1blsvhfeasjl",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-07T23:57:10Z",
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261107-232347-9023eb",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-07T23:23:47+00:00",
+  "team": "media",
+  "title": "Video fail to play in ESR 115 Win7 and 8.1 on https://www.wcvb.com/nowcast"
+ },
+ {
+  "agent_version": "6224745a",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2090627,
+  "comment": "Thanks for the profile and about:support.\n\n**Analysis**\n\nThe profile shows a race between two audio sinks in the media code. With these autoplay prefs, the first `play()` fails. After the click, the page sets `currentTime = 0`, calls `play()`, and sets `currentTime = 0` again within 7 ms.\n\nA seek that completes during playback starts an async init of a new `AudioSink`, see [AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/mediasink/AudioSinkWrapper.cpp#516). The sink creator in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/MediaDecoderStateMachine.cpp#3542-3549) moves `mAudibleListener` to each new sink when it creates the sink. In the profile, the listener moves to the second sink at 6.612s.\n\nThen the first init finishes and its sink plays. The check in [AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/mediasink/AudioSinkWrapper.cpp#576-582) does not see that a newer `Start` superseded this init. The `mAsyncDispatchSeq` check in [AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/mediasink/AudioSinkWrapper.cpp#531-535) runs only before the init starts. The wrapper then shuts down the second sink as \"unneeded\".\n\nAt 6.785s the first sink logs \"Notifying that audio is now audible\". Nothing listens to that sink, so the element does not become audible and the tab shows no icon. [AudioSink.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/mediasink/AudioSink.cpp#497-508) sends the event only on a change, so the event does not come again.\n\nThis explains each observation. The 15s buttons mute and unmute, and the unmute creates one new sink with the listener. A long pause probably makes the decoder dormant, and the resume then creates one new sink. A wait between the steps removes the overlap of the two seeks. The audio output is correct; only the audible state is wrong.\n\nThe probable cause is bug 2050845, which landed on 2026-07-03 for Firefox 154. It added the async init for a seek resume. Before it, a seek resume created the sink at once. No bisection confirms this, and the regression status is not known yet. The current tree has the same code.\n\n**Fix direction**\n\n- Connect the audible event to the sink that starts, not to the sink that the creator makes. When the listener moves, send the current audible state again.\n- Also drop a superseded async init in the continuation. For example, check `mAsyncDispatchSeq` again there, or increase it in `Stop()`.\n- A gtest in [TestAudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/gtest/TestAudioSinkWrapper.cpp) can show the race every time. Call `Start(SeekResume)`, `Stop`, and `Start(SeekResume)` before the first init completes. Then check which sink plays.\n\nThis bug blocks the autoplay meta bug 2023365.\n\nAlastor, could you please look at this bug? Bug 2050845 added the async init path.",
+  "comment_count": 5,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-07T17:06:57Z",
+  "fix_tags": [],
+  "issue_type": "web-api",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Alastor Wu",
+    "nick": "alwu",
+    "role": "other"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-08T20:21:25Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261108-200551-06de81",
+  "security_hold": false,
+  "see_also_add": [
+   2050845
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-08T20:05:51+00:00",
+  "team": "media",
+  "title": "No speaker icon on tab when autoplay disabled and playing podcast on specific website"
+ },
+ {
+  "agent_version": "6224745a",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2076218,
+  "comment": null,
+  "comment_count": null,
+  "decision": "watching",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-09-28T17:15:51Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "no_action",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261108-200551-0f1e9b",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-08T20:05:51+00:00",
+  "team": "media",
+  "title": "Media playback hangs with AirPods Pro as output on macOS 27; works while about:support is open"
+ },
+ {
+  "agent_version": "6224745a",
+  "asked": [
+   "wake lock capture",
+   "open tabs list",
+   "about:support"
+  ],
+  "blocks_add": [
+   2023379
+  ],
+  "bug_id": 1808039,
+  "comment": "Thanks to everyone for the `powercfg -requests` results. The SYSTEM line and the EXECUTION line come from two different parts of Firefox.\n\n**Analysis**\n\nThe SYSTEM line \"The audio stream is already in use\" probably comes from a silent `AudioContext`. A page can create an `AudioContext` and not suspend or close it. Then Firefox keeps an audio output stream open, also when the page outputs only silence. [MediaTrackGraph.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/MediaTrackGraph.cpp#391) keeps the audio device driver while any Web Audio track exists. Each realtime destination node adds an audio output ([AudioDestinationNode.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/webaudio/AudioDestinationNode.cpp#490)). The stream stays open until the page suspends or closes the context, or until the tab closes.\n\nThis cause agrees with these facts on this bug:\n\n- The stream starts after an Outlook notification sound (comment 25).\n- The stream stops when that tab closes (comment 29).\n- The problem stops with `dom.webaudio.enabled` set to `false` (comment 31).\n\nBug 2002450 tracks the fix. It removes the destination output when the node has no active input for some time. Bug 2057010 shows the same symptom with Soundcloud on Windows 11. This bug also blocks bug 2023379, the meta bug for media sleep problems.\n\nThe EXECUTION line \"non-display request\" is the `audio-playing` wake lock ([nsAppShell.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/widget/windows/nsAppShell.cpp#81)). The code does not explain why this lock stays when no sound plays. A Web Audio page holds it only while its output is audible ([AudioDestinationNode.cpp](https://searchfox.org/firefox-main/rev/b42441b06bc2b98160f12ee2dff262dd55583a9f/dom/media/webaudio/AudioDestinationNode.cpp#841)). A paused media element releases it after 10 seconds.\n\nThus a source that Firefox measures as audible probably holds the lock. Examples are a page with very quiet audio, or an extension page with no tab icon. Comments 30 and 40 say that the problem continued after the tab closed or unloaded. Another page, window or extension can explain this, but nothing confirms it yet.\n\n**Next steps**\n\n@nobeks, PA and nissemus, could you please capture a profile that shows which source holds the EXECUTION lock? After step 2, add `,WinWakeLock:5,AudioChannel:5,MediaTrackGraph:5` at the end of the module list.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. Under **Log module selection**, choose **\"Media playback\"** in the **Logging preset:** drop-down.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nKeep the logging on until `powercfg -requests` shows the Firefox lines. Then stop it.\n\nPlease also list the open tabs, windows and extensions at that time.\n\nPlease also copy the text of `about:support` into a comment.",
+  "comment_count": 44,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2022-12-30T16:39:48Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": null,
+    "nick": "nobeks",
+    "role": "reporter"
+   },
+   {
+    "name": "PA",
+    "nick": "trap",
+    "role": "other"
+   },
+   {
+    "name": "nissemus",
+    "nick": "bugzilla",
+    "role": "other"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-08T20:21:31Z",
+  "priority": "P2",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261108-200551-a9553b",
+  "security_hold": false,
+  "see_also_add": [
+   2002450,
+   2057010
+  ],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-08T20:05:51+00:00",
+  "team": "media",
+  "title": "Firefox won't let Windows 11 computers sleep"
  }
 ]
