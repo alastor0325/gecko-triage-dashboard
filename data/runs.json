@@ -73,7 +73,7 @@
   "source": "daily",
   "started_at": "2026-10-15T05:43:48+00:00",
   "team": "media",
-  "title": "Crash in [@ amdh264enc64.dll | RtlpWaitOnCriticalSection] on GCN Radeon graphics"
+  "title": "Crash in [@ amdh264enc64.dll | RtlpWaitOnCriticalSection] on GCN Radeon graphics w/ dual GPUs"
  },
  {
   "agent_version": "97f4aefa",
@@ -407,7 +407,7 @@
    {
     "name": "Martin Str\u00e1nsk\u00fd",
     "nick": "stransky",
-    "role": "other"
+    "role": "assignee"
    }
   ],
   "needinfo_cleared": 0,
@@ -429,7 +429,7 @@
   "source": "daily",
   "started_at": "2026-10-15T06:00:16+00:00",
   "team": "media",
-  "title": "Firefox unconditionally inhibits the screensaver even when only audio is playing"
+  "title": "Active tab playing audio has started inhibiting idle (screensaver) instead of just inhibiting suspend on Linux"
  },
  {
   "agent_version": "97f4aefa",
@@ -2246,7 +2246,7 @@
   "source": "daily",
   "started_at": "2026-10-17T18:31:11+00:00",
   "team": "media",
-  "title": "Broken seeking in MSE on Android with H265 MP4 missing the stss box, only if endOfStream not called"
+  "title": "Broken seeking in MSE on Android with H265/VP9 MP4 missing the stss box"
  },
  {
   "agent_version": "5afba2a0",
@@ -5127,7 +5127,7 @@
    {
     "name": "R\u00e9mi Papilli\u00e9",
     "nick": "wsmind",
-    "role": "other"
+    "role": "assignee"
    }
   ],
   "needinfo_cleared": 0,
@@ -5512,7 +5512,7 @@
   "source": "daily",
   "started_at": "2026-10-22T16:51:00+00:00",
   "team": "media",
-  "title": "Graphics fail to load video on Nightly 160.0a1 (2026-10-21) 64-Bit"
+  "title": "Video playback green graphics error on Nightly 160.0a1 (2026-10-21) 64-Bit"
  },
  {
   "agent_version": "b8b0ae16",
@@ -5585,7 +5585,7 @@
    {
     "name": "Andrew Osmond",
     "nick": "aosmond",
-    "role": "other"
+    "role": "assignee"
    }
   ],
   "needinfo_cleared": 0,
@@ -5902,7 +5902,7 @@
    {
     "name": "Tymur Boiko",
     "nick": "tboiko",
-    "role": "other"
+    "role": "assignee"
    }
   ],
   "needinfo_cleared": 0,
@@ -5968,7 +5968,7 @@
   "source": "daily",
   "started_at": "2026-10-24T17:12:42+00:00",
   "team": "media",
-  "title": "Erratic scrolling, unexpected Spacebar focus behavior, and phantom scroll-up events across multiple websites (YouTube, Facebook)"
+  "title": "Slight phantom scroll-up events across multiple websites (YouTube, Facebook)"
  },
  {
   "agent_version": "227777f8",
@@ -6765,7 +6765,7 @@
   "source": "daily",
   "started_at": "2026-10-27T14:02:56+00:00",
   "team": "media",
-  "title": "YouTube"
+  "title": "YouTube player control panel disappears after changing the playback speed"
  },
  {
   "agent_version": "ff21f23a",
@@ -9391,7 +9391,7 @@
    {
     "name": "Alastor Wu",
     "nick": "alwu",
-    "role": "other"
+    "role": "assignee"
    }
   ],
   "needinfo_cleared": 1,
@@ -9591,7 +9591,7 @@
    {
     "name": "Tim Huang",
     "nick": "timhuang",
-    "role": "other"
+    "role": "assignee"
    }
   ],
   "needinfo_cleared": 0,
@@ -9789,7 +9789,7 @@
   "source": "daily",
   "started_at": "2026-11-04T17:58:46+00:00",
   "team": "media",
-  "title": "[Wayland][HDR] Fix HDR metadata fallback to avoid overexposure under KWin 6.8+ and enforce validation constraints on wp_color_management_v1 parameters"
+  "title": "[Wayland][HDR] Fix HDR metadata fallback to avoid overexposure under KWin 6.8+"
  },
  {
   "agent_version": "e71b8037",
@@ -11277,5 +11277,132 @@
   "started_at": "2026-11-08T20:05:51+00:00",
   "team": "media",
   "title": "Firefox won't let Windows 11 computers sleep"
+ },
+ {
+  "agent_version": "ff82acba",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2090426,
+  "comment": null,
+  "comment_count": null,
+  "decision": "watching",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-07T00:01:26Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "no_action",
+  "pending_actions": null,
+  "posted": false,
+  "posted_at": null,
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261109-184732-3e242d",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-09T18:47:32+00:00",
+  "team": "media",
+  "title": "Opening a mic input stream with echoCancellation:true makes WebAudio output sound terrible on macOS"
+ },
+ {
+  "agent_version": "ff82acba",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 1881596,
+  "comment": "This report has the same defect as bug 1368063, which is still open. Both bugs show the same console error from `SupportChecker::AddMediaFormatChecker`: \"Decoder may not have the capability to handle the requested video format with YUV444 chroma subsampling.\"\n\nOn Windows and macOS, [PDMFactory.cpp](https://searchfox.org/firefox-main/rev/a82bcf39e8d23e7b06e021044db52f74210862ce/dom/media/platforms/PDMFactory.cpp#264-281) rejects each H.264 stream with the High 4:4:4 Predictive profile or 4:4:4 chroma before Firefox creates a decoder. The attached sample (High 4:4:4 Predictive@L5, 1920x1200) and the GitHub sample in comment 7 both hit this check. Bug 1898501 enabled 4:4:4 H.264 playback on Linux only, so bug 1368063 still tracks the Windows path.\n\nComment 4 gives the work that a fix on Windows needs. The WMF H.264 decoder fails on 4:4:4 input, and the code assumes 2x chroma subsampling. The new details here also apply to bug 1368063. Comment 6 shows the same failure on an NVIDIA RTX 3050. Comment 7 reports more user uploads on GitHub with this format.\n\nFor files encoded with FFmpeg, the `-pix_fmt yuv420p` option gives a file that Firefox can play.",
+  "comment_count": 8,
+  "decision": "duplicate",
+  "dupe_of": 1368063,
+  "error": false,
+  "filed": "2024-02-22T19:42:21Z",
+  "fix_tags": [],
+  "issue_type": "codec-support",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-09T19:11:37Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": "DUPLICATE",
+  "run_id": "local-20261109-184732-8a1833",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-09T18:47:32+00:00",
+  "team": "media",
+  "title": "Firefox cannot play h264 video in 444 on Windows"
+ },
+ {
+  "agent_version": "ff82acba",
+  "asked": [
+   "about:logging capture",
+   "regression range"
+  ],
+  "blocks_add": [],
+  "bug_id": 2087144,
+  "comment": "Thanks for the detailed data. The attached `dumpsys media.aaudio` output agrees with the AAudio code in the current tree.\n\n**Analysis**\n\nThe Web Audio graph asks for a latency below `POWERSAVE_LATENCY_FRAMES_THRESHOLD` (4000 frames), so cubeb opens the output stream in `AAUDIO_PERFORMANCE_MODE_LOW_LATENCY` ([cubeb_aaudio.cpp](https://searchfox.org/firefox-main/rev/a82bcf39e8d23e7b06e021044db52f74210862ce/media/libcubeb/src/cubeb_aaudio.cpp#1434)). In that mode, cubeb sets the output buffer to 3 bursts when the burst is smaller than 128 frames ([cubeb_aaudio.cpp](https://searchfox.org/firefox-main/rev/a82bcf39e8d23e7b06e021044db52f74210862ce/media/libcubeb/src/cubeb_aaudio.cpp#1476-1480)). With a burst of 96 frames, the buffer is 288 frames, or 6 ms. This is the \"Avail 288\" in the attached dump.\n\nThe buffer size does not depend on the requested latency. cubeb also does not read the XRun count and does not make the buffer larger after XRuns. The probable reason for the XRuns is that 6 ms is too short for each callback, which goes through AudioIPC. No log or profile proves this yet.\n\nFirefox ignores `latencyHint`: `AudioContextOptions` declares only `sampleRate` ([AudioContext.webidl](https://searchfox.org/firefox-main/rev/a82bcf39e8d23e7b06e021044db52f74210862ce/dom/webidl/AudioContext.webidl#12)). This explains why the burst and the buffer stay the same for every hint. Bug 2020377 covers the `latencyHint` implementation. The `MediaStreamAudioDestinationNode` route plays through the same graph stream, so it crackles too.\n\nThe plain `<audio src>` control asks for about 100 ms ([AudioStream.cpp](https://searchfox.org/firefox-main/rev/a82bcf39e8d23e7b06e021044db52f74210862ce/dom/media/AudioStream.cpp#338)). That is above the threshold, so the stream gets the power saving mode and the AudioFlinger deep buffer mixer. This explains why the control is clean.\n\nThe probable cause is the libcubeb update of bug 2026000, which landed on 2026-03-25 for Firefox 151. It added the fixed 3 burst sizing in the output setup of `cubeb_aaudio.cpp`. Before it, the buffer also grew with the requested latency, and the Android graph asked for at least 1024 frames (bug 1930825). This comes from code reading only, so a regression range can confirm it.\n\nFix direction: in upstream libcubeb first, then vendored, make the low latency output buffer depend on the requested latency again. Another option is to add one burst to the buffer after new XRuns. Implementing `latencyHint` (bug 2020377) can also let `'playback'` open a power saving stream. This bug already blocks the crackling meta bug 1951155.\n\nMatthew, could you please look at the output buffer sizing of the AAudio backend for this bug?\n\n**Next steps**\n\n@vincent.kerdraon, could you please record a capture while the single `sine` page crackles? It shows how Firefox 158.0.2 opens the stream and where the callback is late.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. Under **Log module selection**, choose **\"Media playback\"** in the **Logging preset:** drop-down.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nOn Android, about:logging offers to upload the profile itself. After the upload, it shows a \"Share URL\" to add to this bug.\n\n@vincent.kerdraon, could you please also find the regression range? It shows if bug 2026000 is the change that brought the crackling back.\n\nPlease find the regression range with mozregression:\n\n1. Install it from https://mozilla.github.io/mozregression/.\n2. Run it with the first known bad and the last known good versions.\n3. Follow the steps that show the problem on each build it opens.\n4. Paste the final \"pushlog\" link into this bug.",
+  "comment_count": 3,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-10-29T16:03:11Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [
+   "regression"
+  ],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": null,
+    "nick": "vincent.kerdraon",
+    "role": "reporter"
+   },
+   {
+    "name": "Matthew Gregan",
+    "nick": "kinetik",
+    "role": "other"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-09T19:11:15Z",
+  "priority": "P2",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261109-184732-a6030a",
+  "security_hold": false,
+  "see_also_add": [
+   2026000,
+   2020377
+  ],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-09T18:47:32+00:00",
+  "team": "media",
+  "title": "Web Audio crackles on Pixel 8a (Android 17) even with a single OscillatorNode; latencyHint has no effect (AAudio shared MMAP stream XRuns)"
  }
 ]
