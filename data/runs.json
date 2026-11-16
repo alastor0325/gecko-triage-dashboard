@@ -12616,7 +12616,7 @@
   "blocks_add": [],
   "bug_id": 2092756,
   "comment": "Thanks for the detailed report and the repro. This is the same defect as bug 2057760. `VideoEncoder` converts RGB input to YUV with the BT.601 matrix, but the `decoderConfig.colorSpace` it reports is a fixed BT.709 value. The fix for bug 2057760 must make the conversion matrix and the reported color space agree. Either option in that bug removes the H.264 color shift in this report.\n\nThe new details here are useful for that fix. On Windows, both H.264 encoder paths call the same BT.601 conversion: `WMFMediaDataEncoder::ConvertToNV12InputSample` in [WMFMediaDataEncoder.cpp](https://searchfox.org/firefox-main/rev/30ac121fcc8e0c83e2ccb5182257df80c9143b15/dom/media/platforms/wmf/WMFMediaDataEncoder.cpp) and the FFmpeg path in [FFmpegVideoEncoder.cpp](https://searchfox.org/firefox-main/rev/30ac121fcc8e0c83e2ccb5182257df80c9143b15/dom/media/platforms/ffmpeg/FFmpegVideoEncoder.cpp). The WMF encoder sets no color attributes, which agrees with the missing SPS color description (`video_signal_type_present_flag = 0`). Bug 2057758 added the bitstream color data only for `FFmpegVideoEncoder`. So the fix for bug 2057760 must also cover the bitstream color data of the WMF H.264 path.\n\nBug 2056028 is related: it covers the fixed `decoderConfig.colorSpace` for all codecs, and the missing color data in the AV1 bitstream. Bug 2057760 now also blocks the WebCodecs meta bug 1746557.",
-  "comment_count": null,
+  "comment_count": 1,
   "decision": "duplicate",
   "dupe_of": 2057760,
   "error": false,
@@ -12636,10 +12636,10 @@
     "bug_id": 2057760
    }
   ],
-  "outcome": "awaiting review",
+  "outcome": "posted",
   "pending_actions": null,
-  "posted": false,
-  "posted_at": null,
+  "posted": true,
+  "posted_at": "2026-11-16T20:22:49Z",
   "priority": null,
   "regressed_by_add": [],
   "rejected": false,
