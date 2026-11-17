@@ -1273,7 +1273,7 @@
   "assigned": false,
   "fix_tags": [],
   "open": true,
-  "severity": "--"
+  "severity": "S3"
  },
  "2090627": {
   "assigned": false,
@@ -1395,7 +1395,7 @@
   "assigned": false,
   "fix_tags": [],
   "open": true,
-  "severity": "--"
+  "severity": "S4"
  },
  "2093825": {
   "assigned": false,
