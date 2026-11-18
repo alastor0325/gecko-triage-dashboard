@@ -269,7 +269,25 @@
   "open": false,
   "severity": "S4"
  },
+ "2043916": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2045880": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
  "2048815": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2049170": {
   "assigned": false,
   "fix_tags": [],
   "open": true,
@@ -1364,7 +1382,7 @@
  "2092415": {
   "assigned": true,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S2"
  },
  "2092453": {
@@ -1392,7 +1410,7 @@
   "severity": "S3"
  },
  "2093728": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S4"
@@ -1408,5 +1426,11 @@
   "fix_tags": [],
   "open": true,
   "severity": "S4"
+ },
+ "2094590": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "--"
  }
 }
