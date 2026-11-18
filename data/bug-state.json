@@ -1138,7 +1138,7 @@
   "severity": "--"
  },
  "2087988": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S4"

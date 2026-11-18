@@ -13091,6 +13091,105 @@
   "title": "When I have two tabs open on YouTube, Firefox stutters when playing videos in Windows 11"
  },
  {
+  "agent_version": "0.1.0+unknown",
+  "asked": [
+   "current-release media profile",
+   "local file status",
+   "about:support"
+  ],
+  "blocks_add": [],
+  "bug_id": 2045880,
+  "comment": "Thank you for the test on 154.0 and for the video in comment 6.\n\n**Analysis**\n\nBug 2050845 and bug 2055541 are in Firefox 154. Bug 2055541 holds the clock at the seek target while a new audio stream opens after a seek. A replay from the ended state can still start the audio sink in a different way.\n\nThe probable cause of the desync is a stale clock flag in [AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/f612f4a72980aeb8d7a868d53534ad698b2ee602/dom/media/mediasink/AudioSinkWrapper.cpp#225). At the end of playback, the audio sink ends first. Later position queries then set `mLastClockSource` to `SystemClock`. `Start()` and `Stop()` do not reset this flag. On a cold replay start, the first position query reads the old flag. It then moves the sink start time forward by the time that the audio stream needs to open ([AudioSinkWrapper.cpp](https://searchfox.org/firefox-main/rev/f612f4a72980aeb8d7a868d53534ad698b2ee602/dom/media/mediasink/AudioSinkWrapper.cpp#171-180)).\n\nThe audio then trails the video by that open time, which agrees with the 0.3 to 0.5 s in comment 0. A seek during playback stops a live sink, so the flag is correct after it. This comes from code reading only. It does not explain the local file failure on 154.0. A click on play after the end usually takes the seek resume path of bug 2055541. The flag came with bug 1743834 in Firefox 102, which agrees with \"several years\".\n\nThe probable cause of the freeze is the buffering check in [MediaDecoderStateMachine.cpp](https://searchfox.org/firefox-main/rev/f612f4a72980aeb8d7a868d53534ad698b2ee602/dom/media/MediaDecoderStateMachine.cpp#3215). For a local file, `mCanPlayThrough` stays false, because only `ChannelMediaDecoder::DownloadProgressed` sets it ([ChannelMediaDecoder.cpp](https://searchfox.org/firefox-main/rev/f612f4a72980aeb8d7a868d53534ad698b2ee602/dom/media/ChannelMediaDecoder.cpp#425)). When the audio track and the video track end at different times, `HasLowBufferedData()` can stay true near the start of a short file. Then only the 15 s buffering timeout ends the wait. Bug 2083351 shows the same 15 s wait on Linux with hardware decoding.\n\nSuggested fix direction: reset `mLastClockSource` in `AudioSinkWrapper::Start()`, or set `mClockStartTime` after `SyncCreateAudioSink` returns. For the freeze, treat a fully cached local file as able to play through, or limit the low buffered data check to the buffered end.\n\n**Next steps**\n\nThe profiles on Google Drive are from Firefox 151, before the two fixes. @kimpire, could you please record a new profile on the current Firefox release?\n\n1. Open `about:logging`.\n2. On the **Logging presets** tab, choose the **\"Media playback\"** preset.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Play the local file to the end. Then click play again.\n6. Wait until the desync or the freeze shows. Then click **Stop Logging**.\n7. Click **Upload Local Profile**. Add the share URL to this bug.\n\n@kimpire, could you please also tell us if the local file still fails on the current release, or only YouTube and Reddit?\n\nPlease also paste the text from `about:support` into this bug.",
+  "comment_count": null,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-06-08T19:59:38Z",
+  "fix_tags": [],
+  "issue_type": null,
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": null,
+    "nick": "kimpire",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": 0,
+  "posted": true,
+  "posted_at": "2026-11-18T13:49:31.968104Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "review_only": false,
+  "run_id": "d1052642-fc4a-44a3-8d04-559b03571e97",
+  "security_hold": false,
+  "see_also_add": [
+   1743834,
+   2055541
+  ],
+  "severity": null,
+  "source": "hackbot",
+  "started_at": "2026-11-17T19:09:48.853356Z",
+  "team": "media",
+  "team_from_input": false,
+  "title": "On replaying video, the audio output is 0.3-0.5s behind the video, and sometimes freezes up"
+ },
+ {
+  "agent_version": "0.1.0+unknown",
+  "asked": [
+   "cubeb log",
+   "about:support",
+   "wasapi-raw test"
+  ],
+  "blocks_add": [],
+  "bug_id": 2043916,
+  "comment": "Thanks, Nikita. The note about the \"voice clarity\" feature of the MCHOOSE V9 Turbo+ headset (comment 3 and comment 6) helps a lot.\n\n**Analysis**\n\nThe profile shows that Firefox sends audio to Windows on time. The stream is 48 kHz with steady 10 ms callbacks and no underruns during playback, on YouTube and on Twitch. Thus the distortion probably occurs after Firefox gives the audio to Windows, inside the headset's \"voice clarity\" effect.\n\nFirefox opens a normal shared WASAPI output stream with float samples. By default, Firefox does not use RAW mode, so Windows and driver effects process the stream ([StaticPrefList.yaml](https://searchfox.org/firefox-main/rev/cac2c0cf44beecb92c93119bd79e2408636f76d7/modules/libpref/init/StaticPrefList.yaml#12638), [cubeb_wasapi.cpp](https://searchfox.org/firefox-main/rev/cac2c0cf44beecb92c93119bd79e2408636f76d7/media/libcubeb/src/cubeb_wasapi.cpp#2337-2374)). We do not know yet which stream setting makes the effect act differently on Firefox than on other browsers. The device mix format and the channel layout are not in the profile.\n\n**Next steps**\n\nNikita, could you please attach a cubeb log to this bug? Turn the \"voice clarity\" feature on first.\n\n1. Open `about:logging` in a new tab.\n2. In \"New log modules\", type `cubeb:5`.\n3. Select \"Logging to a file\".\n4. Click \"Start logging\".\n5. Play a YouTube video until the sound distorts.\n6. Click \"Stop logging\", then attach the log files to this bug.\n\nNikita, could you please also paste the text of `about:support` into a comment? Click \"Copy text to clipboard\" on that page.\n\nNikita, could you please also try this test and tell us the result?\n\n1. Open `about:config`.\n2. Set `media.cubeb.wasapi-raw` to `2`.\n3. Restart Firefox, then play a YouTube video with \"voice clarity\" on.\n4. Tell us if the sound still distorts.\n5. Set `media.cubeb.wasapi-raw` back to `0` after the test.\n\nThe log shows the device format and the stream setup. The test shows if the effect stops when Firefox asks Windows to skip audio effects.",
+  "comment_count": null,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-05-31T17:00:14Z",
+  "fix_tags": [],
+  "issue_type": null,
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Nikita",
+    "nick": "ghud010",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": 0,
+  "posted": true,
+  "posted_at": "2026-11-18T14:23:00.006147Z",
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "review_only": false,
+  "run_id": "bcfa0151-8322-4a01-b99e-2a142dfc9602",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": "S3",
+  "source": "hackbot",
+  "started_at": "2026-11-18T13:54:11.942385Z",
+  "team": "media",
+  "team_from_input": false,
+  "title": "\u041f\u0440\u043e\u0431\u043b\u0435\u043c\u0430 \u0437\u0432\u0443\u043a\u0430 [sound issue]"
+ },
+ {
   "agent_version": "c8266038",
   "asked": [],
   "blocks_add": [],
