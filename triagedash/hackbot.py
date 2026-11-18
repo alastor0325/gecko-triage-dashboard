@@ -15,11 +15,12 @@ import subprocess
 import urllib.request
 from collections import Counter
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from . import store
 from .summary import is_public, parse_summary
+from .teams import team_for_component
 
 DEFAULT_URL = "https://hackbot-api.moz.tools"
 KEYCHAIN_SERVICE = "hackbot-api"
@@ -30,6 +31,8 @@ REVIEWS = "reviews.jsonl"
 PAGE = 100
 DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 FINISHED = ("succeeded", "failed", "timed_out")
+# A review-only run still unapplied this long after it ran is not fetched again.
+REVIEW_ONLY_WAIT = timedelta(days=7)
 # Fields of a RunDoc that the dashboard never needs; requested_by is an email.
 DROPPED = ("requested_by", "artifacts")
 
@@ -64,7 +67,11 @@ def key_from_keychain(service: str = KEYCHAIN_SERVICE) -> str | None:
 
 
 def load_key() -> str | None:
-    return key_from_keychain() or key_from_file(KEY_FILE)
+    return (
+        os.environ.get("HACKBOT_API_KEY", "").strip()
+        or key_from_keychain()
+        or key_from_file(KEY_FILE)
+    )
 
 
 def settled(run: dict, actions: list[dict]) -> bool:
@@ -89,7 +96,19 @@ def stored(out_dir: Path) -> dict[str, dict]:
 
 
 def is_settled(doc: dict) -> bool:
-    return settled(doc["run"], doc["actions"])
+    return settled(doc["run"], doc["actions"]) or abandoned_review(doc)
+
+
+def abandoned_review(doc: dict) -> bool:
+    """A finished review-only run that nothing was applied from a week after it ran, such
+    as a shadow run made to compare with a local run."""
+    run = doc["run"]
+    if not run["inputs"].get("require_review") or run.get("status") not in FINISHED:
+        return False
+    if any(a.get("status") == "applied" for a in doc["actions"]) or not doc.get("fetched_at"):
+        return False
+    ran = datetime.fromisoformat(run["created_at"])
+    return datetime.fromisoformat(doc["fetched_at"]) - ran > REVIEW_ONLY_WAIT
 
 
 def needs_fetch(run_id: str, known: dict[str, dict]) -> bool:
@@ -194,6 +213,7 @@ def to_record(doc: dict, meta: dict, users: dict[str, dict], review: dict | None
     """A downloaded run as a dashboard record: the summary parsed and scrubbed as for local
     runs, plus its outcome from the action rows and the review log."""
     run = doc["run"]
+    result = outcome(run, doc["actions"], review)
     record = parse_summary(
         summary_of(doc),
         bug_id=bug_of(doc),
@@ -201,11 +221,19 @@ def to_record(doc: dict, meta: dict, users: dict[str, dict], review: dict | None
         meta=meta,
         users=users,
         source="hackbot",
-        team=team_of(doc),
+        team=team_of(doc) or team_for_component(meta.get("product"), meta.get("component")),
         started_at=run["created_at"],
     )
-    result = outcome(run, doc["actions"], review)
-    return {**record, **result, "error": record["error"] or result["outcome"] == "failed"}
+    flags = {
+        "team_from_input": team_of(doc) is not None,
+        "review_only": bool(run["inputs"].get("require_review")),
+    }
+    return {
+        **record,
+        **result,
+        **flags,
+        "error": record["error"] or result["outcome"] == "failed",
+    }
 
 
 def bug_of(doc: dict) -> int:
@@ -222,7 +250,7 @@ def summary_of(doc: dict) -> dict:
 
 def records(docs: list[dict], metas: dict, users: dict, reviews: dict) -> list[dict]:
     """The records of every downloaded run on a public bug. `store.shown` then keeps the
-    runs made for a shown team."""
+    runs of a shown team that it does not hide."""
     out = []
     for doc in docs:
         meta = metas.get(bug_of(doc))

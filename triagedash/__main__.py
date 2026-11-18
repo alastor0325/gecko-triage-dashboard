@@ -160,7 +160,10 @@ def fetch_hackbot(args) -> None:
     except hackbot.KeyFileError as e:
         raise SystemExit(str(e)) from e
     if not key:
-        print("off: no key (Keychain item 'hackbot-api' or ~/.config/hackbot/key, mode 600)")
+        print(
+            "off: no key (HACKBOT_API_KEY, Keychain item 'hackbot-api' or"
+            " ~/.config/hackbot/key, mode 600)"
+        )
         return
     base = os.environ.get("HACKBOT_API_URL", hackbot.DEFAULT_URL)
     n = hackbot.fetch(hackbot.http_getter(base, key), Path(args.out), hackbot.now_utc())

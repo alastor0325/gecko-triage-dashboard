@@ -130,19 +130,27 @@ input path of `ingest-local.sh`.
 
 ## Hackbot runs
 
-Once gecko-triage runs on Hackbot, its runs show next to the local ones, with
-`source: hackbot`. Run the download on the Mac before `ingest-local.sh`:
+gecko-triage runs on Hackbot show next to the local ones, with `source: hackbot`.
+`scripts/ingest-local.sh` downloads them first; by hand:
 
 ```
 uv run python -m triagedash fetch-hackbot              # off until a key exists
 uv run python -m triagedash review <run_id> --reject "reason"
 ```
 
-- `fetch-hackbot` reads the key from the Keychain item `hackbot-api`, else from
-  `~/.config/hackbot/key` (mode 600 only), and `HACKBOT_API_URL` (default
-  `https://hackbot-api.moz.tools`). It saves each gecko-triage run and its action rows in
-  `~/hackbot/hackbot-runs/<UTC day>/<run_id>.json`, without the requester's email. It
-  never fetches `/artifacts`, so logs with full bug text never reach the dashboard.
+- `fetch-hackbot` reads the key from `HACKBOT_API_KEY`, else the Keychain item
+  `hackbot-api`, else `~/.config/hackbot/key` (mode 600 only), and `HACKBOT_API_URL`
+  (default `https://hackbot-api.moz.tools`). It saves each gecko-triage run and its action
+  rows in `~/hackbot/hackbot-runs/<UTC day>/<run_id>.json`, without the requester's email.
+  It never fetches `/artifacts`, so logs with full bug text never reach the dashboard.
+  When the download fails, `ingest-local.sh` goes on with the runs already stored.
+- A run goes to the team that its input names. A run with no team, such as one started
+  from the Hackbot UI, goes to the team that owns the bug's component, but only once it
+  posted (its comment with the `gecko-triage` tag is on the bug). Until then, and when no
+  team owns the component, it is not shown.
+- A run started with `require_review: true` that nothing was applied from (for example a
+  shadow run made to compare with a local run) is not shown. A week after it ran, it is
+  no longer downloaded again.
 - hackbot-api has no reject state, so `review --reject` writes the rejection to
   `~/hackbot/hackbot-runs/reviews.jsonl`.
 - A Hackbot run's outcome is `failed`, `rejected`, `posted`, `partly posted`,
@@ -152,8 +160,9 @@ uv run python -m triagedash review <run_id> --reject "reason"
 ## Adding a team
 
 Add a `Team` to `TEAMS` in `triagedash/teams.py`, with the components from the agent's
-`teams/<team>/team.toml` (the landing page lists them). Runs whose input names that team
-then go to its page. Local runs are all `LOCAL_TEAM` (media) today.
+`teams/<team>/team.toml` (the landing page lists them). Runs whose input names that team,
+and posted runs with no team on one of its components, then go to its page. Local runs
+are all `LOCAL_TEAM` (media) today.
 
 ## Publishing
 

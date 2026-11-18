@@ -170,3 +170,75 @@ def test_records_keep_public_runs_and_their_team():
         ("c", "graphics"),
     ]
     assert [r["run_id"] for r in store.shown(out)] == ["a"]
+
+
+MEDIA = {**META, "component": "Audio/Video: Playback"}
+
+
+def ui_doc(run_id, team, actions, require_review=False):
+    inputs = {"bug_id": 1, "team": team, "require_review": require_review}
+    return {"run": {**hackbot.slim(RUN), "run_id": run_id, "inputs": inputs}, "actions": actions}
+
+
+def test_a_run_with_no_team_takes_the_team_of_its_component_and_shows_once_it_posted():
+    docs = [
+        ui_doc("posted", None, [APPLIED]),
+        ui_doc("pending", None, [PENDING]),
+        ui_doc("named", "media", [PENDING]),
+    ]
+    out = hackbot.records(docs, {1: MEDIA}, {}, {})
+    assert [(r["run_id"], r["team"], r["team_from_input"]) for r in out] == [
+        ("posted", "media", False),
+        ("pending", "media", False),
+        ("named", "media", True),
+    ]
+    assert [r["run_id"] for r in store.shown(out)] == ["posted", "named"]
+
+
+def test_a_posted_run_with_no_team_outside_every_team_is_not_shown():
+    out = hackbot.records([ui_doc("posted", None, [APPLIED])], {1: META}, {}, {})
+    assert [r["team"] for r in out] == [None]
+    assert store.shown(out) == []
+
+
+def test_a_review_only_run_that_never_posted_is_not_shown():
+    docs = [
+        ui_doc("shadow", "media", [PENDING], require_review=True),
+        ui_doc("shadow-empty", "media", [], require_review=True),
+        ui_doc("applied", "media", [APPLIED], require_review=True),
+        ui_doc("open", "media", [PENDING]),
+    ]
+    out = hackbot.records(docs, {1: MEDIA}, {}, {})
+    assert [r["review_only"] for r in out] == [True, True, True, False]
+    assert [r["run_id"] for r in store.shown(out)] == ["applied", "open"]
+
+
+def test_a_stored_shadow_run_is_dropped_from_the_archive_too():
+    old = hackbot.records([ui_doc("shadow", "media", [PENDING], True)], {1: MEDIA}, {}, {})
+    merged = store.merge_records(old, [])
+    assert store.shown(merged) == []
+
+
+def test_a_review_only_run_stops_being_fetched_a_week_after_it_ran():
+    run = {**hackbot.slim(RUN), "inputs": {"bug_id": 1, "require_review": True}}
+    young = {"run": run, "actions": [PENDING], "fetched_at": "2026-10-26T00:00:00+00:00"}
+    old = {**young, "fetched_at": "2026-10-28T00:00:00+00:00"}
+    applied_later = {
+        **young,
+        "run": {**run, "inputs": {"bug_id": 1}},
+        "fetched_at": old["fetched_at"],
+    }
+    assert not hackbot.is_settled(young)
+    assert hackbot.is_settled(old)
+    assert not hackbot.is_settled(applied_later)
+
+
+def test_load_key_takes_the_env_first(monkeypatch, tmp_path):
+    monkeypatch.setattr(hackbot, "key_from_keychain", lambda: None)
+    monkeypatch.setattr(hackbot, "KEY_FILE", tmp_path / "missing")
+    monkeypatch.setenv("HACKBOT_API_KEY", " env-key \n")
+    assert hackbot.load_key() == "env-key"
+    monkeypatch.setenv("HACKBOT_API_KEY", "")
+    assert hackbot.load_key() is None
+    monkeypatch.delenv("HACKBOT_API_KEY")
+    assert hackbot.load_key() is None

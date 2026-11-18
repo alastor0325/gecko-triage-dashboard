@@ -55,9 +55,18 @@ def log_teams(log: list[dict]) -> dict[str, str | None]:
 
 
 def shown(records: list[dict]) -> list[dict]:
-    """The records the dashboard shows: the runs made for a team of TEAMS. Applied to the
-    whole archive, so a run stored under an older rule is dropped too."""
-    return [r for r in records if is_shown(r["team"])]
+    """The records the dashboard shows: the runs of a team of TEAMS that `hidden` does not
+    drop. Applied to the whole archive, so a run stored under an older rule is dropped too."""
+    return [r for r in records if is_shown(r["team"]) and not hidden(r)]
+
+
+def hidden(record: dict) -> bool:
+    """A Hackbot run that never posted, when it was review-only (a shadow run) or when its
+    team comes only from the bug's component (a run started with no team, as from the
+    Hackbot UI): it never reached Bugzilla, so it stays off the dashboard."""
+    if record.get("source") != "hackbot" or record.get("posted"):
+        return False
+    return bool(record.get("review_only")) or not record.get("team_from_input", True)
 
 
 def local_team(teams: dict[str, str | None], run_id: str) -> str | None:

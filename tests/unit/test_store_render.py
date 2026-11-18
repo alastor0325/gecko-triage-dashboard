@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from triagedash import render, stats, store
 from triagedash.store import apply_log
-from triagedash.teams import TEAMS, is_shown
+from triagedash.teams import TEAMS, is_shown, team_for_component
 
 from .conftest import make_record
 
@@ -174,3 +174,11 @@ def test_apply_log_keeps_a_stale_review():
     run = make_record(1, run_id="a", source="daily")
     (r,) = apply_log([run], [{"run_id": "a", "review": "stale"}])
     assert (r["outcome"], r["posted"]) == ("stale", False)
+
+
+def test_team_for_component():
+    assert team_for_component("Core", "Web Audio") == "media"
+    assert team_for_component("Core", "Audio/Video: Playback") == "media"
+    assert team_for_component("Core", "SQLite and Embedded Database Bindings") is None
+    assert team_for_component("Firefox", "Web Audio") is None
+    assert team_for_component(None, None) is None
