@@ -13932,5 +13932,50 @@
   "started_at": "2026-11-19T16:00:29+00:00",
   "team": "media",
   "title": "MediaRecorder fails with UnknownError on 384 kHz audio streams, breaking microphone dictation with high-rate default output"
+ },
+ {
+  "agent_version": "ff78c39b",
+  "asked": [
+   "WebRTC-preset capture",
+   "macOS input volume"
+  ],
+  "blocks_add": [],
+  "bug_id": 2091322,
+  "comment": "Thanks for the profile in comment 3. The triage tools can now read it.\n\n**Analysis**\n\nFor the whole call, the macOS voice-processing unit of the MacBook Pro Microphone runs with bypass on and its AGC off. cubeb reports no error. Input data arrives with no gaps from the start of the stream. cubeb sets bypass on when the request from Firefox has no echo cancellation ([mod.rs](https://searchfox.org/firefox-main/rev/41b747af72d91784f78616056c2f1d6c17c01345/third_party/rust/cubeb-coreaudio/src/backend/mod.rs#444-485)). So Firefox requested no platform processing for this call.\n\nThe request of the device is the intersection of the requests of all its microphone tracks ([DeviceInputTrack.cpp](https://searchfox.org/firefox-main/rev/41b747af72d91784f78616056c2f1d6c17c01345/dom/media/DeviceInputTrack.cpp#319-328)). One track gives an empty request in three cases ([MediaEngineWebRTCAudio.cpp](https://searchfox.org/firefox-main/rev/41b747af72d91784f78616056c2f1d6c17c01345/dom/media/webrtc/MediaEngineWebRTCAudio.cpp#1143-1161)). Platform processing is off for the track, an earlier attempt to set the params failed, or the track has no processing. The default macOS prefs turn on platform processing ([all.js](https://searchfox.org/firefox-main/rev/41b747af72d91784f78616056c2f1d6c17c01345/modules/libpref/init/all.js#322-335)), and the about:support data shows no change to them.\n\nThe probable cause of the silent first seconds is still the slow gain increase of the software AGC. The input is very quiet, as comment 2 says. The parent process shows no change at the time when the audio starts to work. So the change probably happens later in the chain, in the content process.\n\nA correction to comment 4: the profile has log lines only from the parent process. The Google Meet content process has no log markers, so the profile cannot show the processing that each track requests. Step 2 of the capture steps in comment 2 said \"Media playback\". That preset does not have the `MediaManager` and `webrtc_trace` modules. The profile shows Firefox 160 on macOS 27.2.1, so the problem probably continues in Firefox 160.\n\n**Next steps**\n\nViacheslav, could you please record a new capture while you join a Google Meet instant meeting and speak from the start? In step 2, choose the **WebRTC** preset in place of **Media playback**. Before the upload, keep the data of all tabs and processes in the upload options.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. Under **Log module selection**, choose **\"Media playback\"** in the **Logging preset:** drop-down.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.\n\nViacheslav, could you please also give the input volume of the MacBook Pro Microphone in System Settings > Sound > Input?",
+  "comment_count": 6,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-10T10:07:50Z",
+  "fix_tags": [],
+  "issue_type": "capture",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "Viacheslav Ivannikov",
+    "nick": "slava.v.ivannikov",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-19T18:07:57Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261119-174047-a7cad3",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-19T17:40:47+00:00",
+  "team": "media",
+  "title": "macOS: microphone is silent for the first ~10 s of a WebRTC call (built-in mic, voice-processing input), and disabling voice processing causes a continuous aggregate-device restart loop with no audio at all"
  }
 ]
