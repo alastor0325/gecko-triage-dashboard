@@ -206,7 +206,7 @@
  "1955763": {
   "assigned": true,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S3"
  },
  "1958667": {
@@ -334,6 +334,12 @@
   "fix_tags": [
    "[gecko-triage:easy-fix]"
   ],
+  "open": true,
+  "severity": "S3"
+ },
+ "2055249": {
+  "assigned": false,
+  "fix_tags": [],
   "open": true,
   "severity": "S3"
  },
@@ -1152,10 +1158,10 @@
   "severity": "S3"
  },
  "2087904": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
-  "severity": "--"
+  "severity": "S3"
  },
  "2087988": {
   "assigned": true,
@@ -1484,7 +1490,7 @@
   "severity": "--"
  },
  "2094782": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S4"
@@ -1502,6 +1508,24 @@
   "severity": "S3"
  },
  "2095073": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2095185": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2095288": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S4"
+ },
+ "2095362": {
   "assigned": false,
   "fix_tags": [],
   "open": true,
