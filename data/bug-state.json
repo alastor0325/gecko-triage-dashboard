@@ -96,7 +96,7 @@
   "severity": "S3"
  },
  "1860793": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S4"
@@ -972,7 +972,7 @@
   "severity": "S3"
  },
  "2085469": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S4"
@@ -1122,7 +1122,7 @@
   "severity": "S3"
  },
  "2087461": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "S3"
@@ -1498,7 +1498,7 @@
  "2094782": {
   "assigned": true,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S4"
  },
  "2094933": {
@@ -1550,6 +1550,24 @@
   "severity": "S3"
  },
  "2096189": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2096283": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2096481": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2096538": {
   "assigned": false,
   "fix_tags": [],
   "open": true,
