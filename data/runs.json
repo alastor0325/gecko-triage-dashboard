@@ -14982,5 +14982,134 @@
   "started_at": "2026-11-24T16:00:37+00:00",
   "team": "media",
   "title": "Firefox consistently, but periodically, stutters (at differing intervals), during media play-back, when utilising the KWin Wayland back-end, but not with KWin XWayland."
+ },
+ {
+  "agent_version": "5885bcbc",
+  "asked": [
+   "media+graphics profile"
+  ],
+  "blocks_add": [
+   1416090
+  ],
+  "bug_id": 2097321,
+  "comment": "Thanks for the detailed measurements and the about:support data.\n\n**Analysis**\n\nThe attached about:support shows \"WebRender (Software)\". Firefox blocklists WebRender when the X server uses the Intel DDX driver (`FEATURE_FAILURE_DDX_INTEL`), so all compositing runs on the CPU. The dropped frame count adds frames that the video sink drops and frames that the compositor skips. The current data does not show which of the two drops the frames on this page.\n\nThis bug blocks the dropped frames meta bug 1416090.\n\n**Next steps**\n\nLuureAmet, could you please capture a profile on the flystream.net page while the frames drop? In step 2, choose the **\"Graphics\"** preset together with **\"Media playback\"** when the drop-down allows both.\n\nPlease capture a profile:\n\n1. Open `about:logging`.\n2. Under **Log module selection**, choose **\"Media playback\"** in the **Logging preset:** drop-down.\n3. Under **Logging output**, select **\"Logging to the Firefox Profiler\"**.\n4. Click **Start Logging**.\n5. Reload the page. Then do the steps that show the problem.\n6. Click **Stop Logging**. The profile opens in the Firefox Profiler.\n7. Click **Upload Local Profile**. This is the share button.\n8. Copy the share URL. Add it to this bug.\n\nThe [instruction video](https://www.loom.com/share/24ea3a8e3a054c478de94643a0ea8620?sid=87b0ffaa-c4ea-43ce-8107-639f24b747a8) shows these steps.",
+  "comment_count": 3,
+  "decision": "needs_info",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-11-24T18:04:28Z",
+  "fix_tags": [],
+  "issue_type": "performance",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [
+   {
+    "name": "LuureAmet TeabeAmet",
+    "nick": "luureamet",
+    "role": "reporter"
+   }
+  ],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-25T16:08:11Z",
+  "priority": "P3",
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261125-160037-ceb9d0",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": "S3",
+  "source": "daily",
+  "started_at": "2026-11-25T16:00:37+00:00",
+  "team": "media",
+  "title": "Flystream.net-i videopleieris kaob 80-95% kaadritest; sama videovoog m\u00e4ngib     \u2502 Chromiumis ja tavalisel <video>-lehel sujuvalt"
+ },
+ {
+  "agent_version": "5885bcbc",
+  "asked": [],
+  "blocks_add": [
+   1746557
+  ],
+  "bug_id": 2031056,
+  "comment": "Bug 2082867 fixed the duplicated SPS and PPS header bytes (`67 67`, `68 68`) in `H264::WriteExtraData`. That fix landed on 2026-11-16, for Firefox 162. Comment 7 tested Firefox 160, which does not have the fix. Two other defects of this report are still in the current tree.\n\n**Analysis**\n\n1. Reserved bits. `H264::WriteExtraData` in [H264.cpp](https://searchfox.org/firefox-main/rev/4a7b56cdc419768220e195d758c9e3e4852bc6b2/dom/media/platforms/agnostic/bytestreams/H264.cpp#1505-1506) writes byte 4 as `0x03` and byte 5 as `0x01`. The reserved bits of these bytes must be 1, so the correct values are `0xFF` and `0xE1`. The comment on line 1506 says \"numPPS\", but the field is numOfSequenceParameterSets. `H264::ExtractExtraData` in the same file writes these two bytes correctly (`0xfc | 3`, `0xe0 | numSps`).\n\n2. No High profile trailer. For a profile other than 66, 77 and 88, the record must end with chroma_format, the two bit depths and numOfSequenceParameterSetExt. The record syntax is in [H264.h](https://searchfox.org/firefox-main/rev/4a7b56cdc419768220e195d758c9e3e4852bc6b2/dom/media/platforms/agnostic/bytestreams/H264.h#637-650). `WriteExtraData` stops after the PPS for every profile. Thus the profile 100 records in comment 0 and comment 7 end after the PPS. The Chromium record in comment 0 ends with `fd f8 f8 00`.\n\nThe callers are `AnnexB::ExtractExtraDataForAVCC` (Windows, Android, and the FFmpeg encoders other than libx264) and `FFmpegVideoEncoder::GetExtraData` (libx264). macOS uses the record from VideoToolbox and does not have these defects. Firefox readers do not depend on the reserved bits: `AVCCConfig::Parse` ignores them and accepts a record with no trailer.\n\nA related defect: `AVCCConfig::CreateNewExtraData` in [H264.cpp](https://searchfox.org/firefox-main/rev/4a7b56cdc419768220e195d758c9e3e4852bc6b2/dom/media/platforms/agnostic/bytestreams/H264.cpp#1655-1657) writes the reserved fields with hex literals (`0x111111`, `0x111`, `0x11111`) in place of binary literals. Its only caller is on the decoder side, so it does not change the WebCodecs output.\n\nIt is not known yet if the two remaining defects alone cause the Android black frame in comment 7. A test with Firefox 162 or later can show this.\n\n**Fix direction**\n\n- Write `0xFC | 3` and `0xE0 | 1` in `WriteExtraData`, and correct the comment.\n- For the profiles that need it, decode the SPS and append the trailer: `0xFC | chroma_format_idc`, `0xF8 | bit_depth_luma_minus8`, `0xF8 | bit_depth_chroma_minus8`, `0x00`.\n- Keep `AVCCConfig::Parse` lenient. Files from other tools can have reserved bits that are not all 1.\n- Extend the gtest `H264.WriteExtraDataPreservesNALUnits` in [TestByteStreams.cpp](https://searchfox.org/firefox-main/rev/4a7b56cdc419768220e195d758c9e3e4852bc6b2/dom/media/platforms/agnostic/bytestreams/gtest/TestByteStreams.cpp#980) to check bytes 4 and 5. Add a profile 100 case for the trailer.\n\nBoris Fontaine attached a patch (comment 6). It corrects the reserved bits and the `CreateNewExtraData` literals. It also overlaps the change of bug 2082867. It makes `AVCCConfig::Parse` reject records with reserved bits that are not all 1, and it does not add the trailer.\n\nThe needinfo from comment 2 on C.M.Chang is still open. This is not a regression: the code dates from bug 1570337. This bug now blocks the WebCodecs meta bug 1746557.",
+  "comment_count": 8,
+  "decision": "analyzed",
+  "dupe_of": null,
+  "error": false,
+  "filed": "2026-04-11T04:11:25Z",
+  "fix_tags": [],
+  "issue_type": "web-api",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-25T16:08:28Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": null,
+  "run_id": "local-20261125-160037-d970af",
+  "security_hold": false,
+  "see_also_add": [
+   2049470
+  ],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-25T16:00:37+00:00",
+  "team": "media",
+  "title": "WebCodecs H.264 VideoEncoder malformed AVCC SPS"
+ },
+ {
+  "agent_version": "5885bcbc",
+  "asked": [],
+  "blocks_add": [],
+  "bug_id": 2090573,
+  "comment": "Thanks for the profile and the about:support text.\n\nThis looks like the same problem as bug 1895773. The profile in comment 3 shows the same pattern four times, each time the video in the second tab starts.\n\n**Analysis**\n\n- Windows takes 370 to 560 ms to open the audio stream of the second tab (1 s the first time). The work runs in `cubeb_stream_init` on the `AudioIPC Server RPC` thread of the parent process, and waits inside the Windows audio service.\n- All tabs share this one thread. So during that time, the `MediaDecoderStateMachine` of the first tab waits 419 ms in `AudioStream::GetPositionInFramesUnlocked` ([AudioStream.cpp](https://searchfox.org/firefox-main/rev/4a7b56cdc419768220e195d758c9e3e4852bc6b2/dom/media/AudioStream.cpp)). Its position request waits until the stream init of the second tab is done.\n- The first tab then stops filling its audio buffer of about 200 ms. Its `AudioIPC Client Callback` thread logs \"Underrun when popping samples from audiosink ring buffer\" for 140 to 210 ms, which is the audio cut.\n- The audio device and the sample rate (48000 Hz) do not change. The prefs in about:support are at their defaults.\n\nBug 1895773 shows the same chain: a slow `cubeb_stream_init` blocks the `AudioIPC Server RPC` thread, and the audio that already plays cuts out. There, a new `AudioContext` opens the new stream; here, a second video does. The Firefox fix is the same for both: the stream that already plays must not wait for the init of a new stream. Bug 1895773 names the MaxxAudioAPO driver. This system uses a Realtek(R) Audio device, so the slow driver part can differ.\n\nOn Linux, the audio stream probably opens fast. Then the first tab does not wait long enough to empty its buffer, so the audio does not cut.\n\nThe audio glitch meta bug 1951155 now tracks bug 1895773.",
+  "comment_count": 6,
+  "decision": "duplicate",
+  "dupe_of": 1895773,
+  "error": false,
+  "filed": "2026-11-07T09:12:33Z",
+  "fix_tags": [],
+  "issue_type": "audio-output",
+  "issue_type_note": null,
+  "keywords_add": [],
+  "move_to": null,
+  "needinfo": [],
+  "needinfo_cleared": 0,
+  "other_bugs": [
+   {
+    "blocks_add": [
+     1951155
+    ],
+    "bug_id": 1895773
+   }
+  ],
+  "outcome": "posted",
+  "pending_actions": null,
+  "posted": true,
+  "posted_at": "2026-11-25T16:08:46Z",
+  "priority": null,
+  "regressed_by_add": [],
+  "rejected": false,
+  "resolution": "DUPLICATE",
+  "run_id": "local-20261125-160037-ebe4bc",
+  "security_hold": false,
+  "see_also_add": [],
+  "severity": null,
+  "source": "daily",
+  "started_at": "2026-11-25T16:00:37+00:00",
+  "team": "media",
+  "title": "When I have two tabs open on YouTube, Firefox stutters when playing videos in Windows 11"
  }
 ]
