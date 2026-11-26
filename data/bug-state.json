@@ -98,7 +98,7 @@
  "1860793": {
   "assigned": true,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S4"
  },
  "1861949": {
@@ -260,7 +260,7 @@
  "2008586": {
   "assigned": true,
   "fix_tags": [],
-  "open": true,
+  "open": false,
   "severity": "S4"
  },
  "2026835": {
@@ -1001,7 +1001,7 @@
   "assigned": true,
   "fix_tags": [],
   "open": true,
-  "severity": "S2"
+  "severity": "S3"
  },
  "2085676": {
   "assigned": false,
@@ -1508,7 +1508,7 @@
   "severity": "--"
  },
  "2094590": {
-  "assigned": false,
+  "assigned": true,
   "fix_tags": [],
   "open": true,
   "severity": "--"
@@ -1597,11 +1597,65 @@
   "open": true,
   "severity": "S3"
  },
+ "2096807": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "--"
+ },
+ "2096808": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S4"
+ },
+ "2096811": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
  "2096816": {
   "assigned": false,
   "fix_tags": [],
   "open": false,
   "severity": "--"
+ },
+ "2096836": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "--"
+ },
+ "2096837": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S4"
+ },
+ "2096838": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S4"
+ },
+ "2096839": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2096852": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S4"
+ },
+ "2096854": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
  },
  "2096912": {
   "assigned": false,
@@ -1624,6 +1678,24 @@
   "severity": "S4"
  },
  "2097321": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2097784": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S3"
+ },
+ "2097785": {
+  "assigned": false,
+  "fix_tags": [],
+  "open": true,
+  "severity": "S4"
+ },
+ "2098075": {
   "assigned": false,
   "fix_tags": [],
   "open": true,
